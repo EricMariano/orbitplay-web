@@ -1,0 +1,275 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OrbitPlay API (PROVISIONAL contract)",
+    "version": "0.0.0-provisional",
+    "description": "Hand-authored placeholder contract covering only the endpoints listed in the setup brief. NOT aligned with the real API yet — replace with the API repo's openapi.json (via `pnpm gen:api <url|path>`) as soon as it exists. See DECISIONS.md."
+  },
+  "servers": [{ "url": "/api" }],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "Authenticate and start a session",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session established",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "summary": "Exchange the refresh cookie for a fresh access token",
+        "responses": {
+          "200": {
+            "description": "New access token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RefreshResponse" }
+              }
+            }
+          },
+          "401": { "description": "Refresh failed" }
+        }
+      }
+    },
+    "/games": {
+      "get": {
+        "operationId": "listGames",
+        "summary": "List games",
+        "responses": {
+          "200": {
+            "description": "Games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Game" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{id}": {
+      "get": {
+        "operationId": "getGame",
+        "summary": "Get a game by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Game",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Game" } }
+            }
+          },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/test-models": {
+      "get": {
+        "operationId": "listTestModels",
+        "summary": "List reusable test models",
+        "responses": {
+          "200": {
+            "description": "Test models",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TestModel" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/opportunities": {
+      "get": {
+        "operationId": "listOpportunities",
+        "summary": "List opportunities for the current user",
+        "responses": {
+          "200": {
+            "description": "Opportunities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Opportunity" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}/report": {
+      "get": {
+        "operationId": "getTestReport",
+        "summary": "Get the report for a test run",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TestReport" } }
+            }
+          },
+          "404": { "description": "Not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Role": {
+        "type": "string",
+        "enum": ["studio", "player"],
+        "description": "Authoritative role, decided by the backend (RN-03). The login tab does NOT set it."
+      },
+      "User": {
+        "type": "object",
+        "required": ["id", "name", "email", "role"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "avatarUrl": { "type": "string", "nullable": true }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" },
+          "remember": { "type": "boolean", "default": false }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "required": ["user", "accessToken"],
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" },
+          "accessToken": { "type": "string" }
+        }
+      },
+      "RefreshResponse": {
+        "type": "object",
+        "required": ["accessToken"],
+        "properties": {
+          "accessToken": { "type": "string" }
+        }
+      },
+      "Game": {
+        "type": "object",
+        "required": ["id", "title", "status", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "in_review", "published"]
+          },
+          "coverUrl": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TestModel": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string", "nullable": true }
+        }
+      },
+      "Opportunity": {
+        "type": "object",
+        "required": ["id", "title", "reward", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "gameId": { "type": "string", "nullable": true },
+          "reward": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["open", "in_progress", "closed"]
+          }
+        }
+      },
+      "TestReport": {
+        "type": "object",
+        "required": ["id", "testId", "summary"],
+        "properties": {
+          "id": { "type": "string" },
+          "testId": { "type": "string" },
+          "summary": { "type": "string" },
+          "score": { "type": "number", "nullable": true },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title", "content"],
+              "properties": {
+                "title": { "type": "string" },
+                "content": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "fieldErrors": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

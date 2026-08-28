@@ -1,0 +1,8 @@
+dist
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+src/routeTree.gen.ts
+src/api-types/generated.ts
+src/api-types/openapi.json

@@ -1,0 +1,125 @@
+@import 'tailwindcss';
+
+/* Enables the `dark:` variant if ever needed; the app is dark-first, so the
+   dark values live directly in :root and no class toggle is required. */
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   Design tokens — see DESIGN.md (PLACEHOLDER, dark-first).
+   Layer 1 palette (--n-*, --g-*) is internal; screens use only the semantic
+   layer below (mapped to Tailwind utilities in @theme inline).
+--------------------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+
+  /* ---- Palette: neutrals (n) ---- */
+  --n-dark: #0b0d12; /* TODO confirm absolute base */
+  --n-900: #0f1115;
+  --n-850: #141720;
+  --n-800: #1a1e28;
+  --n-700: #232834;
+  --n-600: #2f3542;
+  --n-400: #6b7280;
+  --n-300: #8b93a7;
+  --n-100: #e6e9f0;
+  --n-50: #f5f7fa;
+  --white: #ffffff;
+
+  /* ---- Palette: brand / status (g) ---- */
+  --g-sapphire: #4f7cff; /* TODO brand color */
+  --g-sapphire-600: #3d63e6; /* TODO */
+  --g-violet: #8b5cf6; /* TODO secondary accent */
+  --success: #22c55e; /* TODO */
+  --warning: #f59e0b; /* TODO */
+  --danger: #ef4444; /* TODO */
+  --info: #38bdf8; /* TODO */
+
+  /* ---- Semantic ---- */
+  --background: var(--n-900);
+  --surface: var(--n-850);
+  --surface-raised: var(--n-800);
+  --foreground: var(--n-50);
+  --muted: var(--n-300);
+  --muted-foreground: var(--n-400);
+  --border: var(--n-700);
+  --input: var(--n-700);
+  --ring: var(--g-sapphire);
+
+  --primary: var(--g-sapphire);
+  --primary-foreground: var(--white);
+  --secondary: var(--n-700);
+  --secondary-foreground: var(--n-50);
+  --accent: var(--n-800);
+  --accent-foreground: var(--n-50);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--white);
+
+  --card: var(--n-850);
+  --card-foreground: var(--n-50);
+  --popover: var(--n-800);
+  --popover-foreground: var(--n-50);
+
+  --radius: 0.625rem;
+}
+
+/* Mirror for the dark variant so `dark:` utilities resolve to the same
+   dark-first values. */
+.dark {
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind mapping — exposes semantic tokens as utilities (bg-surface,
+   text-muted, border-border, …) and feeds the shadcn/ui components.
+--------------------------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family:
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+  }
+}
