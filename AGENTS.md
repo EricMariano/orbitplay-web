@@ -41,6 +41,7 @@ src/
 ## Regras que já valem (não quebrar)
 
 ### Dados
+
 - **Todo acesso a dado é um hook** em `features/<dominio>/api/`. **Nunca** faça
   `fetch` dentro de componente. Use sempre o `api` de `lib/api-client.ts`.
 - **Chaves de query centralizadas** por feature (`gamesKeys.list()`,
@@ -49,14 +50,16 @@ src/
   (aliases sobre `generated.ts`). Contrato errado → conserte `openapi.json` e rode
   `pnpm gen:api`. **Nunca** edite `generated.ts` nem `routeTree.gen.ts`.
 - **Sem mocks.** As telas consomem a API real. Enquanto ela não sobe, placeholder
-  + `QueryBoundary` bastam — não crie dado fixo nem camada falsa de dados.
+  - `QueryBoundary` bastam — não crie dado fixo nem camada falsa de dados.
 
 ### Estados de tela
+
 - Use **`<QueryBoundary>`** para carregando/erro/vazio/pronto. Não reimplemente
   esses quatro estados em cada tela.
 - Ação sem permissão: **`<RoleGate>`** (oculta ou desabilita), nunca quebrada.
 
 ### Tema e ícones
+
 - **Só tokens semânticos** em componente (`bg-surface`, `text-muted`, …). Nunca
   cor literal, nunca token de paleta (`--n-*`, `--g-*`) direto na tela. Tokens em
   `DESIGN.md` / `globals.css`.
@@ -64,6 +67,7 @@ src/
   `lucide-react` (ou outra lib) direto na tela.
 
 ### Autenticação
+
 - **Access token só em memória** (store Zustand). Nunca `localStorage`/
   `sessionStorage` para dado sensível. Persistência de login vem de cookie
   `httpOnly` da API — respeite o `TODO(remember-me)`.
@@ -81,10 +85,19 @@ pnpm lint && pnpm typecheck && pnpm test
 
 `pnpm test:e2e` quando mexer em rota, guarda ou fluxo de sessão.
 
-## Dependências e commits
+## Fluxo de Git
+
+- **Uma branch por feature**, sempre a partir de `development`, no formato
+  `feat/<descricao>` (ex.: `feat/login-studio`). Não trabalhe direto em
+  `development` nem em `main`.
+- **Conventional Commits** (o hook `commit-msg` valida): `feat: ...`,
+  `fix: ...`, `refactor: ...`, etc. Uma mudança lógica por commit.
+- **PR sempre para `development`, nunca para `main`.** A `main` só recebe
+  código via `development`.
+
+## Dependências
 
 - **Não adicione dependência** fora do que já existe sem justificar em
   `DECISIONS.md`. Prefira o que já está instalado.
-- **Conventional Commits** (o hook `commit-msg` valida). Não commite segredo,
-  `.env.local` nem saída de build.
+- Não commite segredo, `.env.local` nem saída de build.
 - Registrou uma divergência desta estrutura? Anote o motivo em `DECISIONS.md`.

@@ -119,7 +119,20 @@ Dark-first, via **tokens semânticos** (`bg-surface`, `text-muted`, …). Nunca 
 cor literal em componente. Tokens e regras em **`DESIGN.md`** (placeholder até o
 handoff definitivo).
 
+## Fluxo de Git
+
+- **Branch por feature**, criada a partir de `development`, no formato
+  `feat/<descricao>` (ex.: `feat/login-studio`). Nunca commite direto em
+  `development` ou `main`.
+- **Commits padronizados** (Conventional Commits): `feat: ...`, `fix: ...`,
+  `refactor: ...`, etc. O hook `commit-msg` valida.
+- **Abra o PR sempre para `development`, nunca para `main`.** A `main` recebe
+  código apenas via merge de `development`.
+
 ## Qualidade
 
 - ESLint (flat) + Prettier.
 - Husky: `pre-commit` → lint-staged; `pre-push` → typecheck; `commit-msg` → commitlint (Conventional Commits).
+- **CI (GitHub Actions)** em `.github/workflows/ci.yml`: roda em PR e push para
+  `development`/`main` — lint, typecheck, testes e build, mais o smoke E2E do
+  Playwright. Mesmo conjunto que `pnpm lint && pnpm typecheck && pnpm test`.
