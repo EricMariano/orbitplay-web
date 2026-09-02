@@ -1,13 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-// This step's E2E covers only acceptance items 1–3 (pure client logic). Items
-// that need the real API (real login, live data, token refresh) are pending in
-// DECISIONS.md and are not exercised here.
-
 test('unauthenticated root redirects to /login', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveURL(/\/login$/)
-  await expect(page.getByRole('button', { name: 'Entrar', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Entrar!', exact: true })).toBeVisible()
 })
 
 test('protected areas redirect to /login without a session', async ({ page }) => {
@@ -18,28 +14,65 @@ test('protected areas redirect to /login without a session', async ({ page }) =>
   await expect(page).toHaveURL(/\/login$/)
 })
 
-test('role guard routes to the correct area and blocks the other, then logs out', async ({
+test('login switches both account visuals on the same form', async ({ page }) => {
+  await page.goto('/login')
+
+  const testerTab = page.getByRole('tab', { name: 'Sou um tester' })
+  const studioTab = page.getByRole('tab', { name: 'Sou um estúdio' })
+  const testerVisual = page.getByTestId('login-visual-tester')
+  const studioVisual = page.getByTestId('login-visual-studio')
+
+  await expect(testerTab).toHaveAttribute('data-state', 'active')
+  await expect(testerVisual).toHaveCSS('opacity', '1')
+  await expect(studioVisual).toHaveCSS('opacity', '0')
+
+  await studioTab.click()
+  await expect(studioTab).toHaveAttribute('data-state', 'active')
+  await expect(studioVisual).toHaveCSS('opacity', '1')
+  await expect(testerVisual).toHaveCSS('opacity', '0')
+  await expect(page.getByLabel('E-mail')).toBeVisible()
+  await expect(page.getByLabel('Senha')).toBeVisible()
+  await expect(page.getByRole('checkbox', { name: 'Lembrar login' })).toBeChecked()
+})
+
+test('login validates required fields before submitting', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Entrar!', exact: true }).click()
+
+  await expect(page.getByText('Informe seu e-mail')).toBeVisible()
+  await expect(page.getByText('Use pelo menos 8 caracteres')).toBeVisible()
+})
+
+test('login submits the backend contract without deriving a role from the tab', async ({
   page,
 }) => {
   await page.goto('/login')
+  await page.getByRole('tab', { name: 'Sou um estúdio' }).click()
+  await page.getByLabel('E-mail').fill('studio@example.com')
+  await page.getByLabel('Senha').fill('senha-segura')
+  await page.getByRole('checkbox', { name: 'Lembrar login' }).uncheck()
 
-  // Seed a studio session via the dev-only shortcut (no API in this phase).
-  await page.getByTestId('dev-login-studio').click()
-  await expect(page).toHaveURL(/\/studio$/)
-  await expect(page.getByRole('heading', { name: 'Início do Estúdio' })).toBeVisible()
-
-  // A studio user must not reach the player area — the guard bounces it back to
-  // /studio. Navigate client-side (not page.goto, which would reload and drop
-  // the in-memory session) so we exercise the live role guard.
+  const submit = page.getByRole('button', { name: 'Entrar!' })
   await page.evaluate(() => {
-    const w = window as unknown as {
-      __router: { navigate: (opts: { to: string }) => Promise<void> }
+    Reflect.set(window, '__loginWasDisabled', false)
+    const record = () => {
+      const button = document.querySelector<HTMLButtonElement>('button[type="submit"]')
+      if (button?.disabled) Reflect.set(window, '__loginWasDisabled', true)
     }
-    return w.__router.navigate({ to: '/player' })
+    new MutationObserver(() => {
+      record()
+    }).observe(document.body, { attributes: true, childList: true, subtree: true })
   })
-  await expect(page).toHaveURL(/\/studio$/)
 
-  // Logout returns to /login.
-  await page.getByRole('button', { name: 'Sair' }).click()
-  await expect(page).toHaveURL(/\/login$/)
+  const requestPromise = page.waitForRequest((request) => request.url().endsWith('/api/auth/login'))
+  await submit.click()
+  const request = await requestPromise
+
+  expect(request.method()).toBe('POST')
+  expect(request.postDataJSON()).toEqual({
+    identifier: 'studio@example.com',
+    password: 'senha-segura',
+    rememberMe: false,
+  })
+  await expect.poll(() => page.evaluate(() => Reflect.get(window, '__loginWasDisabled'))).toBe(true)
 })

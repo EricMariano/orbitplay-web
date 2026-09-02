@@ -1,12 +1,15 @@
 import {
   AlertTriangle,
+  ArrowRight,
   Check,
   ChevronDown,
   Gamepad2,
   Inbox,
   LayoutDashboard,
+  KeyRound,
   Loader2,
   LogOut,
+  Mail,
   Menu,
   Plus,
   Search,
@@ -37,9 +40,12 @@ const registry = {
   plus: Plus,
   search: Search,
   alert: AlertTriangle,
+  'arrow-right': ArrowRight,
   check: Check,
   'chevron-down': ChevronDown,
   loader: Loader2,
+  key: KeyRound,
+  mail: Mail,
   empty: Inbox,
 } satisfies Record<string, LucideIcon>
 
