@@ -88,6 +88,17 @@ GET  /api/test-models  GET  /api/opportunities
 GET  /api/tests/:id/report
 ```
 
+Estendido para a Home do Jogador (`/player`) com mais 7 endpoints, no mesmo
+espírito provisório — hand-authored a partir do mockup, sem API real por
+trás:
+
+```
+GET /api/wallet                GET /api/player/profile-stats
+GET /api/tests/continue        GET /api/tests/mine
+GET /api/games/highlighted     GET /api/earnings/summary
+GET /api/missions/ranking
+```
+
 ## Pendências — só verificáveis quando a API subir
 
 Não contornar; entram quando houver API.
