@@ -24,7 +24,6 @@ export function useStudioSummary() {
       retentionRate: 0.71,
       telemetryActivePointsCount: 15,
       telemetryTriggersCount: 566,
-      aiInsightsGeneratedCount: 124,
     },
   })
 }

@@ -70,6 +70,6 @@ export function useRecentTests({ page, pageSize }: UseRecentTestsParams) {
           hasOrbitPlugin: true,
         },
       ],
-    },
+    } satisfies PaginatedRecentTests,
   })
 }

@@ -3,12 +3,10 @@ import { api } from '@/lib/api-client'
 import { dashboardKeys } from './dashboard-keys'
 import type { BenchmarkEntry } from '../types'
 
-/** Linhas do card "Benchmark de mercado". Sem dado até `/studio/benchmark` existir na API. */
 export function useBenchmarkEntries() {
   return useQuery({
     queryKey: dashboardKeys.benchmark(),
     queryFn: () => api.get<BenchmarkEntry[]>('/studio/benchmark'),
-    // REMOVER — só pra testar o visual sem backend
     initialData: [
       {
         id: '1',
@@ -17,7 +15,13 @@ export function useBenchmarkEntries() {
         priceDeltaCents: 55,
         status: 'continue',
       },
-      { id: '2', gameTitle: '171', progressPercent: 100, priceDeltaCents: 55, status: 'complete' },
+      {
+        id: '2',
+        gameTitle: '171',
+        progressPercent: 100,
+        priceDeltaCents: 55,
+        status: 'complete',
+      },
       {
         id: '3',
         gameTitle: 'DragonFable',
@@ -25,7 +29,13 @@ export function useBenchmarkEntries() {
         priceDeltaCents: 55,
         status: 'continue',
       },
-      { id: '4', gameTitle: 'Feelings', progressPercent: 0, priceDeltaCents: 55, status: 'start' },
+      {
+        id: '4',
+        gameTitle: 'Feelings',
+        progressPercent: 0,
+        priceDeltaCents: 55,
+        status: 'start',
+      },
       {
         id: '5',
         gameTitle: 'Feelings 2',
@@ -33,6 +43,6 @@ export function useBenchmarkEntries() {
         priceDeltaCents: 55,
         status: 'start',
       },
-    ],
+    ] satisfies BenchmarkEntry[],
   })
 }
