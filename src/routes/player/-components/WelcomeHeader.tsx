@@ -26,7 +26,7 @@ export function WelcomeHeader() {
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold text-foreground">
-            Bem-vindo <span className="text-primary">{user?.name ?? ''}</span>
+            Bem-vindo <span className="text-primary">{user?.displayName ?? ''}</span>
           </h1>
           <QueryBoundary query={stats}>
             {(data) => <Badge>{tierLabel[data.tier].toUpperCase()}</Badge>}

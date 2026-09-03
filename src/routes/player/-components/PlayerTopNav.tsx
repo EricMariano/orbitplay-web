@@ -86,9 +86,9 @@ export function PlayerTopNav() {
               className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
             >
               <Avatar size="sm">
-                <AvatarFallback>{user?.name?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
+                <AvatarFallback>{user?.displayName?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
               </Avatar>
-              {user?.name}
+              {user?.displayName}
               <Icon name="chevron-down" className="size-3.5" />
             </button>
           </DropdownMenuTrigger>

@@ -65,7 +65,6 @@ const registry = {
   users: Users,
   'list-checks': ListChecks,
   info: Info,
-  'arrow-right': ArrowRight,
   'trending-up': TrendingUp,
   home: House,
   'graduation-cap': GraduationCap,
