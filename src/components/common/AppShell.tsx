@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate } from '@tanstack/react-router'
 import { Icon, type IconName } from '@/components/icon'
 import { Button } from '@/components/ui/button'
+import { useLogout } from '@/features/auth/api/use-logout'
 import { useAuthStore } from '@/lib/auth'
 
 export type NavItem = {
@@ -18,11 +19,12 @@ type AppShellProps = {
 export function AppShell({ area, navItems }: AppShellProps) {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const clearSession = useAuthStore((s) => s.clearSession)
+  const logout = useLogout()
 
-  function logout() {
-    clearSession()
-    void navigate({ to: '/login' })
+  function handleLogout() {
+    logout.mutate(undefined, {
+      onSettled: () => void navigate({ to: '/login' }),
+    })
   }
 
   return (
@@ -48,10 +50,10 @@ export function AppShell({ area, navItems }: AppShellProps) {
 
       <div className="flex min-w-0 flex-col">
         <header className="flex h-14 items-center justify-between border-b border-border bg-surface/60 px-6">
-          <span className="text-sm text-muted">{user ? user.name : 'Sessão'}</span>
-          <Button variant="ghost" size="sm" onClick={logout}>
+          <span className="text-sm text-muted">{user ? user.displayName : 'Sessão'}</span>
+          <Button variant="ghost" size="sm" onClick={handleLogout} disabled={logout.isPending}>
             <Icon name="logout" />
-            Sair
+            {logout.isPending ? 'Saindo...' : 'Sair'}
           </Button>
         </header>
         <main className="min-w-0 flex-1 p-6">
