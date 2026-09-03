@@ -12,24 +12,20 @@
 ## Regras (valem já)
 
 - **Tema dark-first.** O protótipo inteiro é escuro; o dark é o estado padrão em
-`:root`, sem depender de classe.
+  `:root`, sem depender de classe.
 - **Nunca cor literal em componente.** Em tela use sempre token **semântico**
-(`bg-surface`, `text-muted`, `border-border`, `bg-primary`…), nunca um token de
-**paleta** (`--n-dark`, `--g-sapphire`) direto.
+  (`bg-surface`, `text-muted`, `border-border`, `bg-primary`…), nunca um token de
+  **paleta** (`--n-dark`, `--g-sapphire`) direto.
 - A paleta crua (camada `--n-*` / `--g-*`) só é referenciada aqui e no
-mapeamento semântico dentro de `globals.css`. Telas não a tocam.
-
-
+  mapeamento semântico dentro de `globals.css`. Telas não a tocam.
 
 ## Camadas
 
 1. **Paleta** (`--n-`* neutros, `--g-*` marca) — cores cruas. Uso interno.
 2. **Semântica** (`--surface`, `--muted`, `--primary`…) — o que as telas usam.
 3. **Mapa Tailwind** (`@theme inline`) — expõe a semântica como utilitários
-  (`bg-surface`, `text-muted`…). Também alimenta os componentes shadcn, que
+   (`bg-surface`, `text-muted`…). Também alimenta os componentes shadcn, que
    consomem `--background`, `--foreground`, `--border`, `--ring` etc.
-
-
 
 ## Snippet para `src/styles/globals.css`
 
@@ -41,7 +37,7 @@ real, edite lá (não duplique o CSS aqui).
   color-scheme: dark;
 
   /* ---- Paleta: neutros (n) ---- */
-  --n-dark: #0b0d12; /* TODO confirmar base absoluta */
+  --n-dark: #080321;
   --n-900: #0f1115;
   --n-850: #141720;
   --n-800: #1a1e28;
@@ -63,7 +59,7 @@ real, edite lá (não duplique o CSS aqui).
   --info: #38bdf8; /* TODO */
 
   /* ---- Semântica ---- */
-  --background: var(--n-900);
+  --background: var(--n-dark);
   --surface: var(--n-850);
   --surface-raised: var(--n-800);
   --foreground: var(--n-50);
@@ -91,10 +87,7 @@ real, edite lá (não duplique o CSS aqui).
 }
 ```
 
-
-
 ## Tokens semânticos → utilitário Tailwind
-
 
 | Token semântico        | Utilitário              | Uso típico             |
 | ---------------------- | ----------------------- | ---------------------- |
@@ -109,13 +102,9 @@ real, edite lá (não duplique o CSS aqui).
 | `--primary`            | `bg-primary`            | ação primária          |
 | `--destructive`        | `bg-destructive`        | ação destrutiva        |
 
-
-
-
 ## Ícones
 
 - Setup usa `lucide-react`, sempre através do wrapper `@/components/icon`
-(`<Icon name="..." />`) — **nunca** importe ícone direto na tela.
+  (`<Icon name="..." />`) — **nunca** importe ícone direto na tela.
 - O handoff pede **MingCute em SVG**. A troca acontece só no wrapper quando as
-telas forem implementadas; as telas não mudam. Ver `DECISIONS.md`.
-
+  telas forem implementadas; as telas não mudam. Ver `DECISIONS.md`.

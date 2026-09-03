@@ -1,41 +1,32 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { EmptyState } from '@/components/common/EmptyState'
-import { PageHeader } from '@/components/common/PageHeader'
-import { QueryBoundary } from '@/components/common/QueryBoundary'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useOpportunities } from '@/features/opportunities/api/use-opportunities'
+import { ContinueTestSection } from './-components/ContinueTestSection'
+import { EarningsSummaryCard } from './-components/EarningsSummaryCard'
+import { HighlightedGamesSection } from './-components/HighlightedGamesSection'
+import { MissionsRankingCard } from './-components/MissionsRankingCard'
+import { MyTestsCard } from './-components/MyTestsCard'
+import { SectionHeader } from './-components/SectionHeader'
+import { WelcomeHeader } from './-components/WelcomeHeader'
 
 export const Route = createFileRoute('/player/')({
   component: PlayerHome,
 })
 
 function PlayerHome() {
-  const opportunities = useOpportunities()
-
   return (
-    <div>
-      <PageHeader title="Início do Jogador" />
-      <QueryBoundary
-        query={opportunities}
-        emptyFallback={
-          <EmptyState
-            icon="opportunities"
-            title="Nenhuma oportunidade ainda"
-            description="Quando a API estiver no ar, as oportunidades aparecerão aqui."
-          />
-        }
-      >
-        {(data) => (
-          <Card className="bg-surface">
-            <CardHeader>
-              <CardTitle>Oportunidades</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted">
-              {data.length} oportunidade(s) disponível(is).
-            </CardContent>
-          </Card>
-        )}
-      </QueryBoundary>
+    <div className="flex flex-col gap-8">
+      <WelcomeHeader />
+      <ContinueTestSection />
+      <HighlightedGamesSection />
+      <section>
+        <SectionHeader title="Estatísticas" />
+        <div className="flex flex-col gap-4">
+          <EarningsSummaryCard />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <MissionsRankingCard />
+            <MyTestsCard />
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
