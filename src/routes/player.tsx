@@ -1,21 +1,14 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { AppShell, type NavItem } from '@/components/common/AppShell'
-import { useAuthStore } from '@/lib/auth'
+import { requireRole } from '@/features/auth/lib/route-guards'
 
 const playerNav: NavItem[] = [
   { label: 'Início', to: '/player', icon: 'dashboard' },
-  { label: 'Oportunidades', to: '/player', icon: 'opportunities' },
+  { label: 'Meus jogos', to: '/player/games', icon: 'games' },
+  { label: 'Relatórios', to: '/player/reports', icon: 'reports' },
 ]
 
 export const Route = createFileRoute('/player')({
-  beforeLoad: () => {
-    const { status, role } = useAuthStore.getState()
-    if (status !== 'authenticated') {
-      throw redirect({ to: '/login' })
-    }
-    if (role !== 'player') {
-      throw redirect({ to: '/studio' })
-    }
-  },
+  beforeLoad: () => requireRole('player'),
   component: () => <AppShell area="Jogador" navItems={playerNav} />,
 })

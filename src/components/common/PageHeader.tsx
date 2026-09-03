@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 
-export type Breadcrumb = { label: string; href?: string }
+export type Breadcrumb = { label: string; to?: string }
 
 type PageHeaderProps = {
   title: string
@@ -19,10 +20,10 @@ export function PageHeader({ title, breadcrumbs, actions, className }: PageHeade
           <ol className="flex flex-wrap items-center gap-1 text-xs text-muted">
             {breadcrumbs.map((crumb, i) => (
               <li key={`${crumb.label}-${i}`} className="flex items-center gap-1">
-                {crumb.href ? (
-                  <a href={crumb.href} className="hover:text-foreground">
+                {crumb.to ? (
+                  <Link to={crumb.to as never} className="hover:text-foreground">
                     {crumb.label}
-                  </a>
+                  </Link>
                 ) : (
                   <span>{crumb.label}</span>
                 )}

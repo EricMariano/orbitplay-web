@@ -1,13 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Game } from '@/api-types'
-import { api } from '@/lib/api-client'
 import { gamesKeys } from './games-keys'
+import { gamesRepository, type GamesRepository } from './games-repository'
 
 /** Fetch a single game by id. */
-export function useGame(id: string) {
+export function useGame(id: string, repository: GamesRepository = gamesRepository) {
   return useQuery({
     queryKey: gamesKeys.detail(id),
-    queryFn: () => api.get<Game>(`/games/${id}`),
+    queryFn: () => repository.get(id),
     enabled: Boolean(id),
   })
 }

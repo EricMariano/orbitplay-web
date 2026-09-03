@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  Bug,
   Check,
   ChevronDown,
   Gamepad2,
@@ -30,6 +31,7 @@ const registry = {
   games: Gamepad2,
   tests: FlaskConical,
   reports: FileBarChart,
+  bug: Bug,
   opportunities: Sparkles,
   user: User,
   logout: LogOut,

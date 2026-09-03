@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import type { TestModel } from '@/api-types'
-import { api } from '@/lib/api-client'
 import { testsKeys } from './tests-keys'
+import { testsRepository, type TestsRepository } from './tests-repository'
 
 /** List reusable test models. */
-export function useTestModels() {
+export function useTestModels(repository: TestsRepository = testsRepository) {
   return useQuery({
     queryKey: testsKeys.models(),
-    queryFn: () => api.get<TestModel[]>('/test-models'),
+    queryFn: () => repository.models(),
   })
 }

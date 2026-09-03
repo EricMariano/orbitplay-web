@@ -1,6 +1,7 @@
-import { Link, Outlet, useNavigate } from '@tanstack/react-router'
+import { Link, Outlet } from '@tanstack/react-router'
 import { Icon, type IconName } from '@/components/icon'
 import { Button } from '@/components/ui/button'
+import { useLogout } from '@/features/auth/api/use-logout'
 import { useAuthStore } from '@/lib/auth'
 
 export type NavItem = {
@@ -16,14 +17,8 @@ type AppShellProps = {
 
 /** Authenticated layout: sidebar nav + topbar with the current user and logout. */
 export function AppShell({ area, navItems }: AppShellProps) {
-  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const clearSession = useAuthStore((s) => s.clearSession)
-
-  function logout() {
-    clearSession()
-    void navigate({ to: '/login' })
-  }
+  const logout = useLogout()
 
   return (
     <div className="grid min-h-dvh grid-cols-[220px_1fr]">

@@ -1,13 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import type { TestReport } from '@/api-types'
-import { api } from '@/lib/api-client'
 import { reportsKeys } from './reports-keys'
+import { reportsRepository, type ReportsRepository } from './reports-repository'
 
 /** Fetch the report for a test run. */
-export function useTestReport(testId: string) {
+export function useTestReport(testId: string, repository: ReportsRepository = reportsRepository) {
   return useQuery({
     queryKey: reportsKeys.byTest(testId),
-    queryFn: () => api.get<TestReport>(`/tests/${testId}/report`),
+    queryFn: () => repository.byTest(testId),
     enabled: Boolean(testId),
   })
 }
