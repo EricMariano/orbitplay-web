@@ -51,6 +51,7 @@ real, edite lá (não duplique o CSS aqui).
   --g-sapphire: #4f7cff; /* TODO cor de marca definitiva */
   --g-sapphire-600: #3d63e6; /* TODO */
   --g-violet: #8b5cf6; /* TODO acento secundário */
+  --g-orange: #f8643b;
   --success: #22c55e; /* TODO */
   --warning: #f59e0b; /* TODO */
   --danger: #ef4444; /* TODO */
@@ -71,6 +72,8 @@ real, edite lá (não duplique o CSS aqui).
   --primary-foreground: var(--white);
   --secondary: var(--n-700);
   --secondary-foreground: var(--n-50);
+  --highlight: var(--g-orange);
+  --highlight-foreground: var(--white);
   --accent: var(--n-800);
   --accent-foreground: var(--n-50);
   --destructive: var(--danger);

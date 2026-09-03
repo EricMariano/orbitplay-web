@@ -29,10 +29,15 @@
   --g-sapphire: #4f7cff; /* TODO brand color */
   --g-sapphire-600: #3d63e6; /* TODO */
   --g-violet: #8b5cf6; /* TODO secondary accent */
+  --g-orange: #f97316;
   --success: #22c55e; /* TODO */
   --warning: #f59e0b; /* TODO */
   --danger: #ef4444; /* TODO */
   --info: #38bdf8; /* TODO */
+  --g-teal: #0cf8c4;
+  --app-gradient:
+    radial-gradient(120% 90% at 100% 100%, #5b2ea6 0%, transparent 60%),
+    linear-gradient(180deg, #0b0d1f 0%, #080321 100%);
 
   /* ---- Semantic ---- */
   --background: var(--n-900);
@@ -44,11 +49,25 @@
   --border: var(--n-700);
   --input: var(--n-700);
   --ring: var(--g-sapphire);
+  --foreground-strong: var(--white);
+  --role-badge-background: #0cf8c440; /* --g-teal com alpha embutido */
+  --role-badge-foreground: var(--g-teal);
+
+  --availability-available-background: #22c55e40;
+  --availability-available-foreground: var(--success);
+  --availability-unavailable-background: #ef444440;
+  --availability-unavailable-foreground: var(--danger);
+  --cta-configure-from: var(--g-sapphire);
+  --cta-configure-to: var(--g-violet);
 
   --primary: var(--g-sapphire);
   --primary-foreground: var(--white);
   --secondary: var(--n-700);
   --secondary-foreground: var(--n-50);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--white);
+  --highlight: var(--g-orange);
+  --highlight-foreground: var(--white);
   --accent: var(--n-800);
   --accent-foreground: var(--n-50);
   --destructive: var(--danger);
@@ -60,6 +79,7 @@
   --popover-foreground: var(--n-50);
 
   --radius: 0.625rem;
+  --radius-diagonal: 16px 0px 16px 0px;
 }
 
 /* Mirror for the dark variant so `dark:` utilities resolve to the same
@@ -82,6 +102,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-foreground-strong: var(--foreground-strong);
+  --color-role-badge-background: var(--role-badge-background);
+  --color-role-badge-foreground: var(--role-badge-foreground);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -89,6 +112,8 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
@@ -106,6 +131,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-diagonal: var(--radius-diagonal);
+
+  --color-availability-available-background: var(--availability-available-background);
+  --color-availability-available-foreground: var(--availability-available-foreground);
+  --color-availability-unavailable-background: var(--availability-unavailable-background);
+  --color-availability-unavailable-foreground: var(--availability-unavailable-foreground);
+  --color-cta-configure-from: var(--cta-configure-from);
+  --color-cta-configure-to: var(--cta-configure-to);
 }
 
 @layer base {
@@ -113,7 +146,8 @@
     border-color: var(--border);
   }
   body {
-    background-color: var(--background);
+    background-image: var(--app-gradient);
+    background-attachment: fixed;
     color: var(--foreground);
     font-family:
       system-ui,
@@ -121,5 +155,8 @@
       'Segoe UI',
       Roboto,
       sans-serif;
+  }
+  .rounded-diagonal {
+    border-radius: var(--radius-diagonal);
   }
 }
