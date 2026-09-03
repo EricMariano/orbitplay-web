@@ -1,5 +1,29 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../assets/fonts/montserrat-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('../assets/fonts/ubuntu-regular-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('../assets/fonts/ubuntu-medium-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
 /* Enables the `dark:` variant if ever needed; the app is dark-first, so the
    dark values live directly in :root and no class toggle is required. */
 @custom-variant dark (&:is(.dark *));
@@ -33,6 +57,17 @@
   --warning: #f59e0b; /* TODO */
   --danger: #ef4444; /* TODO */
   --info: #38bdf8; /* TODO */
+
+  /* ---- Login experience ---- */
+  --login-page: #02000d;
+  --login-surface: #080321;
+  --login-field: rgb(255 255 255 / 20%);
+  --login-field-border: rgb(255 255 255 / 64%);
+  --login-copy: #fbfaff;
+  --login-muted: #e4e0ec;
+  --login-accent: #168cf3;
+  --login-button-start: #8758f5;
+  --login-button-end: #1999f5;
 
   /* ---- Semantic ---- */
   --background: var(--n-dark);
@@ -101,6 +136,19 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-info: var(--info);
+
+  --color-login-page: var(--login-page);
+  --color-login-surface: var(--login-surface);
+  --color-login-field: var(--login-field);
+  --color-login-field-border: var(--login-field-border);
+  --color-login-copy: var(--login-copy);
+  --color-login-muted: var(--login-muted);
+  --color-login-accent: var(--login-accent);
+  --color-login-button-start: var(--login-button-start);
+  --color-login-button-end: var(--login-button-end);
+
+  --font-login-body: 'Montserrat', 'Segoe UI', sans-serif;
+  --font-login-display: 'Ubuntu', 'Segoe UI', sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

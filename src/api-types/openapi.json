@@ -5,12 +5,13 @@
     "version": "0.0.0-provisional",
     "description": "Hand-authored placeholder contract covering only the endpoints listed in the setup brief. NOT aligned with the real API yet — replace with the API repo's openapi.json (via `pnpm gen:api <url|path>`) as soon as it exists. See DECISIONS.md."
   },
-  "servers": [{ "url": "/api" }],
+  "servers": [{ "url": "http://localhost:3000" }],
   "paths": {
     "/auth/login": {
       "post": {
         "operationId": "login",
         "summary": "Authenticate and start a session",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -31,7 +32,19 @@
           "401": {
             "description": "Invalid credentials",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } }
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
             }
           }
         }
@@ -43,14 +56,78 @@
         "summary": "Exchange the refresh cookie for a fresh access token",
         "responses": {
           "200": {
-            "description": "New access token",
+            "description": "Session rotated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RefreshResponse" }
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
               }
             }
           },
           "401": { "description": "Refresh failed" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "summary": "End the current session",
+        "responses": {
+          "200": {
+            "description": "Session ended and refresh cookie cleared",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Authenticated user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthUser" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/auth/password/forgot": {
+      "post": {
+        "operationId": "forgotPassword",
+        "summary": "Request a password reset",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ForgotPasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generic response regardless of account existence",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+            }
+          }
         }
       }
     },
@@ -279,42 +356,54 @@
     "schemas": {
       "Role": {
         "type": "string",
-        "enum": ["studio", "player"],
+        "enum": ["owner", "admin", "studio", "player"],
         "description": "Authoritative role, decided by the backend (RN-03). The login tab does NOT set it."
       },
-      "User": {
+      "AuthUser": {
         "type": "object",
-        "required": ["id", "name", "email", "role"],
+        "required": ["userId", "email", "displayName", "organizationId", "role"],
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
+          "userId": { "type": "string", "format": "uuid" },
           "email": { "type": "string", "format": "email" },
-          "role": { "$ref": "#/components/schemas/Role" },
-          "avatarUrl": { "type": "string", "nullable": true }
+          "displayName": { "type": "string" },
+          "organizationId": { "type": "string", "format": "uuid" },
+          "role": { "$ref": "#/components/schemas/Role" }
         }
       },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": ["identifier", "password"],
         "properties": {
-          "email": { "type": "string", "format": "email" },
-          "password": { "type": "string" },
-          "remember": { "type": "boolean", "default": false }
+          "identifier": { "type": "string", "description": "E-mail or access ID" },
+          "password": { "type": "string", "format": "password", "minLength": 8 },
+          "rememberMe": {
+            "type": "boolean",
+            "default": false,
+            "description": "Changes only the refresh-token TTL"
+          }
         }
       },
       "LoginResponse": {
         "type": "object",
-        "required": ["user", "accessToken"],
+        "required": ["accessToken", "expiresIn", "user"],
         "properties": {
-          "user": { "$ref": "#/components/schemas/User" },
-          "accessToken": { "type": "string" }
+          "accessToken": { "type": "string" },
+          "expiresIn": { "type": "integer" },
+          "user": { "$ref": "#/components/schemas/AuthUser" }
         }
       },
-      "RefreshResponse": {
+      "ForgotPasswordRequest": {
         "type": "object",
-        "required": ["accessToken"],
+        "required": ["email"],
         "properties": {
-          "accessToken": { "type": "string" }
+          "email": { "type": "string", "format": "email" }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": { "type": "string" }
         }
       },
       "Game": {
@@ -375,16 +464,31 @@
           }
         }
       },
-      "ApiError": {
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "VALIDATION_ERROR",
+          "UNAUTHORIZED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "CONFLICT",
+          "TOO_MANY_REQUESTS",
+          "UNPROCESSABLE_ENTITY",
+          "INTERNAL_ERROR"
+        ]
+      },
+      "ErrorEnvelope": {
         "type": "object",
-        "required": ["code", "message"],
+        "required": ["statusCode", "code", "message", "requestId"],
         "properties": {
-          "code": { "type": "string" },
+          "statusCode": { "type": "integer" },
+          "code": { "$ref": "#/components/schemas/ErrorCode" },
           "message": { "type": "string" },
           "fieldErrors": {
             "type": "object",
             "additionalProperties": { "type": "string" }
-          }
+          },
+          "requestId": { "type": "string" }
         }
       },
       "Wallet": {
@@ -513,6 +617,18 @@
           "reward": { "type": "number" },
           "action": { "type": "string", "enum": ["start", "continue", "complete"] }
         }
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refresh_token"
       }
     }
   }

@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AppShell, type NavItem } from '@/components/common/AppShell'
-import { useAuthStore } from '@/lib/auth'
+import { isStudioRole, useAuthStore } from '@/lib/auth'
 
 const studioNav: NavItem[] = [
   { label: 'Início', to: '/studio', icon: 'dashboard' },
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/studio')({
     if (status !== 'authenticated') {
       throw redirect({ to: '/login' })
     }
-    if (role !== 'studio') {
+    if (!role || !isStudioRole(role)) {
       throw redirect({ to: '/player' })
     }
   },
