@@ -13,7 +13,7 @@
   color-scheme: dark;
 
   /* ---- Palette: neutrals (n) ---- */
-  --n-dark: #0b0d12; /* TODO confirm absolute base */
+  --n-dark: #080321;
   --n-900: #0f1115;
   --n-850: #141720;
   --n-800: #1a1e28;
@@ -35,7 +35,7 @@
   --info: #38bdf8; /* TODO */
 
   /* ---- Semantic ---- */
-  --background: var(--n-900);
+  --background: var(--n-dark);
   --surface: var(--n-850);
   --surface-raised: var(--n-800);
   --foreground: var(--n-50);
