@@ -68,6 +68,8 @@
   --destructive-foreground: var(--white);
   --highlight: var(--g-orange);
   --highlight-foreground: var(--white);
+  --action-start: var(--g-violet);
+  --action-start-foreground: var(--white);
   --accent: var(--n-800);
   --accent-foreground: var(--n-50);
   --destructive: var(--danger);
@@ -77,9 +79,25 @@
   --card-foreground: var(--n-50);
   --popover: var(--n-800);
   --popover-foreground: var(--n-50);
+  --stat-card-background: #ffffff33;
+  --stat-card-foreground: var(white);
+  --stat-card-muted: var(--n-300);
 
   --radius: 0.625rem;
   --radius-diagonal: 16px 0px 16px 0px;
+
+  --tint-success-background: #22c55e40;
+  --tint-success-foreground: var(--success);
+  --tint-warning-background: #f59e0b40;
+  --tint-warning-foreground: var(--warning);
+  --tint-danger-background: #ef444440;
+  --tint-danger-foreground: var(--danger);
+  --tint-info-background: #38bdf840;
+  --tint-info-foreground: var(--info);
+  --tint-violet-background: #8b5cf640;
+  --tint-violet-foreground: var(--g-violet);
+  --tint-olive-background: #a3a51640;
+  --tint-olive-foreground: #d4d654;
 }
 
 /* Mirror for the dark variant so `dark:` utilities resolve to the same
@@ -114,6 +132,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
+  --color-action-start: var(--action-start);
+  --color-action-start-foreground: var(--action-start-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
@@ -121,6 +141,9 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-stat-card-background: var(--stat-card-background);
+  --color-stat-card-foreground: var(--stat-card-foreground);
+  --color-stat-card-muted: var(--stat-card-muted);
 
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -139,6 +162,19 @@
   --color-availability-unavailable-foreground: var(--availability-unavailable-foreground);
   --color-cta-configure-from: var(--cta-configure-from);
   --color-cta-configure-to: var(--cta-configure-to);
+
+  --color-tint-success-background: var(--tint-success-background);
+  --color-tint-success-foreground: var(--tint-success-foreground);
+  --color-tint-warning-background: var(--tint-warning-background);
+  --color-tint-warning-foreground: var(--tint-warning-foreground);
+  --color-tint-danger-background: var(--tint-danger-background);
+  --color-tint-danger-foreground: var(--tint-danger-foreground);
+  --color-tint-info-background: var(--tint-info-background);
+  --color-tint-info-foreground: var(--tint-info-foreground);
+  --color-tint-violet-background: var(--tint-violet-background);
+  --color-tint-violet-foreground: var(--tint-violet-foreground);
+  --color-tint-olive-background: var(--tint-olive-background);
+  --color-tint-olive-foreground: var(--tint-olive-foreground);
 }
 
 @layer base {

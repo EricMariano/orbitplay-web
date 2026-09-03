@@ -19,7 +19,11 @@ import {
   FlaskConical,
   FileBarChart,
   User,
+  Info,
   ClipboardCheck,
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -45,6 +49,8 @@ const registry = {
   alert: AlertTriangle,
   check: Check,
   'chevron-down': ChevronDown,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
   loader: Loader2,
   empty: Inbox,
   clock: Clock,
@@ -53,6 +59,8 @@ const registry = {
   insights: Lightbulb,
   score: CheckCircle2,
   checklist: ClipboardCheck,
+  info: Info,
+  more: MoreVertical,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry

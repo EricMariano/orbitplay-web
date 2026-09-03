@@ -16,6 +16,15 @@ export function useStudioSummary() {
       averageEngagementRate: 0.78,
       aiInsightsGeneratedCount: 124,
       testsWithActivePluginCount: 29,
+      activeTestsCount: 5,
+      activeTestersCount: 124,
+      testsPerHour: 24.3,
+      funFactorScore: 5,
+      bugsAndGlitchesCount: 124,
+      retentionRate: 0.71,
+      telemetryActivePointsCount: 15,
+      telemetryTriggersCount: 566,
+      aiInsightsGeneratedCount: 124,
     },
   })
 }
