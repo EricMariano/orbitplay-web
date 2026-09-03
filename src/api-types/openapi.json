@@ -156,6 +156,123 @@
           "404": { "description": "Not found" }
         }
       }
+    },
+    "/wallet": {
+      "get": {
+        "operationId": "getWallet",
+        "summary": "Get the current player's wallet balance",
+        "responses": {
+          "200": {
+            "description": "Wallet",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Wallet" } }
+            }
+          }
+        }
+      }
+    },
+    "/player/profile-stats": {
+      "get": {
+        "operationId": "getPlayerProfileStats",
+        "summary": "Get the current player's profile stats (level, feedback quality, achievements, hours played)",
+        "responses": {
+          "200": {
+            "description": "Player profile stats",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PlayerStats" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests/continue": {
+      "get": {
+        "operationId": "getContinueTest",
+        "summary": "Get the in-progress test the player was last working on, if any",
+        "responses": {
+          "200": {
+            "description": "Continue test, or null when there is none in progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{ "$ref": "#/components/schemas/ContinueTest" }],
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/mine": {
+      "get": {
+        "operationId": "listMyTests",
+        "summary": "List the current player's tests with progress",
+        "responses": {
+          "200": {
+            "description": "My tests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MyTestProgress" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/highlighted": {
+      "get": {
+        "operationId": "listHighlightedGames",
+        "summary": "List games highlighted for the current player",
+        "responses": {
+          "200": {
+            "description": "Highlighted games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/HighlightedGame" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/earnings/summary": {
+      "get": {
+        "operationId": "getEarningsSummary",
+        "summary": "Get the current player's earnings summary",
+        "responses": {
+          "200": {
+            "description": "Earnings summary",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EarningsSummary" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/missions/ranking": {
+      "get": {
+        "operationId": "getMissionsRanking",
+        "summary": "Get the current player's missions and ranking overview",
+        "responses": {
+          "200": {
+            "description": "Missions and ranking",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MissionsRanking" }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -268,6 +385,133 @@
             "type": "object",
             "additionalProperties": { "type": "string" }
           }
+        }
+      },
+      "Wallet": {
+        "type": "object",
+        "required": ["balance"],
+        "properties": {
+          "balance": { "type": "number" }
+        }
+      },
+      "PlayerTier": {
+        "type": "string",
+        "enum": ["bronze", "silver", "gold", "elite"]
+      },
+      "PlayerStats": {
+        "type": "object",
+        "required": ["tier", "level", "feedbackQuality", "achievements", "hoursPlayed"],
+        "properties": {
+          "tier": { "$ref": "#/components/schemas/PlayerTier" },
+          "level": { "type": "number" },
+          "feedbackQuality": { "type": "number" },
+          "achievements": { "type": "number" },
+          "hoursPlayed": { "type": "number" }
+        }
+      },
+      "TestTrackProgress": {
+        "type": "object",
+        "required": ["label", "progress", "reward"],
+        "properties": {
+          "label": { "type": "string" },
+          "progress": { "type": "number", "description": "0-100" },
+          "reward": { "type": "number" }
+        }
+      },
+      "ContinueTest": {
+        "type": "object",
+        "required": ["gameId", "gameTitle", "coverUrl", "playersCount", "endsAt", "tracks"],
+        "properties": {
+          "gameId": { "type": "string" },
+          "gameTitle": { "type": "string" },
+          "coverUrl": { "type": "string", "nullable": true },
+          "playersCount": { "type": "number" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "tracks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TestTrackProgress" }
+          }
+        }
+      },
+      "HighlightedGame": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "coverUrl",
+          "status",
+          "isNew",
+          "playersCount",
+          "endsAt",
+          "openTests",
+          "maxReward",
+          "remainingReward"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "coverUrl": { "type": "string", "nullable": true },
+          "status": { "type": "string", "enum": ["available", "unavailable"] },
+          "isNew": { "type": "boolean" },
+          "playersCount": { "type": "number" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "openTests": { "type": "number" },
+          "maxReward": { "type": "number" },
+          "remainingReward": { "type": "number" }
+        }
+      },
+      "EarningsPoint": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": { "type": "string" },
+          "value": { "type": "number" }
+        }
+      },
+      "EarningsSummary": {
+        "type": "object",
+        "required": ["last7Days", "totalAccumulated", "nextPayoutInDays", "series"],
+        "properties": {
+          "last7Days": { "type": "number" },
+          "totalAccumulated": { "type": "number" },
+          "nextPayoutInDays": { "type": "number" },
+          "series": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EarningsPoint" }
+          }
+        }
+      },
+      "RankingCategory": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": { "type": "string" },
+          "value": { "type": "number" }
+        }
+      },
+      "MissionsRanking": {
+        "type": "object",
+        "required": ["rank", "rankDelta", "pending", "nextGoal", "categories"],
+        "properties": {
+          "rank": { "type": "number" },
+          "rankDelta": { "type": "number" },
+          "pending": { "type": "number" },
+          "nextGoal": { "type": "number" },
+          "categories": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RankingCategory" }
+          }
+        }
+      },
+      "MyTestProgress": {
+        "type": "object",
+        "required": ["id", "title", "progress", "reward", "action"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "progress": { "type": "number", "description": "0-100" },
+          "reward": { "type": "number" },
+          "action": { "type": "string", "enum": ["start", "continue", "complete"] }
         }
       }
     }
