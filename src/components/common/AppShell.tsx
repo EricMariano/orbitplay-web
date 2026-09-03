@@ -34,7 +34,7 @@ export function AppShell({ area, navItems }: AppShellProps) {
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => (
             <Link
-              key={item.to}
+              key={item.label}
               to={item.to}
               className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-muted transition-colors hover:bg-accent hover:text-foreground [&.active]:bg-accent [&.active]:text-foreground"
               activeOptions={{ exact: item.to.split('/').length <= 2 }}
