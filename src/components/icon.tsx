@@ -1,19 +1,29 @@
 import {
   AlertTriangle,
   Check,
+  CheckCircle2,
   ChevronDown,
+  Clock,
   Gamepad2,
   Inbox,
   LayoutDashboard,
+  Lightbulb,
   Loader2,
   LogOut,
   Menu,
+  Plug,
   Plus,
   Search,
   Sparkles,
+  Target,
   FlaskConical,
   FileBarChart,
   User,
+  Info,
+  ClipboardCheck,
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -39,8 +49,18 @@ const registry = {
   alert: AlertTriangle,
   check: Check,
   'chevron-down': ChevronDown,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
   loader: Loader2,
   empty: Inbox,
+  clock: Clock,
+  target: Target,
+  plug: Plug,
+  insights: Lightbulb,
+  score: CheckCircle2,
+  checklist: ClipboardCheck,
+  info: Info,
+  more: MoreVertical,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry
@@ -49,13 +69,15 @@ type IconProps = {
   name: IconName
   className?: string
   'aria-label'?: string
+  filled?: boolean
 }
 
-export function Icon({ name, className, ...rest }: IconProps) {
+export function Icon({ name, className, filled = false, ...rest }: IconProps) {
   const Glyph = registry[name]
   return (
     <Glyph
       className={cn('size-4 shrink-0', className)}
+      fill={filled ? 'currentColor' : 'none'}
       aria-hidden={rest['aria-label'] ? undefined : true}
       {...rest}
     />

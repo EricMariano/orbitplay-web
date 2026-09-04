@@ -19,7 +19,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout() {
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="min-h-dvh text-foreground">
       <Outlet />
       <Suspense>
         <TanStackRouterDevtools position="bottom-right" />

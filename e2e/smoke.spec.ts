@@ -26,7 +26,7 @@ test('role guard routes to the correct area and blocks the other, then logs out'
   // Seed a studio session via the dev-only shortcut (no API in this phase).
   await page.getByTestId('dev-login-studio').click()
   await expect(page).toHaveURL(/\/studio$/)
-  await expect(page.getByRole('heading', { name: 'Início do Estúdio' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Bem-vindo/ })).toBeVisible()
 
   // A studio user must not reach the player area — the guard bounces it back to
   // /studio. Navigate client-side (not page.goto, which would reload and drop
