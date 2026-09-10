@@ -9,7 +9,7 @@ type MetricConfig = {
 }
 
 const metrics: MetricConfig[] = [
-  { key: 'gamesTestedCount', label: 'Jogos Testados', icon: 'games', format: String },
+  { key: 'gamesTestedCount', label: 'Jogos Testados', icon: 'gamepad', format: String },
   { key: 'testsCompletedCount', label: 'Testes Realizados', icon: 'tests', format: String },
   {
     key: 'gameplayHoursTested',
