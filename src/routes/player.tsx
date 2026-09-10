@@ -1,11 +1,6 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { AppShell, type NavItem } from '@/components/common/AppShell'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/lib/auth'
-
-const playerNav: NavItem[] = [
-  { label: 'Início', to: '/player', icon: 'dashboard' },
-  { label: 'Oportunidades', to: '/player', icon: 'opportunities' },
-]
+import { PlayerTopNav } from './player/-components/PlayerTopNav'
 
 export const Route = createFileRoute('/player')({
   beforeLoad: () => {
@@ -17,5 +12,16 @@ export const Route = createFileRoute('/player')({
       throw redirect({ to: '/studio' })
     }
   },
-  component: () => <AppShell area="Jogador" navItems={playerNav} />,
+  component: PlayerLayout,
 })
+
+function PlayerLayout() {
+  return (
+    <div className="min-h-dvh">
+      <PlayerTopNav />
+      <main className="mx-auto max-w-[1600px] p-6">
+        <Outlet />
+      </main>
+    </div>
+  )
+}

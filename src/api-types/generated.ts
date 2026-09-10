@@ -175,6 +175,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's wallet balance */
+        get: operations["getWallet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/player/profile-stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's profile stats (level, feedback quality, achievements, hours played) */
+        get: operations["getPlayerProfileStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tests/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the in-progress test the player was last working on, if any */
+        get: operations["getContinueTest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tests/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the current player's tests with progress */
+        get: operations["listMyTests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/games/highlighted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List games highlighted for the current player */
+        get: operations["listHighlightedGames"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/earnings/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's earnings summary */
+        get: operations["getEarningsSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/missions/ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's missions and ranking overview */
+        get: operations["getMissionsRanking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -259,6 +378,77 @@ export interface components {
                 [key: string]: string;
             };
             requestId: string;
+        };
+        Wallet: {
+            balance: number;
+        };
+        /** @enum {string} */
+        PlayerTier: "bronze" | "silver" | "gold" | "elite";
+        PlayerStats: {
+            tier: components["schemas"]["PlayerTier"];
+            level: number;
+            feedbackQuality: number;
+            achievements: number;
+            hoursPlayed: number;
+        };
+        TestTrackProgress: {
+            label: string;
+            /** @description 0-100 */
+            progress: number;
+            reward: number;
+        };
+        ContinueTest: {
+            gameId: string;
+            gameTitle: string;
+            coverUrl: string | null;
+            playersCount: number;
+            /** Format: date-time */
+            endsAt: string;
+            tracks: components["schemas"]["TestTrackProgress"][];
+        };
+        HighlightedGame: {
+            id: string;
+            title: string;
+            coverUrl: string | null;
+            /** @enum {string} */
+            status: "available" | "unavailable";
+            isNew: boolean;
+            playersCount: number;
+            /** Format: date-time */
+            endsAt: string;
+            openTests: number;
+            maxReward: number;
+            remainingReward: number;
+        };
+        EarningsPoint: {
+            label: string;
+            value: number;
+        };
+        EarningsSummary: {
+            last7Days: number;
+            totalAccumulated: number;
+            nextPayoutInDays: number;
+            series: components["schemas"]["EarningsPoint"][];
+        };
+        RankingCategory: {
+            label: string;
+            value: number;
+        };
+        MissionsRanking: {
+            rank: number;
+            rankDelta: number;
+            pending: number;
+            nextGoal: number;
+            categories: components["schemas"]["RankingCategory"][];
+        };
+        MyTestProgress: {
+            id: string;
+            title: string;
+            /** @description 0-100 */
+            progress: number;
+            reward: number;
+            /** @enum {string} */
+            action: "start" | "continue" | "complete";
         };
     };
     responses: never;
@@ -542,6 +732,146 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    getWallet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wallet */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wallet"];
+                };
+            };
+        };
+    };
+    getPlayerProfileStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Player profile stats */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerStats"];
+                };
+            };
+        };
+    };
+    getContinueTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Continue test, or null when there is none in progress */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContinueTest"] | null;
+                };
+            };
+        };
+    };
+    listMyTests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My tests */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyTestProgress"][];
+                };
+            };
+        };
+    };
+    listHighlightedGames: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Highlighted games */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HighlightedGame"][];
+                };
+            };
+        };
+    };
+    getEarningsSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Earnings summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EarningsSummary"];
+                };
+            };
+        };
+    };
+    getMissionsRanking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Missions and ranking */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MissionsRanking"];
+                };
             };
         };
     };
