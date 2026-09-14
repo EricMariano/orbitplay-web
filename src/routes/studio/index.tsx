@@ -37,7 +37,7 @@ function StudioHome() {
       <div className="space-y-4 border-b border-border pb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold text-foreground">
-            Bem-vindo <span className="italic text-highlight">{user?.name}</span>
+            Bem-vindo <span className="italic text-highlight">{user?.displayName}</span>
           </h1>
           {user ? (
             <Badge className="bg-role-badge-background text-role-badge-foreground">

@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useLogout } from '@/features/auth/api/use-logout'
 import { useAuthStore } from '@/lib/auth'
 
 export type NavItem = {
@@ -33,11 +34,12 @@ function initials(name: string) {
 export function AppShell({ area, navItems }: AppShellProps) {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const clearSession = useAuthStore((s) => s.clearSession)
+  const logout = useLogout()
 
-  function logout() {
-    clearSession()
-    void navigate({ to: '/login' })
+  function handleLogout() {
+    logout.mutate(undefined, {
+      onSettled: () => void navigate({ to: '/login' }),
+    })
   }
 
   return (
@@ -101,18 +103,18 @@ export function AppShell({ area, navItems }: AppShellProps) {
             <DropdownMenuTrigger asChild>
               <button type="button" className="flex items-center gap-2">
                 <Avatar className="size-8">
-                  <AvatarFallback>{user ? initials(user.name) : '?'}</AvatarFallback>
+                  <AvatarFallback>{user ? initials(user.displayName) : '?'}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-foreground-strong">
-                  {user ? user.name : 'Sessão'}
+                  {user ? user.displayName : 'Sessão'}
                 </span>
                 <Icon name="chevron-down" className="size-4 text-muted" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={logout}>
+              <DropdownMenuItem onSelect={handleLogout} disabled={logout.isPending}>
                 <Icon name="logout" />
-                Sair
+                {logout.isPending ? 'Saindo...' : 'Sair'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

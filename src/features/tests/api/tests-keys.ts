@@ -4,4 +4,6 @@ export const testsKeys = {
   models: () => [...testsKeys.all, 'models'] as const,
   recent: (page: number, pageSize: number) =>
     [...testsKeys.all, 'recent', { page, pageSize }] as const,
+  continue: () => [...testsKeys.all, 'continue'] as const,
+  mine: () => [...testsKeys.all, 'mine'] as const,
 }

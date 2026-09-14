@@ -20,10 +20,10 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // Same-origin proxy so the session cookie works and we avoid CORS in dev.
-      // The API already namespaces its routes under /api, so no rewrite is needed.
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

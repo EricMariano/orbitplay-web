@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { Suspense, lazy } from 'react'
+import { initializeSession } from '@/lib/api-client'
 
 type RouterContext = {
   queryClient: QueryClient
@@ -14,6 +15,7 @@ const TanStackRouterDevtools = import.meta.env.DEV
   : () => null
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: initializeSession,
   component: RootLayout,
 })
 

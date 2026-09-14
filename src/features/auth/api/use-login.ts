@@ -11,7 +11,8 @@ export function useLogin() {
   const setSession = useAuthStore((s) => s.setSession)
 
   return useMutation({
-    mutationFn: (credentials: LoginRequest) => api.post<LoginResponse>('/auth/login', credentials),
+    mutationFn: (credentials: LoginRequest) =>
+      api.post<LoginResponse>('/auth/login', credentials, { auth: false }),
     onSuccess: ({ user, accessToken }) => {
       setSession({ user, accessToken })
     },

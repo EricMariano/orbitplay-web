@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 type QueryBoundaryProps<T> = {
   query: UseQueryResult<T>
-  children: (data: T) => ReactNode
+  children: (data: NonNullable<T>) => ReactNode
   /** Return true when `data` should render the empty state instead of children. */
   isEmpty?: (data: T) => boolean
   loadingFallback?: ReactNode
@@ -48,5 +48,5 @@ export function QueryBoundary<T>({
     return <>{emptyFallback ?? <EmptyState title="Nada por aqui ainda" />}</>
   }
 
-  return <>{children(data)}</>
+  return <>{children(data as NonNullable<T>)}</>
 }

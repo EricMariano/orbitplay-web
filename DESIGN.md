@@ -5,6 +5,8 @@
 > para destravar o tema, combinado com o solicitante. Substitua os valores pelos
 > reais quando o handoff chegar. Valores incertos estão marcados com `TODO`.
 >
+> (Vou tentar colocar com mais detalhes)
+>
 > Ver `DECISIONS.md` › "Design tokens".
 
 ## Regras (valem já)
@@ -19,7 +21,7 @@
 
 ## Camadas
 
-1. **Paleta** (`--n-*` neutros, `--g-*` marca) — cores cruas. Uso interno.
+1. **Paleta** (`--n-`* neutros, `--g-*` marca) — cores cruas. Uso interno.
 2. **Semântica** (`--surface`, `--muted`, `--primary`…) — o que as telas usam.
 3. **Mapa Tailwind** (`@theme inline`) — expõe a semântica como utilitários
    (`bg-surface`, `text-muted`…). Também alimenta os componentes shadcn, que
@@ -35,7 +37,7 @@ real, edite lá (não duplique o CSS aqui).
   color-scheme: dark;
 
   /* ---- Paleta: neutros (n) ---- */
-  --n-dark: #0b0d12; /* TODO confirmar base absoluta */
+  --n-dark: #080321;
   --n-900: #0f1115;
   --n-850: #141720;
   --n-800: #1a1e28;
@@ -58,7 +60,7 @@ real, edite lá (não duplique o CSS aqui).
   --info: #38bdf8; /* TODO */
 
   /* ---- Semântica ---- */
-  --background: var(--n-900);
+  --background: var(--n-dark);
   --surface: var(--n-850);
   --surface-raised: var(--n-800);
   --foreground: var(--n-50);
@@ -105,7 +107,7 @@ real, edite lá (não duplique o CSS aqui).
 
 ## Ícones
 
-- Setup usa **`lucide-react`**, sempre através do wrapper `@/components/icon`
+- Setup usa `lucide-react`, sempre através do wrapper `@/components/icon`
   (`<Icon name="..." />`) — **nunca** importe ícone direto na tela.
 - O handoff pede **MingCute em SVG**. A troca acontece só no wrapper quando as
   telas forem implementadas; as telas não mudam. Ver `DECISIONS.md`.

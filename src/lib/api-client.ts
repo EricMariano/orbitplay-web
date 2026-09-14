@@ -1,4 +1,4 @@
-import type { ApiError as ApiErrorShape } from '@/api-types'
+import type { ApiError as ApiErrorShape, LoginResponse } from '@/api-types'
 import { clearSession, getAccessToken, useAuthStore } from '@/lib/auth'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
@@ -24,6 +24,8 @@ export type RequestOptions = Omit<RequestInit, 'body'> & {
   json?: unknown
   /** Attach a generated Idempotency-Key (mutations that require it, e.g. the test wizard). */
   idempotent?: boolean
+  /** Set false for public or cookie-only authentication endpoints. */
+  auth?: boolean
   /** Internal: guards against an infinite refresh loop. */
   _isRetry?: boolean
 }
@@ -33,7 +35,7 @@ function buildHeaders(options: RequestOptions): Headers {
   if (options.json !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
-  const token = getAccessToken()
+  const token = options.auth === false ? null : getAccessToken()
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`)
   }
@@ -64,9 +66,9 @@ async function tryRefresh(): Promise<boolean> {
         credentials: 'include',
       })
       if (!res.ok) return false
-      const data = (await res.json()) as { accessToken?: string }
-      if (!data.accessToken) return false
-      useAuthStore.getState().setAccessToken(data.accessToken)
+      const data = (await res.json()) as LoginResponse
+      if (!data.accessToken || !data.user) return false
+      useAuthStore.getState().setSession({ user: data.user, accessToken: data.accessToken })
       return true
     } catch {
       return false
@@ -80,6 +82,17 @@ async function tryRefresh(): Promise<boolean> {
   }
 }
 
+let initializePromise: Promise<void> | null = null
+
+export function initializeSession(): Promise<void> {
+  initializePromise ??= (async () => {
+    if (getAccessToken()) return
+    const restored = await tryRefresh()
+    if (!restored) clearSession()
+  })()
+  return initializePromise
+}
+
 function redirectToLogin() {
   clearSession()
   if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
@@ -88,7 +101,7 @@ function redirectToLogin() {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { json, idempotent, _isRetry, ...init } = options
+  const { json, idempotent, auth, _isRetry, ...init } = options
   void idempotent // consumed in buildHeaders
 
   const response = await fetch(`${BASE_URL}${path}`, {
@@ -98,7 +111,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     body: json !== undefined ? JSON.stringify(json) : undefined,
   })
 
-  if (response.status === 401 && !_isRetry) {
+  if (response.status === 401 && auth !== false && !_isRetry) {
     const refreshed = await tryRefresh()
     if (refreshed) {
       return request<T>(path, { ...options, _isRetry: true })

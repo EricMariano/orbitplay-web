@@ -39,6 +39,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End the current session */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the authenticated user */
+        get: operations["getCurrentUser"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request a password reset */
+        post: operations["forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/games": {
         parameters: {
             query?: never;
@@ -124,6 +175,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's wallet balance */
+        get: operations["getWallet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/player/profile-stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's profile stats (level, feedback quality, achievements, hours played) */
+        get: operations["getPlayerProfileStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tests/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the in-progress test the player was last working on, if any */
+        get: operations["getContinueTest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tests/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the current player's tests with progress */
+        get: operations["listMyTests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/games/highlighted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List games highlighted for the current player */
+        get: operations["listHighlightedGames"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/earnings/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's earnings summary */
+        get: operations["getEarningsSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/missions/ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current player's missions and ranking overview */
+        get: operations["getMissionsRanking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -132,28 +302,39 @@ export interface components {
          * @description Authoritative role, decided by the backend (RN-03). The login tab does NOT set it.
          * @enum {string}
          */
-        Role: "studio" | "player";
-        User: {
-            id: string;
-            name: string;
+        Role: "owner" | "admin" | "studio" | "player";
+        AuthUser: {
+            /** Format: uuid */
+            userId: string;
             /** Format: email */
             email: string;
+            displayName: string;
+            /** Format: uuid */
+            organizationId: string;
             role: components["schemas"]["Role"];
-            avatarUrl?: string | null;
         };
         LoginRequest: {
-            /** Format: email */
-            email: string;
+            /** @description E-mail or access ID */
+            identifier: string;
+            /** Format: password */
             password: string;
-            /** @default false */
-            remember: boolean;
+            /**
+             * @description Changes only the refresh-token TTL
+             * @default false
+             */
+            rememberMe: boolean;
         };
         LoginResponse: {
-            user: components["schemas"]["User"];
             accessToken: string;
+            expiresIn: number;
+            user: components["schemas"]["AuthUser"];
         };
-        RefreshResponse: {
-            accessToken: string;
+        ForgotPasswordRequest: {
+            /** Format: email */
+            email: string;
+        };
+        MessageResponse: {
+            message: string;
         };
         Game: {
             id: string;
@@ -187,12 +368,87 @@ export interface components {
                 content: string;
             }[];
         };
-        ApiError: {
-            code: string;
+        /** @enum {string} */
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "TOO_MANY_REQUESTS" | "UNPROCESSABLE_ENTITY" | "INTERNAL_ERROR";
+        ErrorEnvelope: {
+            statusCode: number;
+            code: components["schemas"]["ErrorCode"];
             message: string;
             fieldErrors?: {
                 [key: string]: string;
             };
+            requestId: string;
+        };
+        Wallet: {
+            balance: number;
+        };
+        /** @enum {string} */
+        PlayerTier: "bronze" | "silver" | "gold" | "elite";
+        PlayerStats: {
+            tier: components["schemas"]["PlayerTier"];
+            level: number;
+            feedbackQuality: number;
+            achievements: number;
+            hoursPlayed: number;
+        };
+        TestTrackProgress: {
+            label: string;
+            /** @description 0-100 */
+            progress: number;
+            reward: number;
+        };
+        ContinueTest: {
+            gameId: string;
+            gameTitle: string;
+            coverUrl: string | null;
+            playersCount: number;
+            /** Format: date-time */
+            endsAt: string;
+            tracks: components["schemas"]["TestTrackProgress"][];
+        };
+        HighlightedGame: {
+            id: string;
+            title: string;
+            coverUrl: string | null;
+            /** @enum {string} */
+            status: "available" | "unavailable";
+            isNew: boolean;
+            playersCount: number;
+            /** Format: date-time */
+            endsAt: string;
+            openTests: number;
+            maxReward: number;
+            remainingReward: number;
+        };
+        EarningsPoint: {
+            label: string;
+            value: number;
+        };
+        EarningsSummary: {
+            last7Days: number;
+            totalAccumulated: number;
+            nextPayoutInDays: number;
+            series: components["schemas"]["EarningsPoint"][];
+        };
+        RankingCategory: {
+            label: string;
+            value: number;
+        };
+        MissionsRanking: {
+            rank: number;
+            rankDelta: number;
+            pending: number;
+            nextGoal: number;
+            categories: components["schemas"]["RankingCategory"][];
+        };
+        MyTestProgress: {
+            id: string;
+            title: string;
+            /** @description 0-100 */
+            progress: number;
+            reward: number;
+            /** @enum {string} */
+            action: "start" | "continue" | "complete";
         };
     };
     responses: never;
@@ -231,7 +487,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -245,13 +519,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description New access token */
+            /** @description Session rotated */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RefreshResponse"];
+                    "application/json": components["schemas"]["LoginResponse"];
                 };
             };
             /** @description Refresh failed */
@@ -260,6 +534,86 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session ended and refresh cookie cleared */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
+            };
+        };
+    };
+    getCurrentUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authenticated user */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthUser"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Generic response regardless of account existence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
             };
         };
     };
@@ -378,6 +732,146 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    getWallet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wallet */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wallet"];
+                };
+            };
+        };
+    };
+    getPlayerProfileStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Player profile stats */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerStats"];
+                };
+            };
+        };
+    };
+    getContinueTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Continue test, or null when there is none in progress */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContinueTest"] | null;
+                };
+            };
+        };
+    };
+    listMyTests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My tests */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyTestProgress"][];
+                };
+            };
+        };
+    };
+    listHighlightedGames: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Highlighted games */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HighlightedGame"][];
+                };
+            };
+        };
+    };
+    getEarningsSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Earnings summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EarningsSummary"];
+                };
+            };
+        };
+    };
+    getMissionsRanking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Missions and ranking */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MissionsRanking"];
+                };
             };
         };
     };
