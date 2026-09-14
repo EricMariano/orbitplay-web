@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  ArrowLeft,
   ArrowRight,
   Bell,
   Check,
@@ -14,6 +15,9 @@ import {
   Info,
   LayoutDashboard,
   ListChecks,
+  LockKeyhole,
+  Monitor,
+  MoreVertical,
   KeyRound,
   Loader2,
   LogOut,
@@ -21,6 +25,7 @@ import {
   Menu,
   Plus,
   Search,
+  Star,
   Sparkles,
   FlaskConical,
   FileBarChart,
@@ -52,6 +57,7 @@ const registry = {
   plus: Plus,
   search: Search,
   alert: AlertTriangle,
+  'arrow-left': ArrowLeft,
   'arrow-right': ArrowRight,
   check: Check,
   'chevron-down': ChevronDown,
@@ -64,6 +70,9 @@ const registry = {
   clock: Clock,
   users: Users,
   'list-checks': ListChecks,
+  lock: LockKeyhole,
+  monitor: Monitor,
+  more: MoreVertical,
   info: Info,
   'trending-up': TrendingUp,
   home: House,
@@ -71,6 +80,7 @@ const registry = {
   help: CircleHelp,
   globe: Globe,
   bell: Bell,
+  star: Star,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry

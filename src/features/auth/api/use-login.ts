@@ -12,7 +12,11 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (credentials: LoginRequest) =>
-      api.post<LoginResponse>('/auth/login', credentials, { auth: false }),
+      api.post<LoginResponse>(
+        '/auth/login',
+        { email: credentials.identifier, password: credentials.password },
+        { auth: false },
+      ),
     onSuccess: ({ user, accessToken }) => {
       setSession({ user, accessToken })
     },

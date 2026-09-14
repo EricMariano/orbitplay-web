@@ -70,9 +70,8 @@ test('login submits the backend contract without deriving a role from the tab', 
 
   expect(request.method()).toBe('POST')
   expect(request.postDataJSON()).toEqual({
-    identifier: 'studio@example.com',
+    email: 'studio@example.com',
     password: 'senha-segura',
-    rememberMe: false,
   })
   await expect.poll(() => page.evaluate(() => Reflect.get(window, '__loginWasDisabled'))).toBe(true)
 })

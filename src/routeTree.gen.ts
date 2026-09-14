@@ -15,6 +15,7 @@ import { Route as PlayerRouteImport } from './routes/player'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as StudioIndexRouteImport } from './routes/studio/index'
+import { Route as PlayerGamesGameIdRouteImport } from './routes/player/games/$gameId'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +48,11 @@ const StudioIndexRoute = StudioIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StudioRoute,
 } as any)
+const PlayerGamesGameIdRoute = PlayerGamesGameIdRouteImport.update({
+  id: '/games/$gameId',
+  path: '/games/$gameId',
+  getParentRoute: () => PlayerRoute,
+} as any)
 const StudioGamesIndexRoute = StudioGamesIndexRouteImport.update({
   id: '/games/',
   path: '/games/',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof StudioRouteWithChildren
   '/player/': typeof PlayerIndexRoute
   '/studio/': typeof StudioIndexRoute
+  '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/player': typeof PlayerIndexRoute
   '/studio': typeof StudioIndexRoute
+  '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games': typeof StudioGamesIndexRoute
 }
 export interface FileRoutesById {
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/studio': typeof StudioRouteWithChildren
   '/player/': typeof PlayerIndexRoute
   '/studio/': typeof StudioIndexRoute
+  '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
 }
 export interface FileRouteTypes {
@@ -88,9 +97,16 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/'
     | '/studio/'
+    | '/player/games/$gameId'
     | '/studio/games/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/player' | '/studio' | '/studio/games'
+  to:
+    | '/'
+    | '/login'
+    | '/player'
+    | '/studio'
+    | '/player/games/$gameId'
+    | '/studio/games'
   id:
     | '__root__'
     | '/'
@@ -99,6 +115,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/'
     | '/studio/'
+    | '/player/games/$gameId'
     | '/studio/games/'
   fileRoutesById: FileRoutesById
 }
@@ -153,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioIndexRouteImport
       parentRoute: typeof StudioRoute
     }
+    '/player/games/$gameId': {
+      id: '/player/games/$gameId'
+      path: '/games/$gameId'
+      fullPath: '/player/games/$gameId'
+      preLoaderRoute: typeof PlayerGamesGameIdRouteImport
+      parentRoute: typeof PlayerRoute
+    }
     '/studio/games/': {
       id: '/studio/games/'
       path: '/games'
@@ -165,10 +189,12 @@ declare module '@tanstack/react-router' {
 
 interface PlayerRouteChildren {
   PlayerIndexRoute: typeof PlayerIndexRoute
+  PlayerGamesGameIdRoute: typeof PlayerGamesGameIdRoute
 }
 
 const PlayerRouteChildren: PlayerRouteChildren = {
   PlayerIndexRoute: PlayerIndexRoute,
+  PlayerGamesGameIdRoute: PlayerGamesGameIdRoute,
 }
 
 const PlayerRouteWithChildren =
