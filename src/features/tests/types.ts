@@ -1,24 +1,27 @@
-export type RecentTestStatus = 'in_progress' | 'completed' | 'generating_insights'
+export type TestModelKey =
+  'free_exploration_telemetry' | 'free_exploration' | 'ab_test' | 'ab_test_images'
 
 /**
- * Linha da tabela "Testes recentes" (Tela 02 / Tela 05). Endpoint ainda não
- * existe no contrato — mover para src/api-types quando o backend expuser
- * `/tests/recent` (paginado).
+ * Modelo de teste real da API (`GET /test-models`). O tipo `TestModel`
+ * genérico em src/api-types ainda está desatualizado (contrato antigo) — usa
+ * este até rodar `pnpm gen:api` de novo com a API no ar; depois disso, troca
+ * pelo tipo gerado de verdade e apaga esta definição manual.
  */
-export type RecentTest = {
-  id: string
-  gameTitle: string
-  testName: string
-  testType: string
-  status: RecentTestStatus
-  startDate: string
-  endDate: string | null
-  hasOrbitPlugin: boolean
+export type TestModelView = {
+  key: TestModelKey
+  name: string
+  description: string
+  deliverables: string[]
+  technicalRequirements: string[]
+  requiresTelemetry: boolean
+  available: boolean
+  unavailableReason: string | null
 }
 
-export type PaginatedRecentTests = {
-  items: RecentTest[]
-  page: number
-  pageSize: number
-  totalCount: number
+/**
+ * Preço não existe no catálogo do backend (é dado comercial, não de produto)
+ * — decorado localmente até existir um campo oficial. Ver DECISIONS.md.
+ */
+export type TestModelOption = TestModelView & {
+  priceCents: number
 }

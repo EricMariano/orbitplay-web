@@ -36,6 +36,8 @@ import {
   User,
   Users,
   Wallet,
+  Compass,
+  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -89,6 +91,9 @@ const registry = {
   'trending-up': TrendingUp,
   home: House,
   'graduation-cap': GraduationCap,
+  compass: Compass,
+  'ab-test': Users,
+  'ab-test-images': ImageIcon,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry
