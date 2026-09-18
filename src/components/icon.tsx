@@ -2,33 +2,42 @@ import {
   AlertTriangle,
   ArrowRight,
   Bell,
+  Brain,
+  ChartColumnDecreasing,
   Check,
+  CheckCircle2,
   ChevronDown,
-  CircleHelp,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
   Clock,
+  FileBarChart,
+  FileCheckCorner,
   Gamepad2,
   Globe,
   GraduationCap,
+  HelpCircle,
   House,
   Inbox,
   Info,
-  LayoutDashboard,
-  ListChecks,
   KeyRound,
+  ListChecks,
   Loader2,
   LogOut,
   Mail,
   Menu,
+  MoreVertical,
   Plus,
   Search,
   Sparkles,
-  FlaskConical,
-  FileBarChart,
+  Target,
   TrendingUp,
   Trophy,
   User,
   Users,
   Wallet,
+  Compass,
+  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -41,9 +50,10 @@ import { cn } from '@/lib/utils'
  * this registry changes — screens stay untouched. See DESIGN.md.
  */
 const registry = {
-  dashboard: LayoutDashboard,
+  dashboard: House,
   games: Gamepad2,
-  tests: FlaskConical,
+  gamepad: Gamepad2,
+  tests: FileCheckCorner,
   reports: FileBarChart,
   opportunities: Sparkles,
   user: User,
@@ -55,6 +65,8 @@ const registry = {
   'arrow-right': ArrowRight,
   check: Check,
   'chevron-down': ChevronDown,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
   loader: Loader2,
   key: KeyRound,
   mail: Mail,
@@ -62,15 +74,26 @@ const registry = {
   wallet: Wallet,
   trophy: Trophy,
   clock: Clock,
-  users: Users,
+  target: Target,
+  plug: ChartColumnDecreasing,
+  insights: Brain,
+  score: CheckCircle2,
+  checklist: ClipboardCheck,
   'list-checks': ListChecks,
   info: Info,
+  more: MoreVertical,
+  help: HelpCircle,
+  language: Globe,
+  globe: Globe,
+  notifications: Bell,
+  bell: Bell,
+  users: Users,
   'trending-up': TrendingUp,
   home: House,
   'graduation-cap': GraduationCap,
-  help: CircleHelp,
-  globe: Globe,
-  bell: Bell,
+  compass: Compass,
+  'ab-test': Users,
+  'ab-test-images': ImageIcon,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry
@@ -79,13 +102,15 @@ type IconProps = {
   name: IconName
   className?: string
   'aria-label'?: string
+  filled?: boolean
 }
 
-export function Icon({ name, className, ...rest }: IconProps) {
+export function Icon({ name, className, filled = false, ...rest }: IconProps) {
   const Glyph = registry[name]
   return (
     <Glyph
       className={cn('size-4 shrink-0', className)}
+      fill={filled ? 'currentColor' : 'none'}
       aria-hidden={rest['aria-label'] ? undefined : true}
       {...rest}
     />

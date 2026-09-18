@@ -87,9 +87,8 @@ function LoginScreen() {
   function onSubmit(values: LoginValues) {
     login.mutate(
       {
-        identifier: values.email,
+        email: values.email,
         password: values.password,
-        rememberMe: values.remember,
       },
       {
         onSuccess: ({ user }) => {

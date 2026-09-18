@@ -1,634 +1,2219 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "OrbitPlay API (PROVISIONAL contract)",
-    "version": "0.0.0-provisional",
-    "description": "Hand-authored placeholder contract covering only the endpoints listed in the setup brief. NOT aligned with the real API yet — replace with the API repo's openapi.json (via `pnpm gen:api <url|path>`) as soon as it exists. See DECISIONS.md."
-  },
-  "servers": [{ "url": "http://localhost:3000" }],
+  "openapi": "3.0.0",
   "paths": {
+    "/audit-logs": {
+      "get": {
+        "operationId": "AuditController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "actorUserId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "audit-logs"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
-        "operationId": "login",
-        "summary": "Authenticate and start a session",
-        "security": [],
+        "operationId": "AuthController_login",
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Session established",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto_Output"
+                }
               }
             }
-          },
-          "401": {
-            "description": "Invalid credentials",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
-            }
-          },
-          "422": {
-            "description": "Validation error",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
-            }
-          },
-          "429": {
-            "description": "Too many requests",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/signup/studio": {
+      "post": {
+        "operationId": "AuthController_signupStudio",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupStudioDto"
+              }
             }
           }
-        }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/signup/player": {
+      "post": {
+        "operationId": "AuthController_signupPlayer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupPlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/signup/availability": {
+      "get": {
+        "operationId": "AuthController_checkAvailability",
+        "parameters": [
+          {
+            "name": "email",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupAvailabilityDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/refresh": {
       "post": {
-        "operationId": "refresh",
-        "summary": "Exchange the refresh cookie for a fresh access token",
+        "operationId": "AuthController_refresh",
+        "parameters": [],
         "responses": {
-          "200": {
-            "description": "Session rotated",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto_Output"
+                }
               }
             }
-          },
-          "401": { "description": "Refresh failed" }
-        }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/logout": {
       "post": {
-        "operationId": "logout",
-        "summary": "End the current session",
+        "operationId": "AuthController_logout",
+        "parameters": [],
         "responses": {
-          "200": {
-            "description": "Session ended and refresh cookie cleared",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto_Output"
+                }
               }
             }
           }
-        }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/me": {
       "get": {
-        "operationId": "getCurrentUser",
-        "summary": "Get the authenticated user",
+        "operationId": "AuthController_me",
+        "parameters": [],
         "responses": {
-          "200": {
-            "description": "Authenticated user",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthUser" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserDto_Output"
+                }
               }
             }
-          },
-          "401": { "description": "Unauthorized" }
-        }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/password/forgot": {
       "post": {
-        "operationId": "forgotPassword",
-        "summary": "Request a password reset",
-        "security": [],
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ForgotPasswordRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Generic response regardless of account existence",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto_Output"
+                }
               }
             }
-          },
-          "429": {
-            "description": "Too many requests",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/password/reset": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
             }
           }
-        }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/orgs/current": {
+      "get": {
+        "operationId": "OrgsController_current",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members": {
+      "get": {
+        "operationId": "OrgsController_members",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members/invite": {
+      "post": {
+        "operationId": "OrgsController_invite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members/{userId}/role": {
+      "patch": {
+        "operationId": "OrgsController_changeRole",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members/{userId}/status": {
+      "patch": {
+        "operationId": "OrgsController_updateStatus",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members/{userId}": {
+      "delete": {
+        "operationId": "OrgsController_remove",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
       }
     },
     "/games": {
       "get": {
-        "operationId": "listGames",
-        "summary": "List games",
+        "operationId": "GamesController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "archived"
+              ]
+            }
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "Games",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Game" }
+                  "$ref": "#/components/schemas/GameListDto_Output"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      },
+      "post": {
+        "operationId": "GamesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
       }
     },
     "/games/{id}": {
       "get": {
-        "operationId": "getGame",
-        "summary": "Get a game by id",
+        "operationId": "GamesController_get",
         "parameters": [
           {
             "name": "id",
-            "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Game",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Game" } }
-            }
-          },
-          "404": { "description": "Not found" }
-        }
-      }
-    },
-    "/test-models": {
-      "get": {
-        "operationId": "listTestModels",
-        "summary": "List reusable test models",
-        "responses": {
-          "200": {
-            "description": "Test models",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/TestModel" }
+                  "$ref": "#/components/schemas/GameDto_Output"
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/opportunities": {
-      "get": {
-        "operationId": "listOpportunities",
-        "summary": "List opportunities for the current user",
-        "responses": {
-          "200": {
-            "description": "Opportunities",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Opportunity" }
-                }
-              }
-            }
+        },
+        "security": [
+          {
+            "bearer": []
           }
-        }
-      }
-    },
-    "/tests/{id}/report": {
-      "get": {
-        "operationId": "getTestReport",
-        "summary": "Get the report for a test run",
+        ],
+        "tags": [
+          "games"
+        ]
+      },
+      "patch": {
+        "operationId": "GamesController_update",
         "parameters": [
           {
             "name": "id",
-            "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      },
+      "delete": {
+        "operationId": "GamesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Report",
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{id}/assets/upload-url": {
+      "post": {
+        "operationId": "GamesController_createAssetUploadUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUploadUrlRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TestReport" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadUrlResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{id}/assets": {
+      "post": {
+        "operationId": "GamesController_confirmAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmAssetRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameAssetDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{id}/assets/{assetId}": {
+      "delete": {
+        "operationId": "GamesController_removeAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
             }
           },
-          "404": { "description": "Not found" }
-        }
-      }
-    },
-    "/wallet": {
-      "get": {
-        "operationId": "getWallet",
-        "summary": "Get the current player's wallet balance",
-        "responses": {
-          "200": {
-            "description": "Wallet",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Wallet" } }
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
             }
           }
-        }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
       }
     },
-    "/player/profile-stats": {
-      "get": {
-        "operationId": "getPlayerProfileStats",
-        "summary": "Get the current player's profile stats (level, feedback quality, achievements, hours played)",
-        "responses": {
-          "200": {
-            "description": "Player profile stats",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/PlayerStats" } }
+    "/sessions/{id}/recordings/upload-url": {
+      "post": {
+        "operationId": "MediaController_createUploadUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
             }
           }
-        }
-      }
-    },
-    "/tests/continue": {
-      "get": {
-        "operationId": "getContinueTest",
-        "summary": "Get the in-progress test the player was last working on, if any",
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordingUploadUrlRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
-            "description": "Continue test, or null when there is none in progress",
+          "201": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [{ "$ref": "#/components/schemas/ContinueTest" }],
-                  "nullable": true
+                  "$ref": "#/components/schemas/UploadUrlResponseDto_Output"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
       }
     },
-    "/tests/mine": {
-      "get": {
-        "operationId": "listMyTests",
-        "summary": "List the current player's tests with progress",
+    "/sessions/{id}/recordings/complete": {
+      "post": {
+        "operationId": "MediaController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordingCompleteRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
-            "description": "My tests",
+          "202": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/MyTestProgress" }
+                  "$ref": "#/components/schemas/RecordingDto_Output"
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
       }
     },
-    "/games/highlighted": {
+    "/sessions/{id}/recordings/{recordingId}/playback-url": {
       "get": {
-        "operationId": "listHighlightedGames",
-        "summary": "List games highlighted for the current player",
+        "operationId": "MediaController_playbackUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recordingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "Highlighted games",
+          "default": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/HighlightedGame" }
+                  "$ref": "#/components/schemas/PlaybackUrlResponseDto_Output"
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/earnings/summary": {
-      "get": {
-        "operationId": "getEarningsSummary",
-        "summary": "Get the current player's earnings summary",
-        "responses": {
-          "200": {
-            "description": "Earnings summary",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/EarningsSummary" }
-              }
-            }
+        },
+        "security": [
+          {
+            "bearer": []
           }
-        }
-      }
-    },
-    "/missions/ranking": {
-      "get": {
-        "operationId": "getMissionsRanking",
-        "summary": "Get the current player's missions and ranking overview",
-        "responses": {
-          "200": {
-            "description": "Missions and ranking",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/MissionsRanking" }
-              }
-            }
-          }
-        }
+        ],
+        "tags": [
+          "media"
+        ]
       }
     }
   },
+  "info": {
+    "title": "OrbitPlay API",
+    "description": "OrbitPlay main API — contract consumed by orbitplay-web.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
   "components": {
-    "schemas": {
-      "Role": {
-        "type": "string",
-        "enum": ["owner", "admin", "studio", "player"],
-        "description": "Authoritative role, decided by the backend (RN-03). The login tab does NOT set it."
-      },
-      "AuthUser": {
-        "type": "object",
-        "required": ["userId", "email", "displayName", "organizationId", "role"],
-        "properties": {
-          "userId": { "type": "string", "format": "uuid" },
-          "email": { "type": "string", "format": "email" },
-          "displayName": { "type": "string" },
-          "organizationId": { "type": "string", "format": "uuid" },
-          "role": { "$ref": "#/components/schemas/Role" }
-        }
-      },
-      "LoginRequest": {
-        "type": "object",
-        "required": ["identifier", "password"],
-        "properties": {
-          "identifier": { "type": "string", "description": "E-mail or access ID" },
-          "password": { "type": "string", "format": "password", "minLength": 8 },
-          "rememberMe": {
-            "type": "boolean",
-            "default": false,
-            "description": "Changes only the refresh-token TTL"
-          }
-        }
-      },
-      "LoginResponse": {
-        "type": "object",
-        "required": ["accessToken", "expiresIn", "user"],
-        "properties": {
-          "accessToken": { "type": "string" },
-          "expiresIn": { "type": "integer" },
-          "user": { "$ref": "#/components/schemas/AuthUser" }
-        }
-      },
-      "ForgotPasswordRequest": {
-        "type": "object",
-        "required": ["email"],
-        "properties": {
-          "email": { "type": "string", "format": "email" }
-        }
-      },
-      "MessageResponse": {
-        "type": "object",
-        "required": ["message"],
-        "properties": {
-          "message": { "type": "string" }
-        }
-      },
-      "Game": {
-        "type": "object",
-        "required": ["id", "title", "status", "createdAt"],
-        "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["draft", "in_review", "published"]
-          },
-          "coverUrl": { "type": "string", "nullable": true },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "TestModel": {
-        "type": "object",
-        "required": ["id", "name"],
-        "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string", "nullable": true }
-        }
-      },
-      "Opportunity": {
-        "type": "object",
-        "required": ["id", "title", "reward", "status"],
-        "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "gameId": { "type": "string", "nullable": true },
-          "reward": { "type": "number" },
-          "status": {
-            "type": "string",
-            "enum": ["open", "in_progress", "closed"]
-          }
-        }
-      },
-      "TestReport": {
-        "type": "object",
-        "required": ["id", "testId", "summary"],
-        "properties": {
-          "id": { "type": "string" },
-          "testId": { "type": "string" },
-          "summary": { "type": "string" },
-          "score": { "type": "number", "nullable": true },
-          "sections": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["title", "content"],
-              "properties": {
-                "title": { "type": "string" },
-                "content": { "type": "string" }
-              }
-            }
-          }
-        }
-      },
-      "ErrorCode": {
-        "type": "string",
-        "enum": [
-          "VALIDATION_ERROR",
-          "UNAUTHORIZED",
-          "FORBIDDEN",
-          "NOT_FOUND",
-          "CONFLICT",
-          "TOO_MANY_REQUESTS",
-          "UNPROCESSABLE_ENTITY",
-          "INTERNAL_ERROR"
-        ]
-      },
-      "ErrorEnvelope": {
-        "type": "object",
-        "required": ["statusCode", "code", "message", "requestId"],
-        "properties": {
-          "statusCode": { "type": "integer" },
-          "code": { "$ref": "#/components/schemas/ErrorCode" },
-          "message": { "type": "string" },
-          "fieldErrors": {
-            "type": "object",
-            "additionalProperties": { "type": "string" }
-          },
-          "requestId": { "type": "string" }
-        }
-      },
-      "Wallet": {
-        "type": "object",
-        "required": ["balance"],
-        "properties": {
-          "balance": { "type": "number" }
-        }
-      },
-      "PlayerTier": {
-        "type": "string",
-        "enum": ["bronze", "silver", "gold", "elite"]
-      },
-      "PlayerStats": {
-        "type": "object",
-        "required": ["tier", "level", "feedbackQuality", "achievements", "hoursPlayed"],
-        "properties": {
-          "tier": { "$ref": "#/components/schemas/PlayerTier" },
-          "level": { "type": "number" },
-          "feedbackQuality": { "type": "number" },
-          "achievements": { "type": "number" },
-          "hoursPlayed": { "type": "number" }
-        }
-      },
-      "TestTrackProgress": {
-        "type": "object",
-        "required": ["label", "progress", "reward"],
-        "properties": {
-          "label": { "type": "string" },
-          "progress": { "type": "number", "description": "0-100" },
-          "reward": { "type": "number" }
-        }
-      },
-      "ContinueTest": {
-        "type": "object",
-        "required": ["gameId", "gameTitle", "coverUrl", "playersCount", "endsAt", "tracks"],
-        "properties": {
-          "gameId": { "type": "string" },
-          "gameTitle": { "type": "string" },
-          "coverUrl": { "type": "string", "nullable": true },
-          "playersCount": { "type": "number" },
-          "endsAt": { "type": "string", "format": "date-time" },
-          "tracks": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/TestTrackProgress" }
-          }
-        }
-      },
-      "HighlightedGame": {
-        "type": "object",
-        "required": [
-          "id",
-          "title",
-          "coverUrl",
-          "status",
-          "isNew",
-          "playersCount",
-          "endsAt",
-          "openTests",
-          "maxReward",
-          "remainingReward"
-        ],
-        "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "coverUrl": { "type": "string", "nullable": true },
-          "status": { "type": "string", "enum": ["available", "unavailable"] },
-          "isNew": { "type": "boolean" },
-          "playersCount": { "type": "number" },
-          "endsAt": { "type": "string", "format": "date-time" },
-          "openTests": { "type": "number" },
-          "maxReward": { "type": "number" },
-          "remainingReward": { "type": "number" }
-        }
-      },
-      "EarningsPoint": {
-        "type": "object",
-        "required": ["label", "value"],
-        "properties": {
-          "label": { "type": "string" },
-          "value": { "type": "number" }
-        }
-      },
-      "EarningsSummary": {
-        "type": "object",
-        "required": ["last7Days", "totalAccumulated", "nextPayoutInDays", "series"],
-        "properties": {
-          "last7Days": { "type": "number" },
-          "totalAccumulated": { "type": "number" },
-          "nextPayoutInDays": { "type": "number" },
-          "series": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/EarningsPoint" }
-          }
-        }
-      },
-      "RankingCategory": {
-        "type": "object",
-        "required": ["label", "value"],
-        "properties": {
-          "label": { "type": "string" },
-          "value": { "type": "number" }
-        }
-      },
-      "MissionsRanking": {
-        "type": "object",
-        "required": ["rank", "rankDelta", "pending", "nextGoal", "categories"],
-        "properties": {
-          "rank": { "type": "number" },
-          "rankDelta": { "type": "number" },
-          "pending": { "type": "number" },
-          "nextGoal": { "type": "number" },
-          "categories": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/RankingCategory" }
-          }
-        }
-      },
-      "MyTestProgress": {
-        "type": "object",
-        "required": ["id", "title", "progress", "reward", "action"],
-        "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "progress": { "type": "number", "description": "0-100" },
-          "reward": { "type": "number" },
-          "action": { "type": "string", "enum": ["start", "continue", "complete"] }
-        }
-      }
-    },
     "securitySchemes": {
       "bearer": {
-        "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "JWT",
+        "type": "http"
       },
       "cookie": {
         "type": "apiKey",
         "in": "cookie",
         "name": "refresh_token"
+      }
+    },
+    "schemas": {
+      "AuditLogListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "actorUserId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "action": {
+                  "type": "string"
+                },
+                "entity": {
+                  "type": "string"
+                },
+                "entityId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "before": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {},
+                  "nullable": true
+                },
+                "after": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {},
+                  "nullable": true
+                },
+                "ip": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "requestId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "organizationId",
+                "actorUserId",
+                "action",
+                "entity",
+                "entityId",
+                "before",
+                "after",
+                "ip",
+                "requestId",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "organizationId": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "admin",
+                  "studio",
+                  "player"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "email",
+              "displayName",
+              "organizationId",
+              "role"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "accessToken",
+          "user"
+        ],
+        "additionalProperties": false
+      },
+      "SignupStudioDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "organizationName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "acceptedTerms": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "displayName",
+          "email",
+          "password",
+          "birthdate",
+          "organizationName"
+        ]
+      },
+      "SignupPlayerDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "acceptedTerms": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "displayName",
+          "email",
+          "password",
+          "birthdate"
+        ]
+      },
+      "SignupAvailabilityDto_Output": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "additionalProperties": false
+      },
+      "MessageResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "AuthUserDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "studio",
+              "player"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "displayName",
+          "organizationId",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "OrgDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "MemberListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "owner",
+                    "admin",
+                    "studio",
+                    "player"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "invited",
+                    "disabled"
+                  ]
+                }
+              },
+              "required": [
+                "userId",
+                "email",
+                "displayName",
+                "role",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "studio",
+              "player"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "MemberDto_Output": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "studio",
+              "player"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "invited",
+              "disabled"
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "email",
+          "displayName",
+          "role",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "ChangeRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "studio",
+              "player"
+            ]
+          },
+          "confirm": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "confirm"
+        ]
+      },
+      "UpdateMemberStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "GameListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genre": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "platform": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "active",
+                    "archived"
+                  ]
+                },
+                "coverUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "bannerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "testsTotal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "testsActive": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "sessionsValid": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "playersTotal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "averageRating": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "testsTotal",
+                    "testsActive",
+                    "sessionsValid",
+                    "playersTotal",
+                    "averageRating"
+                  ],
+                  "additionalProperties": false
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "organizationId",
+                "title",
+                "slug",
+                "description",
+                "genre",
+                "platform",
+                "status",
+                "coverUrl",
+                "bannerUrl",
+                "metrics",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "GameDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "genre": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "platform": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "active",
+              "archived"
+            ]
+          },
+          "coverUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bannerUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "testsTotal": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "testsActive": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "sessionsValid": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "playersTotal": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "averageRating": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "testsTotal",
+              "testsActive",
+              "sessionsValid",
+              "playersTotal",
+              "averageRating"
+            ],
+            "additionalProperties": false
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "title",
+          "slug",
+          "description",
+          "genre",
+          "platform",
+          "status",
+          "coverUrl",
+          "bannerUrl",
+          "metrics",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CreateGameDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "genre": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "active",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "UpdateGameDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "genre": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "active",
+              "archived"
+            ]
+          }
+        }
+      },
+      "AssetUploadUrlRequestDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "banner",
+              "screenshot"
+            ]
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5242880
+          },
+          "fileName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "kind",
+          "contentType",
+          "sizeBytes",
+          "fileName"
+        ]
+      },
+      "UploadUrlResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "uploadUrl": {
+            "type": "string"
+          },
+          "storageKey": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "maxSizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "uploadId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uploadUrl",
+          "storageKey",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "ConfirmAssetRequestDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "banner",
+              "screenshot"
+            ]
+          },
+          "storageKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "kind",
+          "storageKey"
+        ]
+      },
+      "GameAssetDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "banner",
+              "screenshot"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "url",
+          "contentType",
+          "sizeBytes",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "RecordingUploadUrlRequestDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "video/webm",
+              "video/mp4",
+              "audio/webm",
+              "audio/ogg",
+              "audio/mp4"
+            ]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483648
+          },
+          "partNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "uploadId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "screen_recording",
+              "webcam",
+              "microphone"
+            ]
+          }
+        },
+        "required": [
+          "contentType",
+          "sizeBytes"
+        ]
+      },
+      "RecordingCompleteRequestDto": {
+        "type": "object",
+        "properties": {
+          "storageKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "uploadId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "partNumber": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "etag": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "partNumber",
+                "etag"
+              ]
+            }
+          }
+        },
+        "required": [
+          "storageKey",
+          "durationMs"
+        ]
+      },
+      "RecordingDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "status",
+          "durationMs",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "PlaybackUrlResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "url": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiresAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "thumbnailUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "url",
+          "expiresAt",
+          "durationMs",
+          "thumbnailUrl"
+        ],
+        "additionalProperties": false
       }
     }
   }
