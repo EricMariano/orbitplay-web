@@ -23,6 +23,7 @@ const WIZARD_STEPS = ['Tipo', 'Avaliação', 'Build', 'Orçamento']
 
 function NewTestWizard() {
   const { gameId } = Route.useParams()
+  void gameId // TODO: usar quando a rota /studio/games/$gameId existir de verdade
   const navigate = useNavigate()
   const testModels = useTestModels()
   const [selectedKey, setSelectedKey] = useState<TestModelView['key'] | null>(null)
@@ -34,7 +35,7 @@ function NewTestWizard() {
           Home
         </Link>{' '}
         › <span>jogos</span> ›{' '}
-        <Link to="/studio/games/$gameId" params={{ gameId }} className="hover:text-primary">
+        <Link to="/studio/games" className="hover:text-primary">
           Configuração
         </Link>{' '}
         › <span className="text-foreground-strong">Novo teste</span>
@@ -43,7 +44,7 @@ function NewTestWizard() {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => navigate({ to: '/studio/games/$gameId', params: { gameId } })}
+          onClick={() => navigate({ to: '/studio/games' })}
           aria-label="Voltar"
           className="text-primary hover:text-highlight"
         >
