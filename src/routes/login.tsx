@@ -89,7 +89,6 @@ function LoginScreen() {
       {
         email: values.email,
         password: values.password,
-        rememberMe: values.remember,
       },
       {
         onSuccess: ({ user }) => {
