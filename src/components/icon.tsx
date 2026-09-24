@@ -39,6 +39,12 @@ import {
   Compass,
   Image as ImageIcon,
   type LucideIcon,
+  ImagePlus,
+  Copy,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  Eye,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -94,6 +100,12 @@ const registry = {
   compass: Compass,
   'ab-test': Users,
   'ab-test-images': ImageIcon,
+  image: ImagePlus,
+  copy: Copy,
+  trash: Trash2,
+  'arrow-up': ArrowUp,
+  'arrow-down': ArrowDown,
+  eye: Eye,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry

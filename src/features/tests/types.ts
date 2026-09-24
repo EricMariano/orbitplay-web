@@ -50,3 +50,26 @@ export type TestModelView = {
 export type TestModelOption = TestModelView & {
   priceCents: number
 }
+
+export type QuestionType = 'short_answer' | 'single_choice' | 'multiple_choice' | 'linear_scale'
+
+export type QuestionOption = {
+  id: string
+  label: string
+}
+
+/**
+ * Uma pergunta do formulário de avaliação (Tela 07). Estado 100% local até
+ * o teste inteiro ser submetido na Etapa 5 — não existe endpoint pra isso.
+ */
+export type TestFormQuestion = {
+  id: string
+  type: QuestionType
+  prompt: string
+  required: boolean
+  options: QuestionOption[] // usado só em single_choice / multiple_choice
+  scaleMin: number
+  scaleMax: number
+  scaleMinLabel: string
+  scaleMaxLabel: string
+}
