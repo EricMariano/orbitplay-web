@@ -28,19 +28,25 @@ export function TestFormBuilder({ questions, onChange }: TestFormBuilderProps) {
 
   function moveAt(index: number, direction: 'up' | 'down') {
     const targetIndex = direction === 'up' ? index - 1 : index + 1
-    if (targetIndex < 0 || targetIndex >= questions.length) return
+    const current = questions[index]
+    const target = questions[targetIndex]
+    if (!current || !target) return
     const next = [...questions]
-    ;[next[index], next[targetIndex]] = [next[targetIndex], next[index]]
+    next[index] = target
+    next[targetIndex] = current
     onChange(next)
   }
 
   function duplicateAt(index: number) {
-    const copy = { ...questions[index], id: crypto.randomUUID() }
+    const original = questions[index]
+    if (!original) return
+    const copy: TestFormQuestion = { ...original, id: crypto.randomUUID() }
     onChange([...questions.slice(0, index + 1), copy, ...questions.slice(index + 1)])
   }
 
   function deleteAt(index: number) {
     const question = questions[index]
+    if (!question) return
     const hasContent = question.prompt.trim() || question.options.some((o) => o.label.trim())
     // RN-05: exclusão pede confirmação quando há conteúdo preenchido
     if (
