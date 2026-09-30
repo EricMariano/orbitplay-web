@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader } from '@/components/common/PageHeader'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
@@ -53,6 +53,7 @@ function GamesList() {
               <TableRow>
                 <TableHead>Título</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Comunidade</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -61,6 +62,13 @@ function GamesList() {
                   <TableCell className="font-medium">{game.title}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">{game.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/studio/games/$gameId/chat" params={{ gameId: game.id }}>
+                        Gerenciar chat
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

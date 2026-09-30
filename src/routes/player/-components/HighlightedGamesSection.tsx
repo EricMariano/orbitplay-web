@@ -1,4 +1,5 @@
 import type { HighlightedGame } from '@/api-types'
+import { Link } from '@tanstack/react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { Icon } from '@/components/icon'
@@ -87,8 +88,10 @@ function HighlightedGameCard({ game }: { game: HighlightedGame }) {
             <p className="text-muted">Prêmio restante</p>
           </div>
         </div>
-        <Button size="sm" className="mt-auto">
-          Testar!
+        <Button asChild size="sm" className="mt-auto">
+          <Link to="/player/games/$gameId" params={{ gameId: game.id }}>
+            Ver detalhes
+          </Link>
         </Button>
       </div>
     </div>
