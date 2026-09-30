@@ -8,6 +8,8 @@ export const gamesKeys = {
   playerTests: (id: string) => [...gamesKeys.all, 'player-tests', id] as const,
   achievements: (id: string) => [...gamesKeys.all, 'achievements', id] as const,
   community: (id: string) => [...gamesKeys.all, 'community', id] as const,
+  chatChannels: (id: string) => [...gamesKeys.all, 'chat-channels', id] as const,
+  chatMessages: (id: string) => [...gamesKeys.all, 'chat-messages', id] as const,
   reviews: (id: string) => [...gamesKeys.all, 'reviews', id] as const,
   specs: (id: string) => [...gamesKeys.all, 'specs', id] as const,
 }

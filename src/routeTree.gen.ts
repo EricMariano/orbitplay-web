@@ -17,6 +17,7 @@ import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as StudioIndexRouteImport } from './routes/studio/index'
 import { Route as PlayerGamesGameIdRouteImport } from './routes/player/games/$gameId'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
+import { Route as StudioGamesGameIdChatRouteImport } from './routes/studio/games/$gameId/chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const StudioGamesIndexRoute = StudioGamesIndexRouteImport.update({
   path: '/games/',
   getParentRoute: () => StudioRoute,
 } as any)
+const StudioGamesGameIdChatRoute = StudioGamesGameIdChatRouteImport.update({
+  id: '/games/$gameId/chat',
+  path: '/games/$gameId/chat',
+  getParentRoute: () => StudioRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/studio/': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
+  '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games': typeof StudioGamesIndexRoute
+  '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/studio/': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
+  '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/player/games/$gameId'
     | '/studio/games/'
+    | '/studio/games/$gameId/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/games/$gameId'
     | '/studio/games'
+    | '/studio/games/$gameId/chat'
   id:
     | '__root__'
     | '/'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/player/games/$gameId'
     | '/studio/games/'
+    | '/studio/games/$gameId/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioGamesIndexRouteImport
       parentRoute: typeof StudioRoute
     }
+    '/studio/games/$gameId/chat': {
+      id: '/studio/games/$gameId/chat'
+      path: '/games/$gameId/chat'
+      fullPath: '/studio/games/$gameId/chat'
+      preLoaderRoute: typeof StudioGamesGameIdChatRouteImport
+      parentRoute: typeof StudioRoute
+    }
   }
 }
 
@@ -203,11 +222,13 @@ const PlayerRouteWithChildren =
 interface StudioRouteChildren {
   StudioIndexRoute: typeof StudioIndexRoute
   StudioGamesIndexRoute: typeof StudioGamesIndexRoute
+  StudioGamesGameIdChatRoute: typeof StudioGamesGameIdChatRoute
 }
 
 const StudioRouteChildren: StudioRouteChildren = {
   StudioIndexRoute: StudioIndexRoute,
   StudioGamesIndexRoute: StudioGamesIndexRoute,
+  StudioGamesGameIdChatRoute: StudioGamesGameIdChatRoute,
 }
 
 const StudioRouteWithChildren =

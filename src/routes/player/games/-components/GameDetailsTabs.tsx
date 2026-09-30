@@ -20,6 +20,7 @@ import type { Achievement } from '@/features/games/player-game-types'
 import { gameDetailsErrorMessage } from '@/features/games/game-details-utils'
 import { GameTestTable } from './GameTestTable'
 import { GameTestDetails } from './GameTestDetails'
+import { GameChat } from './GameChat'
 
 export type GameDetailsTab = 'available' | 'mine' | 'achievements' | 'community' | 'specs'
 
@@ -192,7 +193,7 @@ function AchievementsContent({ gameId }: { gameId: string }) {
   )
 }
 
-function CommunityContent({ gameId }: { gameId: string }) {
+function CommunityFeedContent({ gameId }: { gameId: string }) {
   const posts = useGameCommunity(gameId)
   const reviews = useGameReviews(gameId)
 
@@ -267,6 +268,23 @@ function CommunityContent({ gameId }: { gameId: string }) {
         </div>
       </section>
     </div>
+  )
+}
+
+function CommunityContent({ gameId }: { gameId: string }) {
+  return (
+    <Tabs defaultValue="chat" className="gap-4">
+      <TabsList aria-label="Visões da comunidade" className="w-fit bg-white/10">
+        <TabsTrigger value="chat">Chat</TabsTrigger>
+        <TabsTrigger value="posts">Publicações e avaliações</TabsTrigger>
+      </TabsList>
+      <TabsContent value="chat">
+        <GameChat gameId={gameId} />
+      </TabsContent>
+      <TabsContent value="posts">
+        <CommunityFeedContent gameId={gameId} />
+      </TabsContent>
+    </Tabs>
   )
 }
 
