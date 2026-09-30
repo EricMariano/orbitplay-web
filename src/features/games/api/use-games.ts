@@ -3,7 +3,7 @@ import type { Game } from '@/api-types'
 import { api } from '@/lib/api-client'
 import { gamesKeys } from './games-keys'
 
-/** List games. Returns no data until the real API is running (expected in setup). */
+/** List games from the paginated API. */
 export function useGames() {
   return useQuery({
     queryKey: gamesKeys.list(),

@@ -5,6 +5,38 @@
  */
 
 export interface paths {
+    "/audit-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuditController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HealthController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -14,8 +46,55 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Authenticate and start a session */
-        post: operations["login"];
+        post: operations["AuthController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/studio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_signupStudio"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/player": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_signupPlayer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuthController_checkAvailability"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -31,8 +110,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Exchange the refresh cookie for a fresh access token */
-        post: operations["refresh"];
+        post: operations["AuthController_refresh"];
         delete?: never;
         options?: never;
         head?: never;
@@ -48,8 +126,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** End the current session */
-        post: operations["logout"];
+        post: operations["AuthController_logout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -63,8 +140,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get the authenticated user */
-        get: operations["getCurrentUser"];
+        get: operations["AuthController_me"];
         put?: never;
         post?: never;
         delete?: never;
@@ -82,9 +158,120 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Request a password reset */
-        post: operations["forgotPassword"];
+        post: operations["AuthController_forgotPassword"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orgs/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrgsController_current"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orgs/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrgsController_members"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orgs/members/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OrgsController_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orgs/members/{userId}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["OrgsController_changeRole"];
+        trace?: never;
+    };
+    "/orgs/members/{userId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["OrgsController_updateStatus"];
+        trace?: never;
+    };
+    "/orgs/members/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["OrgsController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -97,10 +284,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List games */
-        get: operations["listGames"];
+        get: operations["GamesController_list"];
         put?: never;
-        post?: never;
+        post: operations["GamesController_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -114,178 +300,103 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a game by id */
-        get: operations["getGame"];
+        get: operations["GamesController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["GamesController_remove"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["GamesController_update"];
         trace?: never;
     };
-    "/test-models": {
+    "/games/{id}/assets/upload-url": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List reusable test models */
-        get: operations["listTestModels"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["GamesController_createAssetUploadUrl"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/opportunities": {
+    "/games/{id}/assets": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List opportunities for the current user */
-        get: operations["listOpportunities"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["GamesController_confirmAsset"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/tests/{id}/report": {
+    "/games/{id}/assets/{assetId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get the report for a test run */
-        get: operations["getTestReport"];
+        get?: never;
         put?: never;
         post?: never;
+        delete: operations["GamesController_removeAsset"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sessions/{id}/recordings/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MediaController_createUploadUrl"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/wallet": {
+    "/sessions/{id}/recordings/complete": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get the current player's wallet balance */
-        get: operations["getWallet"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["MediaController_complete"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/player/profile-stats": {
+    "/sessions/{id}/recordings/{recordingId}/playback-url": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get the current player's profile stats (level, feedback quality, achievements, hours played) */
-        get: operations["getPlayerProfileStats"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tests/continue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the in-progress test the player was last working on, if any */
-        get: operations["getContinueTest"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tests/mine": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the current player's tests with progress */
-        get: operations["listMyTests"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/games/highlighted": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List games highlighted for the current player */
-        get: operations["listHighlightedGames"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/earnings/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the current player's earnings summary */
-        get: operations["getEarningsSummary"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/missions/ranking": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the current player's missions and ranking overview */
-        get: operations["getMissionsRanking"];
+        get: operations["MediaController_playbackUrl"];
         put?: never;
         post?: never;
         delete?: never;
@@ -298,157 +409,254 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * @description Authoritative role, decided by the backend (RN-03). The login tab does NOT set it.
-         * @enum {string}
-         */
-        Role: "owner" | "admin" | "studio" | "player";
-        AuthUser: {
-            /** Format: uuid */
-            userId: string;
+        AuditLogListDto_Output: {
+            data: {
+                id: string;
+                organizationId: string | null;
+                actorUserId: string | null;
+                action: string;
+                entity: string;
+                entityId: string | null;
+                before: {
+                    [key: string]: unknown;
+                } | null;
+                after: {
+                    [key: string]: unknown;
+                } | null;
+                ip: string | null;
+                requestId: string | null;
+                createdAt: string;
+            }[];
+            nextCursor: string[];
+        };
+        LoginDto: {
             /** Format: email */
+            email: string;
+            password: string;
+        };
+        LoginResponseDto_Output: {
+            accessToken: string;
+            user: {
+                id: string;
+                email: string;
+                displayName: string;
+                organizationId: string;
+                /** @enum {string} */
+                role: "owner" | "admin" | "studio" | "player";
+            };
+        };
+        SignupStudioDto: {
+            displayName: string;
+            /** Format: email */
+            email: string;
+            password: string;
+            /** Format: date */
+            birthdate: string;
+            organizationName: string;
+            acceptedTerms?: boolean;
+        };
+        SignupPlayerDto: {
+            displayName: string;
+            /** Format: email */
+            email: string;
+            password: string;
+            /** Format: date */
+            birthdate: string;
+            acceptedTerms?: boolean;
+        };
+        SignupAvailabilityDto_Output: {
+            available: boolean;
+        };
+        MessageResponseDto_Output: {
+            message: string;
+        };
+        AuthUserDto_Output: {
+            id: string;
             email: string;
             displayName: string;
-            /** Format: uuid */
             organizationId: string;
-            role: components["schemas"]["Role"];
+            /** @enum {string} */
+            role: "owner" | "admin" | "studio" | "player";
         };
-        LoginRequest: {
-            /** @description E-mail or access ID */
-            identifier: string;
-            /** Format: password */
-            password: string;
-            /**
-             * @description Changes only the refresh-token TTL
-             * @default false
-             */
-            rememberMe: boolean;
-        };
-        LoginResponse: {
-            accessToken: string;
-            expiresIn: number;
-            user: components["schemas"]["AuthUser"];
-        };
-        ForgotPasswordRequest: {
+        ForgotPasswordDto: {
             /** Format: email */
             email: string;
         };
-        MessageResponse: {
-            message: string;
+        ResetPasswordDto: {
+            token: string;
+            password: string;
         };
-        Game: {
-            id: string;
-            title: string;
-            /** @enum {string} */
-            status: "draft" | "in_review" | "published";
-            coverUrl?: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        TestModel: {
+        OrgDto_Output: {
             id: string;
             name: string;
-            description?: string | null;
+            slug: string;
+            createdAt: string;
         };
-        Opportunity: {
-            id: string;
-            title: string;
-            gameId?: string | null;
-            reward: number;
-            /** @enum {string} */
-            status: "open" | "in_progress" | "closed";
-        };
-        TestReport: {
-            id: string;
-            testId: string;
-            summary: string;
-            score?: number | null;
-            sections?: {
-                title: string;
-                content: string;
+        MemberListDto_Output: {
+            data: {
+                userId: string;
+                email: string;
+                displayName: string;
+                /** @enum {string} */
+                role: "owner" | "admin" | "studio" | "player";
+                /** @enum {string} */
+                status: "active" | "invited" | "disabled";
             }[];
         };
-        /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "TOO_MANY_REQUESTS" | "UNPROCESSABLE_ENTITY" | "INTERNAL_ERROR";
-        ErrorEnvelope: {
-            statusCode: number;
-            code: components["schemas"]["ErrorCode"];
-            message: string;
-            fieldErrors?: {
-                [key: string]: string;
+        InviteMemberDto: {
+            /** Format: email */
+            email: string;
+            displayName?: string;
+            /** @enum {string} */
+            role: "owner" | "admin" | "studio" | "player";
+        };
+        MemberDto_Output: {
+            userId: string;
+            email: string;
+            displayName: string;
+            /** @enum {string} */
+            role: "owner" | "admin" | "studio" | "player";
+            /** @enum {string} */
+            status: "active" | "invited" | "disabled";
+        };
+        ChangeRoleDto: {
+            /** @enum {string} */
+            role: "owner" | "admin" | "studio" | "player";
+            /** @enum {boolean} */
+            confirm: true;
+        };
+        UpdateMemberStatusDto: {
+            /** @enum {string} */
+            status: "active" | "disabled";
+        };
+        GameListDto_Output: {
+            data: {
+                id: string;
+                organizationId: string;
+                title: string;
+                slug: string;
+                description: string | null;
+                genre: string | null;
+                platform: string | null;
+                /** @enum {string} */
+                status: "draft" | "active" | "archived";
+                coverUrl: string | null;
+                bannerUrl: string | null;
+                metrics: {
+                    testsTotal: number;
+                    testsActive: number;
+                    sessionsValid: number;
+                    playersTotal: number;
+                    averageRating: number | null;
+                };
+                createdAt: string;
+                updatedAt: string;
+            }[];
+            nextCursor: string[];
+        };
+        GameDto_Output: {
+            id: string;
+            organizationId: string;
+            title: string;
+            slug: string;
+            description: string[];
+            genre: string[];
+            platform: string[];
+            /** @enum {string} */
+            status: "draft" | "active" | "archived";
+            coverUrl: string[];
+            bannerUrl: string[];
+            metrics: {
+                testsTotal: number;
+                testsActive: number;
+                sessionsValid: number;
+                playersTotal: number;
+                averageRating: number | null;
             };
-            requestId: string;
+            createdAt: string;
+            updatedAt: string;
         };
-        Wallet: {
-            balance: number;
-        };
-        /** @enum {string} */
-        PlayerTier: "bronze" | "silver" | "gold" | "elite";
-        PlayerStats: {
-            tier: components["schemas"]["PlayerTier"];
-            level: number;
-            feedbackQuality: number;
-            achievements: number;
-            hoursPlayed: number;
-        };
-        TestTrackProgress: {
-            label: string;
-            /** @description 0-100 */
-            progress: number;
-            reward: number;
-        };
-        ContinueTest: {
-            gameId: string;
-            gameTitle: string;
-            coverUrl: string | null;
-            playersCount: number;
-            /** Format: date-time */
-            endsAt: string;
-            tracks: components["schemas"]["TestTrackProgress"][];
-        };
-        HighlightedGame: {
-            id: string;
+        CreateGameDto: {
             title: string;
-            coverUrl: string | null;
+            slug?: string;
+            description?: string;
+            genre?: string;
+            platform?: string;
             /** @enum {string} */
-            status: "available" | "unavailable";
-            isNew: boolean;
-            playersCount: number;
-            /** Format: date-time */
-            endsAt: string;
-            openTests: number;
-            maxReward: number;
-            remainingReward: number;
+            status?: "draft" | "active" | "archived";
         };
-        EarningsPoint: {
-            label: string;
-            value: number;
+        UpdateGameDto: {
+            title?: string;
+            slug?: string;
+            description?: string;
+            genre?: string;
+            platform?: string;
+            /** @enum {string} */
+            status?: "draft" | "active" | "archived";
         };
-        EarningsSummary: {
-            last7Days: number;
-            totalAccumulated: number;
-            nextPayoutInDays: number;
-            series: components["schemas"]["EarningsPoint"][];
+        AssetUploadUrlRequestDto: {
+            /** @enum {string} */
+            kind: "cover" | "banner" | "screenshot";
+            /** @enum {string} */
+            contentType: "image/png" | "image/jpeg" | "image/webp";
+            sizeBytes: number;
+            fileName: string;
         };
-        RankingCategory: {
-            label: string;
-            value: number;
+        UploadUrlResponseDto_Output: {
+            uploadUrl: string;
+            storageKey: string;
+            expiresAt: string;
+            maxSizeBytes?: number;
+            uploadId?: string;
         };
-        MissionsRanking: {
-            rank: number;
-            rankDelta: number;
-            pending: number;
-            nextGoal: number;
-            categories: components["schemas"]["RankingCategory"][];
+        ConfirmAssetRequestDto: {
+            /** @enum {string} */
+            kind: "cover" | "banner" | "screenshot";
+            storageKey: string;
         };
-        MyTestProgress: {
+        GameAssetDto_Output: {
             id: string;
-            title: string;
-            /** @description 0-100 */
-            progress: number;
-            reward: number;
             /** @enum {string} */
-            action: "start" | "continue" | "complete";
+            kind: "cover" | "banner" | "screenshot";
+            url: string;
+            contentType: string[];
+            sizeBytes: number | null;
+            createdAt: string;
+        };
+        RecordingUploadUrlRequestDto: {
+            /** @enum {string} */
+            contentType: "video/webm" | "video/mp4" | "audio/webm" | "audio/ogg" | "audio/mp4";
+            sizeBytes: number;
+            partNumber?: number;
+            uploadId?: string;
+            /** @enum {string} */
+            kind?: "screen_recording" | "webcam" | "microphone";
+        };
+        RecordingCompleteRequestDto: {
+            storageKey: string;
+            durationMs: number;
+            sizeBytes?: number;
+            uploadId?: string;
+            parts?: {
+                partNumber: number;
+                etag: string;
+            }[];
+        };
+        RecordingDto_Output: {
+            id: string;
+            sessionId: string;
+            /** @enum {string} */
+            status: "processing" | "ready" | "failed" | "unavailable";
+            durationMs: number | null;
+            createdAt: string;
+        };
+        PlaybackUrlResponseDto_Output: {
+            /** @enum {string} */
+            status: "processing" | "ready" | "failed" | "unavailable";
+            url: string[];
+            expiresAt: string[];
+            durationMs: number | null;
+            thumbnailUrl: string[];
         };
     };
     responses: never;
@@ -459,7 +667,52 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    login: {
+    AuditController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                actorUserId?: string;
+                action?: string;
+                entity?: string;
+                entityId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditLogListDto_Output"];
+                };
+            };
+        };
+    };
+    HealthController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_login: {
         parameters: {
             query?: never;
             header?: never;
@@ -468,123 +721,21 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
+                "application/json": components["schemas"]["LoginDto"];
             };
         };
         responses: {
-            /** @description Session established */
-            200: {
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponse"];
-                };
-            };
-            /** @description Invalid credentials */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Validation error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Too many requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
+                    "application/json": components["schemas"]["LoginResponseDto_Output"];
                 };
             };
         };
     };
-    refresh: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Session rotated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LoginResponse"];
-                };
-            };
-            /** @description Refresh failed */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Session ended and refresh cookie cleared */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-        };
-    };
-    getCurrentUser: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Authenticated user */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthUser"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    forgotPassword: {
+    AuthController_signupStudio: {
         parameters: {
             query?: never;
             header?: never;
@@ -593,31 +744,65 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ForgotPasswordRequest"];
+                "application/json": components["schemas"]["SignupStudioDto"];
             };
         };
         responses: {
-            /** @description Generic response regardless of account existence */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-            /** @description Too many requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
+                    "application/json": components["schemas"]["LoginResponseDto_Output"];
                 };
             };
         };
     };
-    listGames: {
+    AuthController_signupPlayer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupPlayerDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponseDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_checkAvailability: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_refresh: {
         parameters: {
             query?: never;
             header?: never;
@@ -626,18 +811,278 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Games */
-            200: {
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Game"][];
+                    "application/json": components["schemas"]["LoginResponseDto_Output"];
                 };
             };
         };
     };
-    getGame: {
+    AuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthUserDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_current: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_members: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberListDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteMemberDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_changeRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRoleDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMemberStatusDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GamesController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                q?: string;
+                status?: "draft" | "active" | "archived";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameListDto_Output"];
+                };
+            };
+        };
+    };
+    GamesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGameDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameDto_Output"];
+                };
+            };
+        };
+    };
+    GamesController_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -648,65 +1093,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Game */
-            200: {
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Game"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    listTestModels: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Test models */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TestModel"][];
+                    "application/json": components["schemas"]["GameDto_Output"];
                 };
             };
         };
     };
-    listOpportunities: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Opportunities */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Opportunity"][];
-                };
-            };
-        };
-    };
-    getTestReport: {
+    GamesController_remove: {
         parameters: {
             query?: never;
             header?: never;
@@ -717,17 +1114,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Report */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TestReport"];
-                };
-            };
-            /** @description Not found */
-            404: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -735,142 +1122,169 @@ export interface operations {
             };
         };
     };
-    getWallet: {
+    GamesController_update: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGameDto"];
+            };
+        };
         responses: {
-            /** @description Wallet */
-            200: {
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Wallet"];
+                    "application/json": components["schemas"]["GameDto_Output"];
                 };
             };
         };
     };
-    getPlayerProfileStats: {
+    GamesController_createAssetUploadUrl: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetUploadUrlRequestDto"];
+            };
+        };
         responses: {
-            /** @description Player profile stats */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlayerStats"];
+                    "application/json": components["schemas"]["UploadUrlResponseDto_Output"];
                 };
             };
         };
     };
-    getContinueTest: {
+    GamesController_confirmAsset: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmAssetRequestDto"];
+            };
+        };
         responses: {
-            /** @description Continue test, or null when there is none in progress */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ContinueTest"] | null;
+                    "application/json": components["schemas"]["GameAssetDto_Output"];
                 };
             };
         };
     };
-    listMyTests: {
+    GamesController_removeAsset: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+                assetId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description My tests */
-            200: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MediaController_createUploadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordingUploadUrlRequestDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MyTestProgress"][];
+                    "application/json": components["schemas"]["UploadUrlResponseDto_Output"];
                 };
             };
         };
     };
-    listHighlightedGames: {
+    MediaController_complete: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordingCompleteRequestDto"];
+            };
+        };
         responses: {
-            /** @description Highlighted games */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HighlightedGame"][];
+                    "application/json": components["schemas"]["RecordingDto_Output"];
                 };
             };
         };
     };
-    getEarningsSummary: {
+    MediaController_playbackUrl: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Earnings summary */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EarningsSummary"];
-                };
+            path: {
+                id: string;
+                recordingId: string;
             };
-        };
-    };
-    getMissionsRanking: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Missions and ranking */
-            200: {
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MissionsRanking"];
+                    "application/json": components["schemas"]["PlaybackUrlResponseDto_Output"];
                 };
             };
         };

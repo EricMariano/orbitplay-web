@@ -14,7 +14,7 @@ export function useLogin() {
     mutationFn: (credentials: LoginRequest) =>
       api.post<LoginResponse>(
         '/auth/login',
-        { email: credentials.identifier, password: credentials.password },
+        { email: credentials.email, password: credentials.password },
         { auth: false },
       ),
     onSuccess: ({ user, accessToken }) => {

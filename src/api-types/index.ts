@@ -5,27 +5,135 @@ import type { components } from './generated'
 
 export type Schemas = components['schemas']
 
-export type Role = Schemas['Role']
-export type AuthUser = Schemas['AuthUser']
-export type LoginRequest = Schemas['LoginRequest']
-export type LoginResponse = Schemas['LoginResponse']
-export type ForgotPasswordRequest = Schemas['ForgotPasswordRequest']
-export type MessageResponse = Schemas['MessageResponse']
-export type Game = Schemas['Game']
-export type TestModel = Schemas['TestModel']
-export type Opportunity = Schemas['Opportunity']
-export type TestReport = Schemas['TestReport']
+// ---- Tipos reais, vindos do contrato gerado a partir da API ----
+export type AuthUser = Schemas['AuthUserDto_Output']
+export type Role = AuthUser['role']
+export type LoginRequest = Schemas['LoginDto']
+export type LoginResponse = Schemas['LoginResponseDto_Output']
+export type ForgotPasswordRequest = Schemas['ForgotPasswordDto']
+export type MessageResponse = Schemas['MessageResponseDto_Output']
+export type Game = Schemas['GameListDto_Output']['data'][number]
 
-export type ApiError = Schemas['ErrorEnvelope']
+// TestModel: o backend ainda não expõe esse schema no Swagger (funciona em
+// runtime, mas não aparece no OpenAPI gerado). Ver features/tests/types.ts
+// (TestModelView / TestModelOption), que já cobre isso manualmente.
 
-export type Wallet = Schemas['Wallet']
-export type PlayerTier = Schemas['PlayerTier']
-export type PlayerStats = Schemas['PlayerStats']
-export type TestTrackProgress = Schemas['TestTrackProgress']
-export type ContinueTest = Schemas['ContinueTest']
-export type HighlightedGame = Schemas['HighlightedGame']
-export type EarningsPoint = Schemas['EarningsPoint']
-export type EarningsSummary = Schemas['EarningsSummary']
-export type RankingCategory = Schemas['RankingCategory']
-export type MissionsRanking = Schemas['MissionsRanking']
-export type MyTestProgress = Schemas['MyTestProgress']
+// ---------------------------------------------------------------------------
+// ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
+// implementou a fatia vertical de `games` + auth até agora (ver README do
+// orbitplay-api). Estes tipos foram recuperados do contrato provisório
+// antigo (commit 262c190) para não quebrar as telas de Jogador que já
+// dependem deles. Substituir por Schemas['...'] assim que o backend
+// implementar cada endpoint (/wallet, /player/profile-stats, /tests/mine,
+// /games/highlighted, /earnings/summary, /missions/ranking, /opportunities,
+// /tests/{id}/report).
+// ---------------------------------------------------------------------------
+
+export type ApiErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'TOO_MANY_REQUESTS'
+  | 'UNPROCESSABLE_ENTITY'
+  | 'INTERNAL_ERROR'
+
+export type ApiError = {
+  statusCode: number
+  code: ApiErrorCode
+  message: string
+  fieldErrors?: Record<string, string>
+  requestId: string
+}
+
+export type Opportunity = {
+  id: string
+  title: string
+  gameId: string | null
+  reward: number
+  status: 'open' | 'in_progress' | 'closed'
+}
+
+export type TestReport = {
+  id: string
+  testId: string
+  summary: string
+  score: number | null
+  sections?: { title: string; content: string }[]
+}
+
+export type Wallet = {
+  balance: number
+}
+
+export type PlayerTier = 'bronze' | 'silver' | 'gold' | 'elite'
+
+export type PlayerStats = {
+  tier: PlayerTier
+  level: number
+  feedbackQuality: number
+  achievements: number
+  hoursPlayed: number
+}
+
+export type TestTrackProgress = {
+  label: string
+  progress: number
+  reward: number
+}
+
+export type ContinueTest = {
+  gameId: string
+  gameTitle: string
+  coverUrl: string | null
+  playersCount: number
+  endsAt: string
+  tracks: TestTrackProgress[]
+}
+
+export type HighlightedGame = {
+  id: string
+  title: string
+  coverUrl: string | null
+  status: 'available' | 'unavailable'
+  isNew: boolean
+  playersCount: number
+  endsAt: string
+  openTests: number
+  maxReward: number
+  remainingReward: number
+}
+
+export type EarningsPoint = {
+  label: string
+  value: number
+}
+
+export type EarningsSummary = {
+  last7Days: number
+  totalAccumulated: number
+  nextPayoutInDays: number
+  series: EarningsPoint[]
+}
+
+export type RankingCategory = {
+  label: string
+  value: number
+}
+
+export type MissionsRanking = {
+  rank: number
+  rankDelta: number
+  pending: number
+  nextGoal: number
+  categories: RankingCategory[]
+}
+
+export type MyTestProgress = {
+  id: string
+  title: string
+  progress: number
+  reward: number
+  action: 'start' | 'continue' | 'complete'
+}

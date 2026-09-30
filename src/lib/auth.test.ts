@@ -3,7 +3,7 @@ import type { AuthUser } from '@/api-types'
 import { homeRouteForRole, isStudioRole, useAuthStore } from '@/lib/auth'
 
 const studioUser: AuthUser = {
-  userId: '00000000-0000-0000-0000-000000000001',
+  id: '00000000-0000-0000-0000-000000000001',
   displayName: 'Estúdio',
   email: 'studio@example.com',
   organizationId: '00000000-0000-0000-0000-000000000002',

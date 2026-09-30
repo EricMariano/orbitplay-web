@@ -122,7 +122,7 @@ function ChatRoom({
 }) {
   const queryClient = useQueryClient()
   const token = useAuthStore((state) => state.accessToken)
-  const userId = useAuthStore((state) => state.user?.userId)
+  const userId = useAuthStore((state) => state.user?.id)
   const [live, setLive] = useState(false)
   const [presence, setPresence] = useState<ChatPresence | null>(null)
   const [sendError, setSendError] = useState<string | null>(null)

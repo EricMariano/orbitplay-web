@@ -1,0 +1,418 @@
+.session-page {
+  --session-accent: #329af5;
+  --session-surface: #3b3750;
+  --session-muted: #d0cadb;
+  width: 100%;
+  max-width: 1792px;
+  margin: 24px auto 80px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.session-breadcrumb {
+  font-size: 13px;
+  color: var(--session-muted);
+  margin-bottom: 15px;
+}
+.session-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+  border-bottom: 1px solid var(--session-accent);
+  padding-bottom: 15px;
+  margin-bottom: 24px;
+}
+.session-page-heading h1 {
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.session-back {
+  color: var(--session-accent);
+  display: inline-flex;
+  align-items: center;
+}
+.session-back:focus-visible,
+.session-home-link:focus-visible {
+  outline: 2px solid var(--session-accent);
+  outline-offset: 4px;
+}
+.session-loading {
+  display: grid;
+  gap: 28px;
+}
+.session-panel {
+  background: var(--session-surface);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 24px;
+  overflow: hidden;
+}
+.session-overview {
+  padding: 32px;
+  margin-bottom: 28px;
+}
+.session-game {
+  display: grid;
+  grid-template-columns: minmax(340px, 560px) minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+}
+.session-game-image {
+  width: 100%;
+  aspect-ratio: 560 / 230;
+  border-radius: 12px;
+  background: #211d33;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--session-muted);
+  font-size: 15px;
+}
+.session-game-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.session-game-info {
+  align-self: center;
+  min-width: 0;
+}
+.session-game-title-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.session-game-title-row h2 {
+  font-size: 31px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.session-available {
+  padding: 5px 13px;
+  border-radius: 5px;
+  background: #00dc80;
+  color: #073b2b;
+  font-size: 13px;
+  font-weight: 700;
+}
+.session-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: rgba(18, 15, 30, 0.36);
+  font-size: 12px;
+  font-weight: 700;
+}
+.session-test-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 18px;
+}
+.session-game-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 28px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.session-game-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.session-game-stats svg {
+  color: var(--session-accent);
+}
+.session-metric {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 2px !important;
+}
+.session-metric strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 20px;
+}
+.session-metric small {
+  color: var(--session-muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+.session-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.45);
+  margin: 26px 0 28px;
+}
+.session-record-heading {
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.session-record-heading span {
+  font-weight: 600;
+}
+.session-record-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
+  gap: 34px;
+}
+.session-media {
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #151123;
+}
+.session-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #151123;
+}
+.session-media-state {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  color: #bdb5cd;
+  font-size: 16px;
+}
+.session-transcript {
+  min-width: 0;
+  height: auto;
+  max-height: 396px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: rgba(15, 10, 35, 0.32);
+  padding: 19px 24px;
+}
+.session-transcript h3 {
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.session-transcript-state {
+  font-size: 15px;
+  color: var(--session-muted);
+}
+.session-form-panel {
+  padding: 32px;
+}
+.session-form-head {
+  padding-bottom: 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+}
+.session-form-head h2 {
+  font-size: 31px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.session-form-head p {
+  margin-top: 10px;
+  color: var(--session-muted);
+  font-size: 16px;
+}
+.session-question {
+  min-width: 0;
+  padding: 18px 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.32);
+}
+.session-question legend {
+  display: block;
+  width: 100%;
+  padding-top: 18px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.session-required {
+  color: #ff857f;
+}
+.session-question-help {
+  color: var(--session-muted);
+  margin: 9px 0 0;
+  font-size: 14px;
+}
+.session-scale {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 12px;
+}
+.session-scale-option {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.session-scale-option input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.session-scale-option span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: #ddd8e5;
+  font-size: 12px;
+}
+.session-scale-option span::after {
+  content: '';
+  width: 23px;
+  height: 23px;
+  border: 2px solid #d6d3dd;
+  border-radius: 50%;
+  background: #fff;
+}
+.session-rating .session-scale-option span::after {
+  border-radius: 6px;
+}
+.session-scale-option input:checked + span::after {
+  border-color: #76b9ff;
+  background: #399af6;
+  box-shadow: inset 0 0 0 4px #fff;
+}
+.session-scale-option input:focus-visible + span,
+.session-choice input:focus-visible {
+  outline: 2px solid #8dc6ff;
+  outline-offset: 3px;
+}
+.session-choice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-top: 13px;
+}
+.session-boolean-list {
+  gap: 30px;
+}
+.session-choice {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: fit-content;
+  cursor: pointer;
+  color: #f6f5fa;
+  font-size: 16px;
+}
+.session-choice input {
+  width: 21px;
+  height: 21px;
+  accent-color: #399af6;
+  cursor: pointer;
+}
+.session-text-input {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 12px 16px;
+  outline: none;
+  font: inherit;
+  font-size: 16px;
+}
+.session-text-input::placeholder {
+  color: #c8c2d0;
+}
+.session-text-input:focus {
+  border-color: #67b6ff;
+  box-shadow: 0 0 0 2px rgba(50, 154, 245, 0.25);
+}
+.session-text-input[aria-invalid='true'] {
+  border-color: #ff857f;
+}
+.session-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+.session-field-error {
+  margin-top: 12px;
+  color: #ffaaa5;
+  font-size: 14px;
+}
+.session-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  padding-top: 28px;
+}
+.session-submit-error {
+  color: #ffaaa5;
+  font-size: 14px;
+}
+.session-submit {
+  min-width: 117px;
+  height: 48px;
+  gap: 10px;
+  border-radius: 7px;
+  background: linear-gradient(100deg, #2d9df5, #8657ed);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+.session-submit:hover {
+  filter: brightness(1.1);
+}
+.session-empty-form {
+  padding: 42px 0;
+  color: var(--session-muted);
+}
+.session-complete {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 42px 0;
+}
+.session-complete-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #0abf7a;
+}
+.session-complete h3 {
+  font-size: 21px;
+  font-weight: 700;
+}
+.session-complete p {
+  color: var(--session-muted);
+  margin-top: 4px;
+}
+.session-home-link {
+  color: #62b2ff;
+  font-weight: 600;
+  margin-left: auto;
+}
+@media (max-width: 1440px) {
+  .session-overview,
+  .session-form-panel {
+    padding: 26px;
+  }
+  .session-game {
+    grid-template-columns: minmax(320px, 44%) minmax(0, 1fr);
+    gap: 28px;
+  }
+  .session-game-title-row h2,
+  .session-form-head h2 {
+    font-size: 27px;
+  }
+  .session-record-grid {
+    gap: 26px;
+  }
+}

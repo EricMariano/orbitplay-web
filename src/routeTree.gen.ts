@@ -17,7 +17,9 @@ import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as StudioIndexRouteImport } from './routes/studio/index'
 import { Route as PlayerGamesGameIdRouteImport } from './routes/player/games/$gameId'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
+import { Route as PlayerSessionsSessionIdSummaryRouteImport } from './routes/player/sessions/$sessionId/summary'
 import { Route as StudioGamesGameIdChatRouteImport } from './routes/studio/games/$gameId/chat'
+import { Route as StudioGamesGameIdTestsNewRouteImport } from './routes/studio/games/$gameId/tests/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,11 +61,23 @@ const StudioGamesIndexRoute = StudioGamesIndexRouteImport.update({
   path: '/games/',
   getParentRoute: () => StudioRoute,
 } as any)
+const PlayerSessionsSessionIdSummaryRoute =
+  PlayerSessionsSessionIdSummaryRouteImport.update({
+    id: '/sessions/$sessionId/summary',
+    path: '/sessions/$sessionId/summary',
+    getParentRoute: () => PlayerRoute,
+  } as any)
 const StudioGamesGameIdChatRoute = StudioGamesGameIdChatRouteImport.update({
   id: '/games/$gameId/chat',
   path: '/games/$gameId/chat',
   getParentRoute: () => StudioRoute,
 } as any)
+const StudioGamesGameIdTestsNewRoute =
+  StudioGamesGameIdTestsNewRouteImport.update({
+    id: '/games/$gameId/tests/new',
+    path: '/games/$gameId/tests/new',
+    getParentRoute: () => StudioRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -74,7 +88,9 @@ export interface FileRoutesByFullPath {
   '/studio/': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
+  '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
+  '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,7 +99,9 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games': typeof StudioGamesIndexRoute
+  '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
+  '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,7 +113,9 @@ export interface FileRoutesById {
   '/studio/': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
+  '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
+  '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,7 +128,9 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/player/games/$gameId'
     | '/studio/games/'
+    | '/player/sessions/$sessionId/summary'
     | '/studio/games/$gameId/chat'
+    | '/studio/games/$gameId/tests/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,7 +139,9 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/games/$gameId'
     | '/studio/games'
+    | '/player/sessions/$sessionId/summary'
     | '/studio/games/$gameId/chat'
+    | '/studio/games/$gameId/tests/new'
   id:
     | '__root__'
     | '/'
@@ -128,7 +152,9 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/player/games/$gameId'
     | '/studio/games/'
+    | '/player/sessions/$sessionId/summary'
     | '/studio/games/$gameId/chat'
+    | '/studio/games/$gameId/tests/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -196,11 +222,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioGamesIndexRouteImport
       parentRoute: typeof StudioRoute
     }
+    '/player/sessions/$sessionId/summary': {
+      id: '/player/sessions/$sessionId/summary'
+      path: '/sessions/$sessionId/summary'
+      fullPath: '/player/sessions/$sessionId/summary'
+      preLoaderRoute: typeof PlayerSessionsSessionIdSummaryRouteImport
+      parentRoute: typeof PlayerRoute
+    }
     '/studio/games/$gameId/chat': {
       id: '/studio/games/$gameId/chat'
       path: '/games/$gameId/chat'
       fullPath: '/studio/games/$gameId/chat'
       preLoaderRoute: typeof StudioGamesGameIdChatRouteImport
+      parentRoute: typeof StudioRoute
+    }
+    '/studio/games/$gameId/tests/new': {
+      id: '/studio/games/$gameId/tests/new'
+      path: '/games/$gameId/tests/new'
+      fullPath: '/studio/games/$gameId/tests/new'
+      preLoaderRoute: typeof StudioGamesGameIdTestsNewRouteImport
       parentRoute: typeof StudioRoute
     }
   }
@@ -209,11 +249,13 @@ declare module '@tanstack/react-router' {
 interface PlayerRouteChildren {
   PlayerIndexRoute: typeof PlayerIndexRoute
   PlayerGamesGameIdRoute: typeof PlayerGamesGameIdRoute
+  PlayerSessionsSessionIdSummaryRoute: typeof PlayerSessionsSessionIdSummaryRoute
 }
 
 const PlayerRouteChildren: PlayerRouteChildren = {
   PlayerIndexRoute: PlayerIndexRoute,
   PlayerGamesGameIdRoute: PlayerGamesGameIdRoute,
+  PlayerSessionsSessionIdSummaryRoute: PlayerSessionsSessionIdSummaryRoute,
 }
 
 const PlayerRouteWithChildren =
@@ -223,12 +265,14 @@ interface StudioRouteChildren {
   StudioIndexRoute: typeof StudioIndexRoute
   StudioGamesIndexRoute: typeof StudioGamesIndexRoute
   StudioGamesGameIdChatRoute: typeof StudioGamesGameIdChatRoute
+  StudioGamesGameIdTestsNewRoute: typeof StudioGamesGameIdTestsNewRoute
 }
 
 const StudioRouteChildren: StudioRouteChildren = {
   StudioIndexRoute: StudioIndexRoute,
   StudioGamesIndexRoute: StudioGamesIndexRoute,
   StudioGamesGameIdChatRoute: StudioGamesGameIdChatRoute,
+  StudioGamesGameIdTestsNewRoute: StudioGamesGameIdTestsNewRoute,
 }
 
 const StudioRouteWithChildren =
