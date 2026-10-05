@@ -2,10 +2,10 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 /**
- * Blocos da Home Estúdio que dependem de endpoints ainda não expostos pela
- * API (KPIs, telemetria, benchmark, testes recentes). Mantido isolado para
- * não travar o resto da tela, e para trocar por dado real numa única troca
- * de componente quando o backend entregar.
+ * Blocos das Homes (Estúdio e Jogador) que dependem de endpoints ainda não
+ * expostos pela API (KPIs, benchmark, carteira, destaques, meus testes…).
+ * Mantido isolado para não travar o resto da tela, e para trocar por dado
+ * real numa única troca de componente quando o backend entregar.
  */
 export function DashboardPlaceholder({ title }: { title: string }) {
   return (
