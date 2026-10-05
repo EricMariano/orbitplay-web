@@ -25,6 +25,10 @@ export type PlayerProgress = Schemas['PlayerProgressDto_Output']
 export type PlayerMissionList = Schemas['PlayerMissionListDto_Output']
 export type PlayerMission = PlayerMissionList['data'][number]
 export type RankingList = Schemas['RankingListDto_Output']
+export type SessionSummary = Schemas['SessionSummaryDto_Output']
+export type FormQuestion = SessionSummary['form']['questions'][number]
+export type FormResponseRequest = Schemas['FormResponseRequestDto']
+export type FormResponse = Schemas['FormResponseDto_Output']
 
 // ---------------------------------------------------------------------------
 // ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
