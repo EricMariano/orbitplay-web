@@ -16,10 +16,11 @@ export type GameList = Schemas['GameListDto_Output']
 export type Game = GameList['data'][number]
 export type GameStatus = Game['status']
 export type CreateGameRequest = Schemas['CreateGameDto']
-
-// TestModel: o backend ainda não expõe esse schema no Swagger (funciona em
-// runtime, mas não aparece no OpenAPI gerado). Ver features/tests/types.ts
-// (TestModelView / TestModelOption), que já cobre isso manualmente.
+export type TestModelList = Schemas['TestModelListDto_Output']
+export type TestModel = TestModelList['data'][number]
+export type TestModelKey = TestModel['key']
+export type CreateTestRequest = Schemas['CreateTestDto']
+export type Test = Schemas['TestDto_Output']
 
 // ---------------------------------------------------------------------------
 // ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
