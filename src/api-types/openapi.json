@@ -1052,6 +1052,122 @@
           "media"
         ]
       }
+    },
+    "/participations/{id}/result": {
+      "get": {
+        "tags": [
+          "participations"
+        ],
+        "summary": "Resultado da participação",
+        "description": "Tela 19. RN-01/02: XP, nota e conquistas só saem **depois da validação\nda sessão**; enquanto isso, `status: in_review` e os valores vêm nulos.\n\nRN-03: recarregar não duplica XP nem conquista — a transição é única e\ntransacional. Esta rota é leitura pura.\n\nRN-04: o crédito financeiro está deferido. `rewardCents` é informativo e\n`rewardStatus` permanece `pending`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado ou estado de análise",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/form-response": {
+      "post": {
+        "tags": [
+          "participations"
+        ],
+        "summary": "Enviar a avaliação da sessão",
+        "description": "RN-01 (Tela 18): perguntas obrigatórias não respondidas bloqueiam o\nenvio → `422` com erro por campo (`fieldErrors`, chaveado por\n`questionId`).\n\nRN-02: as respostas ficam vinculadas à sessão e ao jogador autenticado.\n\nRN-03: envio duplicado não gera segunda avaliação — com a mesma\n`Idempotency-Key`, devolve a resposta original; sem ela, `409`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormResponseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Avaliação registrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Avaliação já enviada para esta sessão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/summary": {
+      "get": {
+        "tags": [
+          "participations"
+        ],
+        "summary": "Resumo da sessão para o jogador",
+        "description": "Tela 18. Traz o resumo, a prévia da gravação e o formulário a responder.\n\nRN-05 (Tela 18): os dados brutos da sessão são somente leitura para o\njogador.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumo da sessão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
     }
   },
   "info": {
@@ -2214,6 +2330,853 @@
           "thumbnailUrl"
         ],
         "additionalProperties": false
+      },
+      "ParticipationResult": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "in_review",
+              "completed",
+              "rejected"
+            ],
+            "description": "'RN-02 (Tela 19): enquanto `in_review`, os valores abaixo vêm nulos.\nNão exiba número provisório.'\n"
+          },
+          "xpEarned": {
+            "type": "integer",
+            "nullable": true
+          },
+          "level": {
+            "type": "integer",
+            "nullable": true
+          },
+          "feedbackQuality": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "achievementsUnlocked": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Achievement"
+            }
+          },
+          "rewardCents": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Informativo. O crédito em carteira está deferido."
+          },
+          "rewardStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "credited",
+              "rejected"
+            ],
+            "description": "Permanece `pending` enquanto a carteira não existir."
+          },
+          "rejectedReason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "FormResponseRequest": {
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnswerInput"
+            }
+          }
+        }
+      },
+      "FormResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "sessionId",
+          "submittedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "description": "Envelope único de erro da API. Serializado exclusivamente pelo\n`HttpExceptionFilter` — nenhum controller monta erro à mão.\n",
+        "required": [
+          "statusCode",
+          "code",
+          "message",
+          "requestId"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 422
+          },
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "example": "Dados inválidos"
+          },
+          "fieldErrors": {
+            "type": "object",
+            "description": "Mensagem por campo, presente em falhas de validação.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "title": "Título obrigatório"
+            }
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Correlaciona a resposta com os logs estruturados."
+          }
+        }
+      },
+      "Achievement": {
+        "type": "object",
+        "required": [
+          "key",
+          "name"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
+      "AnswerInput": {
+        "type": "object",
+        "required": [
+          "questionId",
+          "value"
+        ],
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "description": "Texto, número, booleano ou lista de ids de opção, conforme o tipo da\npergunta.\n",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "VALIDATION_ERROR",
+          "UNAUTHORIZED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "CONFLICT",
+          "TOO_MANY_REQUESTS",
+          "UNPROCESSABLE_ENTITY",
+          "INTERNAL_ERROR"
+        ]
+      },
+      "SessionSummary": {
+        "type": "object",
+        "required": [
+          "session",
+          "test",
+          "game",
+          "form"
+        ],
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "test": {
+            "$ref": "#/components/schemas/PlayerTest"
+          },
+          "game": {
+            "$ref": "#/components/schemas/Game"
+          },
+          "recording": {
+            "$ref": "#/components/schemas/PlaybackUrlResponse"
+          },
+          "form": {
+            "$ref": "#/components/schemas/TestForm"
+          },
+          "alreadySubmitted": {
+            "type": "boolean",
+            "description": "RN-03 (Tela 18): `true` bloqueia novo envio."
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "required": [
+          "id",
+          "participationId",
+          "status",
+          "startedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "participationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "finishing",
+              "in_review",
+              "valid",
+              "invalid",
+              "abandoned"
+            ]
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "invalidReason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PlayerTest": {
+        "type": "object",
+        "required": [
+          "testId",
+          "gameId",
+          "cta",
+          "disabled"
+        ],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FeedItem"
+          }
+        ],
+        "properties": {
+          "modelKey": {
+            "$ref": "#/components/schemas/TestModelKey"
+          },
+          "participation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Participation"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "Game": {
+        "type": "object",
+        "required": [
+          "id",
+          "organizationId",
+          "title",
+          "slug",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "genre": {
+            "type": "string",
+            "nullable": true
+          },
+          "platform": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/GameStatus"
+          },
+          "coverUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/GameMetrics"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PlaybackUrlResponse": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ProcessingStatus"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "description": "Nulo quando `status` não é `ready`."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
+      "TestForm": {
+        "type": "object",
+        "required": [
+          "testId",
+          "questions"
+        ],
+        "properties": {
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestion"
+            }
+          }
+        }
+      },
+      "FeedItem": {
+        "type": "object",
+        "required": [
+          "testId",
+          "gameId",
+          "title",
+          "cta",
+          "disabled"
+        ],
+        "properties": {
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "genre": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "rewardCents": {
+            "type": "integer",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "spotsLeft": {
+            "type": "integer",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          "cta": {
+            "$ref": "#/components/schemas/TestCta"
+          },
+          "disabled": {
+            "type": "boolean",
+            "description": "'RN-03 (Tela 14): incompatível ou indisponível aparece desabilitado\ncom motivo, em vez de sumir sem explicação.'\n"
+          },
+          "disabledReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "promoted": {
+            "type": "boolean",
+            "default": false,
+            "description": "Item pago. Sempre `false` nesta fase. Quando o impulsionamento\nvoltar, a UI **precisa** rotular o item — publicidade não\nidentificada é questão regulatória.\n"
+          }
+        }
+      },
+      "TestModelKey": {
+        "type": "string",
+        "enum": [
+          "free_exploration_telemetry",
+          "free_exploration",
+          "ab_test",
+          "ab_test_images"
+        ]
+      },
+      "Participation": {
+        "type": "object",
+        "required": [
+          "id",
+          "testId",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ParticipationStatus"
+          },
+          "currentSessionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "resumePoint": {
+            "type": "string",
+            "nullable": true,
+            "description": "RN-02 (Tela 13): ponto de retomada permitido pelo modelo."
+          },
+          "consentsGranted": {
+            "type": "boolean"
+          },
+          "build": {
+            "$ref": "#/components/schemas/Build"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "GameStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "active",
+          "archived"
+        ]
+      },
+      "GameMetrics": {
+        "type": "object",
+        "description": "RN-03 (Tela 03): agregados a partir dos testes do jogo, calculados no\nbackend.\n",
+        "properties": {
+          "testsTotal": {
+            "type": "integer"
+          },
+          "testsActive": {
+            "type": "integer"
+          },
+          "sessionsValid": {
+            "type": "integer"
+          },
+          "playersTotal": {
+            "type": "integer"
+          },
+          "averageRating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          }
+        }
+      },
+      "ProcessingStatus": {
+        "type": "string",
+        "description": "Estado de um recurso que depende de job assíncrono. Enquanto\n`processing`, a UI mostra o estado — nunca um valor provisório\ndisfarçado de definitivo.\n",
+        "enum": [
+          "processing",
+          "ready",
+          "failed",
+          "unavailable"
+        ]
+      },
+      "FormQuestion": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "prompt",
+          "required",
+          "position"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestionType"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "helpText": {
+            "type": "string",
+            "nullable": true
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer",
+            "description": "RN-03 (Tela 07): a ordem persistida é esta, não a do array."
+          },
+          "options": {
+            "type": "array",
+            "description": "'RN-02: obrigatório para `single_choice` e `multiple_choice`, com no\nmínimo duas opções.'\n",
+            "items": {
+              "$ref": "#/components/schemas/FormOption"
+            }
+          },
+          "scaleMin": {
+            "type": "integer",
+            "nullable": true
+          },
+          "scaleMax": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "Platform": {
+        "type": "string",
+        "enum": [
+          "windows",
+          "macos",
+          "linux",
+          "android",
+          "ios",
+          "web"
+        ]
+      },
+      "TestCta": {
+        "type": "string",
+        "description": "RN-01 (Tela 15): calculado no backend, nunca inferido na UI.",
+        "enum": [
+          "start",
+          "continue",
+          "completed",
+          "in_review",
+          "downloading",
+          "unavailable"
+        ]
+      },
+      "ParticipationStatus": {
+        "type": "string",
+        "description": "Máquina de estados da participação, alinhada às telas do fluxo do\njogador: `tutorial` (Tela 16), `playing` (Tela 17), `form_pending`\n(Tela 18) e `in_review` (Tela 19).\n",
+        "enum": [
+          "reserved",
+          "tutorial",
+          "downloading",
+          "ready",
+          "playing",
+          "form_pending",
+          "in_review",
+          "completed",
+          "rejected",
+          "abandoned"
+        ]
+      },
+      "Build": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "validationSteps"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "uploading",
+              "processing",
+              "validated",
+              "failed"
+            ]
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "checksum": {
+            "type": "string",
+            "nullable": true
+          },
+          "validationSteps": {
+            "type": "array",
+            "description": "Lista de etapas, **não** um booleano. A leitura do manifesto do\nOrbit Plug-in entra aqui como mais uma etapa quando voltar ao\nescopo, sem alterar o formato.\n",
+            "items": {
+              "$ref": "#/components/schemas/ValidationStep"
+            }
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "RN-05 (Tela 08): diz o que corrigir para tentar de novo."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "QuestionType": {
+        "type": "string",
+        "enum": [
+          "short_text",
+          "long_text",
+          "single_choice",
+          "multiple_choice",
+          "scale",
+          "rating",
+          "boolean"
+        ]
+      },
+      "FormOption": {
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      },
+      "ValidationStep": {
+        "type": "object",
+        "required": [
+          "key",
+          "status"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "checksum",
+              "malware_scan",
+              "metadata",
+              "platform_support"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "passed",
+              "failed",
+              "skipped"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    },
+    "parameters": {
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "description": "Chave única por tentativa, gerada pelo cliente (UUID). Repetir a chave\n**reproduz a resposta original** em vez de executar a operação de novo.\n",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Recurso inexistente — ou pertencente a outra organização. As duas\nsituações respondem igual, de propósito, para não vazar existência.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Dados inválidos, com erro por campo em `fieldErrors`",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
       }
     }
   }

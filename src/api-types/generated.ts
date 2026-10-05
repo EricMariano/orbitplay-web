@@ -405,6 +405,169 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/participations/{id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resultado da participação
+         * @description Tela 19. RN-01/02: XP, nota e conquistas só saem **depois da validação
+         *     da sessão**; enquanto isso, `status: in_review` e os valores vêm nulos.
+         *
+         *     RN-03: recarregar não duplica XP nem conquista — a transição é única e
+         *     transacional. Esta rota é leitura pura.
+         *
+         *     RN-04: o crédito financeiro está deferido. `rewardCents` é informativo e
+         *     `rewardStatus` permanece `pending`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: components["parameters"]["Id"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Resultado ou estado de análise */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ParticipationResult"];
+                    };
+                };
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sessions/{id}/form-response": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enviar a avaliação da sessão
+         * @description RN-01 (Tela 18): perguntas obrigatórias não respondidas bloqueiam o
+         *     envio → `422` com erro por campo (`fieldErrors`, chaveado por
+         *     `questionId`).
+         *
+         *     RN-02: as respostas ficam vinculadas à sessão e ao jogador autenticado.
+         *
+         *     RN-03: envio duplicado não gera segunda avaliação — com a mesma
+         *     `Idempotency-Key`, devolve a resposta original; sem ela, `409`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /**
+                     * @description Chave única por tentativa, gerada pelo cliente (UUID). Repetir a chave
+                     *     **reproduz a resposta original** em vez de executar a operação de novo.
+                     */
+                    "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                };
+                path: {
+                    id: components["parameters"]["Id"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["FormResponseRequest"];
+                };
+            };
+            responses: {
+                /** @description Avaliação registrada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FormResponse"];
+                    };
+                };
+                404: components["responses"]["NotFound"];
+                /** @description Avaliação já enviada para esta sessão */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                422: components["responses"]["ValidationError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sessions/{id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumo da sessão para o jogador
+         * @description Tela 18. Traz o resumo, a prévia da gravação e o formulário a responder.
+         *
+         *     RN-05 (Tela 18): os dados brutos da sessão são somente leitura para o
+         *     jogador.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: components["parameters"]["Id"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Resumo da sessão */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SessionSummary"];
+                    };
+                };
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -658,9 +821,320 @@ export interface components {
             durationMs: number | null;
             thumbnailUrl: string[];
         };
+        ParticipationResult: {
+            /**
+             * @description 'RN-02 (Tela 19): enquanto `in_review`, os valores abaixo vêm nulos.
+             *     Não exiba número provisório.'
+             * @enum {string}
+             */
+            status: "in_review" | "completed" | "rejected";
+            xpEarned?: number | null;
+            level?: number | null;
+            /** Format: float */
+            feedbackQuality?: number | null;
+            /** Format: float */
+            rating?: number | null;
+            achievementsUnlocked?: components["schemas"]["Achievement"][];
+            /** @description Informativo. O crédito em carteira está deferido. */
+            rewardCents?: number | null;
+            /**
+             * @description Permanece `pending` enquanto a carteira não existir.
+             * @enum {string}
+             */
+            rewardStatus?: "pending" | "credited" | "rejected";
+            rejectedReason?: string | null;
+        };
+        FormResponseRequest: {
+            answers: components["schemas"]["AnswerInput"][];
+        };
+        FormResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            sessionId: string;
+            /** Format: date-time */
+            submittedAt: string;
+        };
+        /**
+         * @description Envelope único de erro da API. Serializado exclusivamente pelo
+         *     `HttpExceptionFilter` — nenhum controller monta erro à mão.
+         */
+        ErrorEnvelope: {
+            /** @example 422 */
+            statusCode: number;
+            code: components["schemas"]["ErrorCode"];
+            /** @example Dados inválidos */
+            message: string;
+            /**
+             * @description Mensagem por campo, presente em falhas de validação.
+             * @example {
+             *       "title": "Título obrigatório"
+             *     }
+             */
+            fieldErrors?: {
+                [key: string]: string;
+            };
+            /** @description Correlaciona a resposta com os logs estruturados. */
+            requestId: string;
+        };
+        Achievement: {
+            key: string;
+            name: string;
+            description?: string;
+            /** Format: uri */
+            iconUrl?: string | null;
+        };
+        AnswerInput: {
+            /** Format: uuid */
+            questionId: string;
+            /**
+             * @description Texto, número, booleano ou lista de ids de opção, conforme o tipo da
+             *     pergunta.
+             */
+            value: string | number | boolean | string[];
+        };
+        /** @enum {string} */
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "TOO_MANY_REQUESTS" | "UNPROCESSABLE_ENTITY" | "INTERNAL_ERROR";
+        SessionSummary: {
+            session: components["schemas"]["Session"];
+            test: components["schemas"]["PlayerTest"];
+            game: components["schemas"]["Game"];
+            recording?: components["schemas"]["PlaybackUrlResponse"];
+            form: components["schemas"]["TestForm"];
+            /** @description RN-03 (Tela 18): `true` bloqueia novo envio. */
+            alreadySubmitted?: boolean;
+        };
+        Session: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            participationId: string;
+            /** Format: uuid */
+            testId?: string;
+            /** @enum {string} */
+            status: "active" | "finishing" | "in_review" | "valid" | "invalid" | "abandoned";
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            endedAt?: string | null;
+            durationMs?: number | null;
+            invalidReason?: string | null;
+        };
+        PlayerTest: {
+            modelKey?: components["schemas"]["TestModelKey"];
+            participation?: components["schemas"]["Participation"] | null;
+        } & WithRequired<components["schemas"]["FeedItem"], "testId" | "gameId" | "cta" | "disabled">;
+        Game: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            organizationId: string;
+            title: string;
+            slug: string;
+            description?: string | null;
+            genre?: string | null;
+            platform?: string | null;
+            status: components["schemas"]["GameStatus"];
+            /** Format: uri */
+            coverUrl?: string | null;
+            /** Format: uri */
+            bannerUrl?: string | null;
+            metrics?: components["schemas"]["GameMetrics"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PlaybackUrlResponse: {
+            status: components["schemas"]["ProcessingStatus"];
+            /**
+             * Format: uri
+             * @description Nulo quando `status` não é `ready`.
+             */
+            url?: string | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
+            durationMs?: number | null;
+            /** Format: uri */
+            thumbnailUrl?: string | null;
+        };
+        TestForm: {
+            /** Format: uuid */
+            testId: string;
+            questions: components["schemas"]["FormQuestion"][];
+        };
+        FeedItem: {
+            /** Format: uuid */
+            testId: string;
+            /** Format: uuid */
+            gameId: string;
+            title: string;
+            genre?: string | null;
+            /** Format: uri */
+            coverUrl?: string | null;
+            rewardCents?: number | null;
+            durationMinutes?: number | null;
+            spotsLeft?: number | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
+            platforms?: components["schemas"]["Platform"][];
+            cta: components["schemas"]["TestCta"];
+            /**
+             * @description 'RN-03 (Tela 14): incompatível ou indisponível aparece desabilitado
+             *     com motivo, em vez de sumir sem explicação.'
+             */
+            disabled: boolean;
+            disabledReason?: string | null;
+            /**
+             * @description Item pago. Sempre `false` nesta fase. Quando o impulsionamento
+             *     voltar, a UI **precisa** rotular o item — publicidade não
+             *     identificada é questão regulatória.
+             * @default false
+             */
+            promoted: boolean;
+        };
+        /** @enum {string} */
+        TestModelKey: "free_exploration_telemetry" | "free_exploration" | "ab_test" | "ab_test_images";
+        Participation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            testId: string;
+            /** Format: uuid */
+            gameId?: string;
+            status: components["schemas"]["ParticipationStatus"];
+            /** Format: uuid */
+            currentSessionId?: string | null;
+            /** @description RN-02 (Tela 13): ponto de retomada permitido pelo modelo. */
+            resumePoint?: string | null;
+            consentsGranted?: boolean;
+            build?: components["schemas"]["Build"];
+            /** Format: date-time */
+            startedAt?: string | null;
+            /** Format: date-time */
+            completedAt?: string | null;
+        };
+        /** @enum {string} */
+        GameStatus: "draft" | "active" | "archived";
+        /**
+         * @description RN-03 (Tela 03): agregados a partir dos testes do jogo, calculados no
+         *     backend.
+         */
+        GameMetrics: {
+            testsTotal?: number;
+            testsActive?: number;
+            sessionsValid?: number;
+            playersTotal?: number;
+            /** Format: float */
+            averageRating?: number | null;
+        };
+        /**
+         * @description Estado de um recurso que depende de job assíncrono. Enquanto
+         *     `processing`, a UI mostra o estado — nunca um valor provisório
+         *     disfarçado de definitivo.
+         * @enum {string}
+         */
+        ProcessingStatus: "processing" | "ready" | "failed" | "unavailable";
+        FormQuestion: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["QuestionType"];
+            prompt: string;
+            helpText?: string | null;
+            required: boolean;
+            /** @description RN-03 (Tela 07): a ordem persistida é esta, não a do array. */
+            position: number;
+            /**
+             * @description 'RN-02: obrigatório para `single_choice` e `multiple_choice`, com no
+             *     mínimo duas opções.'
+             */
+            options?: components["schemas"]["FormOption"][];
+            scaleMin?: number | null;
+            scaleMax?: number | null;
+        };
+        /** @enum {string} */
+        Platform: "windows" | "macos" | "linux" | "android" | "ios" | "web";
+        /**
+         * @description RN-01 (Tela 15): calculado no backend, nunca inferido na UI.
+         * @enum {string}
+         */
+        TestCta: "start" | "continue" | "completed" | "in_review" | "downloading" | "unavailable";
+        /**
+         * @description Máquina de estados da participação, alinhada às telas do fluxo do
+         *     jogador: `tutorial` (Tela 16), `playing` (Tela 17), `form_pending`
+         *     (Tela 18) e `in_review` (Tela 19).
+         * @enum {string}
+         */
+        ParticipationStatus: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+        Build: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            testId?: string;
+            /** @enum {string} */
+            status: "uploading" | "processing" | "validated" | "failed";
+            platform?: components["schemas"]["Platform"];
+            version?: string | null;
+            sizeBytes?: number | null;
+            checksum?: string | null;
+            /**
+             * @description Lista de etapas, **não** um booleano. A leitura do manifesto do
+             *     Orbit Plug-in entra aqui como mais uma etapa quando voltar ao
+             *     escopo, sem alterar o formato.
+             */
+            validationSteps: components["schemas"]["ValidationStep"][];
+            /** @description RN-05 (Tela 08): diz o que corrigir para tentar de novo. */
+            failureReason?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        /** @enum {string} */
+        QuestionType: "short_text" | "long_text" | "single_choice" | "multiple_choice" | "scale" | "rating" | "boolean";
+        FormOption: {
+            /** Format: uuid */
+            id?: string;
+            label: string;
+            position?: number;
+        };
+        ValidationStep: {
+            /** @enum {string} */
+            key: "checksum" | "malware_scan" | "metadata" | "platform_support";
+            /** @enum {string} */
+            status: "pending" | "running" | "passed" | "failed" | "skipped";
+            message?: string | null;
+        };
     };
-    responses: never;
-    parameters: never;
+    responses: {
+        /**
+         * @description Recurso inexistente — ou pertencente a outra organização. As duas
+         *     situações respondem igual, de propósito, para não vazar existência.
+         */
+        NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Dados inválidos, com erro por campo em `fieldErrors` */
+        ValidationError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+    };
+    parameters: {
+        Id: string;
+        /**
+         * @description Chave única por tentativa, gerada pelo cliente (UUID). Repetir a chave
+         *     **reproduz a resposta original** em vez de executar a operação de novo.
+         */
+        IdempotencyKey: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -1290,3 +1764,6 @@ export interface operations {
         };
     };
 }
+type WithRequired<T, K extends keyof T> = T & {
+    [P in K]-?: T[P];
+};
