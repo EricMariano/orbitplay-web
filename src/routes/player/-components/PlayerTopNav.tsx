@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useLogout } from '@/features/auth/api/use-logout'
 import { useAuthStore } from '@/lib/auth'
 
 type NavEntry = {
@@ -28,12 +29,14 @@ const navEntries: NavEntry[] = [
 /** Top navbar for the player area — replaces the sidebar shell used by /studio. */
 export function PlayerTopNav() {
   const user = useAuthStore((s) => s.user)
-  const clearSession = useAuthStore((s) => s.clearSession)
+  const logout = useLogout()
   const navigate = useNavigate()
 
-  function logout() {
-    clearSession()
-    void navigate({ to: '/login' })
+  function handleLogout() {
+    // Revoga o refresh cookie na API; sem isso o reload restaura a sessão.
+    logout.mutate(undefined, {
+      onSettled: () => void navigate({ to: '/login' }),
+    })
   }
 
   return (
@@ -93,9 +96,9 @@ export function PlayerTopNav() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={logout}>
+            <DropdownMenuItem onSelect={handleLogout} disabled={logout.isPending}>
               <Icon name="logout" />
-              Sair
+              {logout.isPending ? 'Saindo...' : 'Sair'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
