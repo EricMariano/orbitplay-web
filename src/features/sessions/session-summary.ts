@@ -1,57 +1,14 @@
+import type { Schemas } from '@/api-types'
 import { api } from '@/lib/api-client'
 
-export type QuestionType =
-  'short_text' | 'long_text' | 'single_choice' | 'multiple_choice' | 'scale' | 'rating' | 'boolean'
-
-export type FormQuestion = {
-  id: string
-  type: QuestionType
-  prompt: string
-  helpText?: string | null
-  required: boolean
-  position: number
-  options?: { id?: string; label: string; position?: number }[]
-  scaleMin?: number | null
-  scaleMax?: number | null
-}
-
-export type SessionSummary = {
-  session: {
-    id: string
-    participationId: string
-    testId?: string
-    status: string
-    startedAt: string
-    endedAt?: string | null
-    durationMs?: number | null
-  }
-  test: {
-    testId: string
-    gameId: string
-    title: string
-    disabled: boolean
-    rewardCents?: number | null
-    durationMinutes?: number | null
-    expiresAt?: string | null
-  }
-  game: {
-    id: string
-    title: string
-    coverUrl?: string | null
-    bannerUrl?: string | null
-  }
-  recording?: {
-    status: 'processing' | 'ready' | 'failed' | 'unavailable'
-    url?: string | null
-    thumbnailUrl?: string | null
-    expiresAt?: string | null
-  }
-  form: { testId: string; questions: FormQuestion[] }
-  alreadySubmitted?: boolean
-}
+export type QuestionType = Schemas['FormQuestion']['type']
+export type FormQuestion = Schemas['FormQuestion']
+export type SessionSummary = Schemas['SessionSummary']
 
 export type AnswerValue = string | number | boolean | string[]
 export type Answers = Record<string, AnswerValue | undefined>
+export type FormResponse = Schemas['FormResponse']
+export type ParticipationResult = Schemas['ParticipationResult']
 
 export function orderedQuestions(questions: FormQuestion[]) {
   return [...questions].sort((a, b) => a.position - b.position)
@@ -127,7 +84,7 @@ export function getSessionSummary(sessionId: string) {
 }
 
 export function submitSessionForm(sessionId: string, answers: Answers, idempotencyKey: string) {
-  return api.post<{ id: string; sessionId: string; submittedAt: string }>(
+  return api.post<FormResponse>(
     `/sessions/${encodeURIComponent(sessionId)}/form-response`,
     {
       answers: Object.entries(answers)

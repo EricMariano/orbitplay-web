@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, createFileRoute, useBlocker } from '@tanstack/react-router'
+import { Link, createFileRoute, useBlocker, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { ArrowLeft, Check, Clock3, Gift, Play, Send } from 'lucide-react'
@@ -84,6 +84,7 @@ function SessionSummaryPage() {
 
 function SessionContent({ sessionId, summary }: { sessionId: string; summary: SessionSummary }) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const questions = useMemo(
     () => orderedQuestions(summary.form.questions),
     [summary.form.questions],
@@ -94,7 +95,6 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
   const answers = useWatch({ control, name: 'answers' }) ?? {}
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
   const [alreadySubmitted, setAlreadySubmitted] = useState(Boolean(summary.alreadySubmitted))
   const pendingKey = useRef<string | null>(null)
   const submitting = useRef(false)
@@ -102,7 +102,7 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
     mutationFn: ({ key, values }: { key: string; values: Answers }) =>
       submitSessionForm(sessionId, values, key),
   })
-  const hasDraft = formState.isDirty && !submitted && !alreadySubmitted
+  const hasDraft = formState.isDirty && !alreadySubmitted
   const blocker = useBlocker({
     shouldBlockFn: () => hasDraft,
     enableBeforeUnload: hasDraft,
@@ -123,7 +123,7 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     void handleSubmit(async ({ answers: currentAnswers }) => {
-      if (submitting.current || submitted || alreadySubmitted) return
+      if (submitting.current || alreadySubmitted) return
       const validationErrors = validateAnswers(questions, currentAnswers)
       if (Object.keys(validationErrors).length) {
         setErrors(validationErrors)
@@ -135,8 +135,11 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
       pendingKey.current ??= crypto.randomUUID()
       try {
         await mutation.mutateAsync({ key: pendingKey.current, values: currentAnswers })
-        setSubmitted(true)
         void queryClient.invalidateQueries({ queryKey: ['session-summary', sessionId] })
+        await navigate({
+          to: '/player/participations/$participationId/result',
+          params: { participationId: summary.session.participationId },
+        })
       } catch (error) {
         if (error instanceof ApiError && error.status === 422 && error.fieldErrors) {
           setErrors(error.fieldErrors)
@@ -145,6 +148,10 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
           setAlreadySubmitted(true)
           setGeneralError(null)
           void queryClient.invalidateQueries({ queryKey: ['session-summary', sessionId] })
+          await navigate({
+            to: '/player/participations/$participationId/result',
+            params: { participationId: summary.session.participationId },
+          })
         } else if (error instanceof ApiError && error.status === 403) {
           setGeneralError('Você não tem permissão para enviar esta avaliação.')
         } else if (error instanceof ApiError && error.status === 404) {
@@ -168,17 +175,21 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
           <h2 id="session-form-title">Sua avaliação</h2>
           <p>Conte como foi sua experiência neste teste.</p>
         </div>
-        {submitted || alreadySubmitted ? (
+        {alreadySubmitted ? (
           <div className="session-complete" role="status">
             <span className="session-complete-icon">
               <Check size={26} />
             </span>
             <div>
-              <h3>{submitted ? 'Avaliação enviada' : 'Avaliação já enviada'}</h3>
-              <p>Esta sessão não aceita um novo envio.</p>
+              <h3>Avaliação enviada</h3>
+              <p>Esta sessão não aceita um novo envio. Consulte o resultado da participação.</p>
             </div>
-            <Link to="/player" className="session-home-link">
-              Voltar para Home
+            <Link
+              to="/player/participations/$participationId/result"
+              params={{ participationId: summary.session.participationId }}
+              className="session-home-link"
+            >
+              Acompanhar resultado
             </Link>
           </div>
         ) : (
