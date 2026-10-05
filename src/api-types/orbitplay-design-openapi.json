@@ -1,0 +1,6347 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OrbitPlay API — contrato de design",
+    "version": "0.2.0-design",
+    "description": "Contrato **de design** do backend do OrbitPlay, derivado de\n`docs/BACKEND-SPEC.md` (handoff v1.6). Serve para documentar e começar o\ndesenvolvimento antes da implementação existir.\n\n## Relação com `openapi.json`\n\n`openapi.json` na raiz do repositório é **gerado** a partir dos decorators\ndo Nest (`pnpm openapi:generate`) e descreve apenas o que já está\nimplementado. Este arquivo descreve o **alvo**. Conforme cada endpoint é\nimplementado, ele passa a existir no `openapi.json` gerado — que continua\nsendo a fonte da verdade do que roda. Este YAML nunca é gerado; é editado à\nmão e vale como especificação.\n\nEndpoints já implementados estão marcados com `x-status: implemented`; os\ndemais, com `x-status: todo`.\n\n## Escopo\n\nEsta fase cobre a plataforma. Estão **fora**: cobrança do estúdio, carteira\ne saque do jogador, impulsionamento do feed, Orbit Plug-in e ingestão de\ntelemetria, insights de IA e transcrição (ASR). Ver seção 10 da\nespecificação.\n\n## Convenções\n\n- **Tenancy:** toda rota autenticada é escopada pela organização do token.\n  Recurso de outra organização responde `404`, nunca `403`, para não vazar\n  existência.\n- **Papel:** vem da membership ativa carregada no access token, nunca do\n  corpo da requisição.\n- **Erros:** envelope único `ErrorEnvelope` em toda falha.\n- **Paginação:** `?limit=&cursor=` devolvendo `{ data, nextCursor }`, com\n  cursor opaco sobre UUIDv7. **Exceção:** o feed do jogador usa cursor de\n  ranking congelado (ver `GET /player/feed`).\n- **Idempotência:** `Idempotency-Key` obrigatório onde indicado; repetir a\n  chave reproduz a resposta original em vez de executar de novo.\n- **Valores monetários:** inteiros em centavos, com `currency` ISO-4217.\n- **Timestamps:** ISO-8601 UTC. Tempos dentro de uma sessão usam `tMs`,\n  milissegundos desde o início da sessão.\n",
+    "contact": {
+      "name": "OrbitPlay"
+    },
+    "license": {
+      "name": "UNLICENSED"
+    }
+  },
+  "servers": [
+    {
+      "description": "SwaggerHub API Auto Mocking",
+      "url": "https://virtserver.swaggerhub.com/ebm-210/orbitplay/0.2.0-design"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Desenvolvimento local"
+    }
+  ],
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "health",
+      "description": "Saúde e observabilidade (M15)"
+    },
+    {
+      "name": "auth",
+      "description": "Autenticação e onboarding (M1)"
+    },
+    {
+      "name": "orgs",
+      "description": "Organizações, membros e central de usuários (M2)"
+    },
+    {
+      "name": "games",
+      "description": "Jogos do estúdio (M3)"
+    },
+    {
+      "name": "test-models",
+      "description": "Catálogo de modelos de teste (M4)"
+    },
+    {
+      "name": "tests",
+      "description": "Wizard de criação de teste (M5)"
+    },
+    {
+      "name": "builds",
+      "description": "Builds (M6)"
+    },
+    {
+      "name": "player-feed",
+      "description": "Feed do jogador e elegibilidade (M7)"
+    },
+    {
+      "name": "participations",
+      "description": "Participações e sessões (M8)"
+    },
+    {
+      "name": "media",
+      "description": "Mídia e gravação (M9)"
+    },
+    {
+      "name": "reports",
+      "description": "Relatórios (M10)"
+    },
+    {
+      "name": "dashboard",
+      "description": "Dashboard do estúdio (M11)"
+    },
+    {
+      "name": "gamification",
+      "description": "XP, conquistas, missões e ranking (M12)"
+    },
+    {
+      "name": "community",
+      "description": "Comunidade e avaliações (M13)"
+    },
+    {
+      "name": "notifications",
+      "description": "Notificações (M14)"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["health"],
+        "summary": "Estado da API e das dependências",
+        "description": "Verifica Postgres, Redis e object storage. Responde `503` quando alguma\ndependência está fora. A fila (BullMQ) ainda não entra na checagem.\n",
+        "security": [],
+        "x-status": "implemented",
+        "responses": {
+          "200": {
+            "description": "Todas as dependências disponíveis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReport"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Alguma dependência indisponível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["health"],
+        "summary": "Prontidão para receber tráfego",
+        "description": "Diferente de `/health`: além de Postgres, Redis e storage, inclui a fila\n(BullMQ). Serve como readiness probe do deploy — uma instância que não\nconsegue enfileirar job não deve receber tráfego.\n",
+        "security": [],
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Pronto para receber tráfego",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReport"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Ainda não pronto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Autenticar e abrir sessão",
+        "description": "RN-02 (Tela 01): credencial inválida devolve erro **genérico** — a\nresposta não diferencia usuário inexistente de senha errada, e o tempo\nde resposta é equivalente nos dois casos.\n\nRN-03: a aba escolhida na UI não define o papel. A sessão é criada com o\npapel real da membership ativa.\n\nRN-04: `rememberMe` altera apenas o TTL do refresh token.\n\nO access token volta no corpo; o refresh token é setado como cookie\n`httpOnly`.\n",
+        "security": [],
+        "x-status": "implemented",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sessão criada",
+            "headers": {
+              "Set-Cookie": {
+                "description": "refresh_token (httpOnly, SameSite=Lax)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Rotacionar a sessão",
+        "description": "Lê o refresh token do cookie, rotaciona e emite novo par. Reuso de um\ntoken já rotacionado é tratado como comprometimento: a família de tokens\ninteira é revogada.\n",
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "x-status": "implemented",
+        "responses": {
+          "200": {
+            "description": "Sessão rotacionada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Encerrar a sessão",
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "x-status": "implemented",
+        "responses": {
+          "200": {
+            "description": "Sessão encerrada e cookie limpo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Usuário autenticado",
+        "x-status": "implemented",
+        "responses": {
+          "200": {
+            "description": "Principal da requisição",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUser"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/password/forgot": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Solicitar redefinição de senha",
+        "description": "RN-05 (Tela 01). Resposta **sempre** genérica, exista ou não a conta.\nGera token de uso único com expiração curta e dispara o e-mail.\n\nHoje implementado como stub: envia e-mail sem gerar token. Concluir\njunto com `POST /auth/password/reset`.\n",
+        "security": [],
+        "x-status": "partial",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resposta genérica, independente de a conta existir",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/auth/password/reset": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Redefinir a senha com token",
+        "description": "Consome o token de uso único. Ao concluir, revoga todas as sessões\nativas do usuário. Token inválido, expirado ou já usado → `422`.\n",
+        "security": [],
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha redefinida e sessões revogadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/auth/signup/studio": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Criar conta de estúdio",
+        "description": "Cria usuário, organização e membership `owner` em uma única transação\n(decisão `DECISIONS.md` §1.1). Idade mínima 18 anos (§1.4).\n",
+        "security": [],
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupStudioRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conta, organização e sessão criadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "E-mail já cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/auth/signup/player": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Criar conta de jogador",
+        "description": "Cria usuário e membership `player`. Idade mínima 18 anos.",
+        "security": [],
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupPlayerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conta e sessão criadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "E-mail já cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/auth/signup/availability": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Checar disponibilidade de e-mail",
+        "description": "Usado para feedback em formulário. Resposta propositalmente pobre e com\nrate limit agressivo, para não virar enumeração de contas.\n",
+        "security": [],
+        "x-status": "todo",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disponibilidade do e-mail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["available"],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/orgs/current": {
+      "get": {
+        "tags": ["orgs"],
+        "summary": "Organização da sessão",
+        "x-status": "implemented",
+        "responses": {
+          "200": {
+            "description": "Organização atual",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Org"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["orgs"],
+        "summary": "Atualizar dados da organização",
+        "description": "Papéis: `owner`, `admin`.",
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrgRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organização atualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Org"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/orgs/members": {
+      "get": {
+        "tags": ["orgs"],
+        "summary": "Listar membros",
+        "description": "Tela 20 exige busca e filtro. Hoje implementado sem paginação nem\nfiltros — estender.\n",
+        "x-status": "partial",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Busca por nome ou e-mail",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Role"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MembershipStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de membros",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberList"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/orgs/members/invite": {
+      "post": {
+        "tags": ["orgs"],
+        "summary": "Convidar membro",
+        "description": "Cria membership com status `invited` e dispara e-mail de convite. Não\ncria senha — o convidado define a dele pelo fluxo de redefinição\n(RN-04, Tela 20).\n",
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Convite criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "description": "Usuário já é membro da organização",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/orgs/members/{userId}/role": {
+      "patch": {
+        "tags": ["orgs"],
+        "summary": "Alterar papel de um membro",
+        "description": "RN-02 (Tela 20): ação crítica, exige `confirm: true` explícito.\n\nRN-03: rebaixar o **último Owner ativo** é recusado com `409`.\n\nRN-05: gera registro em `audit_log` com autor, data e ação.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Papel alterado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Último Owner ativo, ou conflito de edição concorrente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/orgs/members/{userId}/status": {
+      "patch": {
+        "tags": ["orgs"],
+        "summary": "Ativar ou desativar um membro",
+        "description": "RN-06 (Tela 20): desativação lógica; não há exclusão física quando há\nhistórico de testes associado. Desativar o último Owner ativo → `409`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status alterado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Último Owner ativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orgs/members/{userId}/password-reset": {
+      "post": {
+        "tags": ["orgs"],
+        "summary": "Disparar redefinição de senha para um membro",
+        "description": "RN-04 (Tela 20): o administrador **nunca** define nem vê a senha de\noutro usuário; apenas dispara o fluxo de redefinição.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "E-mail de redefinição enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/orgs/members/{userId}": {
+      "delete": {
+        "tags": ["orgs"],
+        "summary": "Remover membro",
+        "description": "RN-06: desativação lógica quando há histórico associado. Papel `owner`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Membro removido ou desativado"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Último Owner ativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "tags": ["orgs"],
+        "summary": "Consultar trilha de auditoria",
+        "description": "Papéis: `owner`, `admin`. Escopado pela organização.",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "actorUserId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de registros",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogList"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/games": {
+      "get": {
+        "tags": ["games"],
+        "summary": "Listar jogos do estúdio",
+        "description": "RN-03 (Tela 03): as métricas do card são **agregadas no backend** a\npartir dos testes do jogo. Hoje implementado sem filtros e sem métricas\n— estender.\n",
+        "x-status": "partial",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GameStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de jogos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": ["games"],
+        "summary": "Criar jogo",
+        "description": "RN-02 (Tela 04): o jogo é sempre criado dentro da organização da sessão;\n`organizationId` não é aceito no corpo.\n",
+        "x-status": "implemented",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Jogo criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "description": "Slug já usado nesta organização",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/games/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Id"
+        }
+      ],
+      "get": {
+        "tags": ["games"],
+        "summary": "Obter jogo",
+        "x-status": "implemented",
+        "responses": {
+          "200": {
+            "description": "Jogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["games"],
+        "summary": "Atualizar jogo",
+        "x-status": "implemented",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Jogo atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["games"],
+        "summary": "Remover jogo",
+        "description": "Exclusão lógica (`deleted_at`).",
+        "x-status": "implemented",
+        "responses": {
+          "204": {
+            "description": "Jogo removido"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{id}/assets/upload-url": {
+      "post": {
+        "tags": ["games"],
+        "summary": "Obter URL assinada para upload de imagem",
+        "description": "RN-05 (Tela 04): formato, tamanho e falha de envio são validados **no\nbackend**. Esta rota valida `contentType` e `sizeBytes` antes de assinar;\na confirmação em `POST /games/{id}/assets` valida o objeto de fato\ngravado.\n\nO binário vai direto do cliente para o storage — a API nunca faz proxy.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUploadUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "URL de upload assinada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadUrlResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/games/{id}/assets": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Id"
+        }
+      ],
+      "post": {
+        "tags": ["games"],
+        "summary": "Confirmar upload e vincular imagem ao jogo",
+        "description": "Verifica a existência do objeto no storage antes de gravar a linha. Um\nupload que não chegou não vira asset.\n",
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmAssetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Asset vinculado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameAsset"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Objeto ausente no storage, formato ou tamanho inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{id}/assets/{assetId}": {
+      "delete": {
+        "tags": ["games"],
+        "summary": "Remover imagem do jogo",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Asset removido"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{id}/summary": {
+      "get": {
+        "tags": ["games"],
+        "summary": "Resumo do jogo para a tela de detalhes",
+        "description": "Tela 05. Banner, disponibilidade e indicadores agregados.",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumo do jogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameSummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{id}/tests": {
+      "get": {
+        "tags": ["games"],
+        "summary": "Testes de um jogo",
+        "description": "Tabela da Tela 05. RN-04: os estados vêm do backend.",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "tab",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["active", "all"],
+              "default": "active"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TestStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de testes do jogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{id}/achievements": {
+      "get": {
+        "tags": ["games"],
+        "summary": "Conquistas configuradas do jogo",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conquistas do jogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Achievement"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{id}/specs": {
+      "get": {
+        "tags": ["games"],
+        "summary": "Especificações técnicas do jogo",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Especificações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameSpecs"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/test-models": {
+      "get": {
+        "tags": ["test-models"],
+        "summary": "Catálogo de modelos de teste",
+        "description": "RN-03 (Tela 06): requisitos técnicos vêm da configuração do backend; a\nUI nunca os define.\n\nRN-04: `requiresTelemetry` indica dependência do Orbit Plug-in. Nesta\nfase, `free_exploration_telemetry` retorna `available: false` com\n`unavailableReason`, porque o plug-in está deferido.\n",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Modelos disponíveis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TestModel"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test-models/{key}": {
+      "get": {
+        "tags": ["test-models"],
+        "summary": "Detalhe de um modelo de teste",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TestModelKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Modelo de teste",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{gameId}/tests": {
+      "post": {
+        "tags": ["tests"],
+        "summary": "Criar rascunho de teste",
+        "description": "RN-01 (Tela 05): o teste nasce associado ao jogo atual. O wizard é um\nrascunho persistido (`status: draft`) para que voltar entre etapas não\nperca dados.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rascunho criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Test"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/tests/{id}": {
+      "get": {
+        "tags": ["tests"],
+        "summary": "Obter teste",
+        "description": "Inclui `currentStep` e `pendingValidations` — é o backend quem diz em\nque etapa o wizard está e o que falta para publicar.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teste",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Test"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/model": {
+      "patch": {
+        "tags": ["tests"],
+        "summary": "Etapa 1 — selecionar modelo de teste",
+        "description": "RN-01/02 (Tela 06): seleção única e obrigatória. Modelo indisponível\n(`available: false`) é recusado com `422`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["testModelKey"],
+                "properties": {
+                  "testModelKey": {
+                    "$ref": "#/components/schemas/TestModelKey"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Modelo definido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Test"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/tests/{id}/form": {
+      "put": {
+        "tags": ["tests"],
+        "summary": "Etapa 2 — definir o formulário do teste",
+        "description": "Substitui o conjunto inteiro de perguntas em uma transação, o que torna\na reordenação atômica.\n\nRN-01 (Tela 07): cada pergunta exige tipo e enunciado.\n\nRN-02: tipos com opções exigem a quantidade mínima de opções.\n\nRN-03: a ordem é persistida exatamente como enviada — `position` é\nautoridade, não a ordem do array.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutFormRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Formulário salvo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestForm"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/tests/{id}/form/preview": {
+      "get": {
+        "tags": ["tests"],
+        "summary": "Pré-visualizar o formulário",
+        "description": "Devolve o formulário como o jogador vai recebê-lo.",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Formulário renderizável",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestForm"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/build/upload-url": {
+      "post": {
+        "tags": ["tests"],
+        "summary": "Etapa 3 — obter URL assinada para upload da build",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildUploadUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "URL de upload assinada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/tests/{id}/build": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Id"
+        }
+      ],
+      "post": {
+        "tags": ["tests"],
+        "summary": "Confirmar upload da build e disparar validação",
+        "description": "RN-01 (Tela 08): só avança com upload concluído e validado. Esta rota\nenfileira `build.validate` e devolve a build em `status: processing`.\n",
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmBuildRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Build recebida, validação enfileirada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "get": {
+        "tags": ["tests"],
+        "summary": "Estado da build do teste",
+        "description": "RN-05 (Tela 08): falha preserva o formulário e permite nova tentativa —\n`failureReason` diz o que corrigir.\n\n`validationSteps` é uma **lista de etapas**, não um booleano, para que a\nleitura do manifesto do Orbit Plug-in entre depois como mais uma etapa.\n",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Build e estado da validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["tests"],
+        "summary": "Remover a build para substituí-la",
+        "x-status": "todo",
+        "responses": {
+          "204": {
+            "description": "Build removida"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Teste já publicado — build não pode ser trocada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}/audience": {
+      "patch": {
+        "tags": ["tests"],
+        "summary": "Etapa 4 — público, quantidade e duração",
+        "description": "RN-01 (Tela 09): precisa existir público elegível. O backend valida que\na combinação retorna estimativa maior que zero e devolve\n`estimatedReach`.\n\nRN-02: `ageMin` menor ou igual a `ageMax`, ambos dentro dos limites do\nproduto (18+).\n\nPreço e impulsionamento estão deferidos; `quantity` e `durationDays`\nseguem sendo campos próprios porque a precificação vai consumi-los.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudienceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Público definido, com estimativa de alcance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Test"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/tests/{id}/publish": {
+      "post": {
+        "tags": ["tests"],
+        "summary": "Etapa 5 — publicar o teste",
+        "description": "RN-02 (Tela 10): recarregar **não pode criar um segundo teste**.\n`Idempotency-Key` obrigatório; repetir a chave devolve o mesmo teste.\nEsta regra não depende de cobrança.\n\nRN-05 (Tela 09): recusa com `422` listando `pendingValidations` se\nalguma etapa anterior estiver incompleta.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teste publicado (ou já publicado, em repetição da chave)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Test"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Etapas pendentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}/status": {
+      "patch": {
+        "tags": ["tests"],
+        "summary": "Pausar ou encerrar um teste",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["paused", "active", "closed"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status alterado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Test"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Transição de status inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/builds/{id}": {
+      "get": {
+        "tags": ["builds"],
+        "summary": "Obter build",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Build",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/builds/{id}/compatibility": {
+      "get": {
+        "tags": ["builds"],
+        "summary": "Checar compatibilidade do dispositivo",
+        "description": "RN-03 (Tela 14) e RN-05 (Tela 15): compatibilidade é verificada **antes**\ndo download. Incompatível devolve `compatible: false` com motivos\nlegíveis, não um erro.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          {
+            "name": "os",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "Windows 11"
+            }
+          },
+          {
+            "name": "arch",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "x64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado da checagem",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompatibilityReport"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/builds/{id}/download-url": {
+      "get": {
+        "tags": ["builds"],
+        "summary": "Obter URL assinada para baixar a build",
+        "description": "RN-03 (Tela 16): só é liberada com participação ativa **e**\ncompatibilidade confirmada.\n\nRN-04: a URL suporta `Range`, para permitir retomar download\ninterrompido.\n\nRN-05: o cliente informa `localVersion`; se coincidir com a atual, a\nresposta indica que não é preciso baixar de novo.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "localVersion",
+            "in": "query",
+            "description": "Versão já presente no dispositivo, se houver",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL de download assinada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadUrlResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem participação ativa neste teste",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Dispositivo incompatível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/player/home": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Home do jogador",
+        "description": "RN-01 (Tela 13): nível, XP, qualidade de feedback e conquistas vêm\nprontos do backend — a UI não recalcula.\n\nRN-02: `currentParticipation` traz o ponto de retomada permitido pelo\nmodelo do teste.\n\nO bloco de carteira está deferido e não aparece nesta versão.\n",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Home do jogador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerHome"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/player/feed": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Feed rankeado de testes disponíveis",
+        "description": "Feed no estilo Steam, **ordenado pelo backend**. O cliente nunca\nreordena.\n\n### Paginação — exceção à convenção da API\n\nO cursor padrão (`UUIDv7`) assume ordem cronológica estável e **não\nserve aqui**: um ranking muda entre requisições e produziria itens\nrepetidos e itens pulados. Este endpoint usa **ranking congelado por\nsessão de navegação**:\n\n1. A primeira chamada (sem `cursor`) calcula o ranking, persiste um\n   snapshot e devolve `rankingSeed` junto do `nextCursor`.\n2. As chamadas seguintes enviam o `cursor`, que carrega o seed e a\n   posição — a ordem permanece consistente durante a rolagem.\n3. O snapshot tem TTL curto; expirado, o cliente recomeça do topo com um\n   seed novo.\n\n### Slots\n\n`items` vem como lista de slots. Nesta fase todos têm\n`type: organic`, mas a estrutura de slot já existe porque é onde o\nimpulsionamento (deferido) se encaixa sem redesenhar o módulo.\n\nElegibilidade segue as regras das Telas 14 e 15: item incompatível ou\nindisponível aparece com `disabled: true` e `disabledReason`, em vez de\nsumir sem explicação.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "name": "section",
+            "in": "query",
+            "description": "Trilho do feed a carregar",
+            "schema": {
+              "type": "string",
+              "enum": ["for_you", "new", "ending_soon", "popular"],
+              "default": "for_you"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor de ranking congelado, devolvido pela chamada anterior",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          {
+            "name": "genre",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página do feed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPage"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "description": "Cursor de ranking expirado — recomeçar do topo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/player/feed/filters": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Facetas disponíveis para filtrar o feed",
+        "description": "Devolve apenas facetas com resultado para este jogador.",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Facetas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedFilters"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/player/games/{gameId}": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Detalhes de um jogo para o jogador",
+        "description": "Tela 15. Banner, disponibilidade, jogadores e testes abertos.",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jogo na visão do jogador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerGame"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/player/games/{gameId}/tests": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Testes de um jogo disponíveis para o jogador",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de testes elegíveis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerTestList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/player/tests/{testId}": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Detalhe de um teste para o jogador",
+        "description": "RN-01 (Tela 15): `cta` é **calculado no backend** —\n`start`, `continue`, `completed`, `in_review`, `downloading` ou\n`unavailable`. A UI apenas renderiza o que veio.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teste na visão do jogador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerTest"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/player/participations": {
+      "get": {
+        "tags": ["player-feed"],
+        "summary": "Meus testes",
+        "description": "Rota própria, e **não** `/player/tests/mine`, de propósito: o segmento\nliteral `mine` colidiria com o parâmetro de `/player/tests/{testId}`. Em\nroteadores que casam o segmento dinâmico primeiro, `mine` cairia no\n`{testId}` e falharia na validação de UUID. Separar a rota remove a\nambiguidade em vez de depender da ordem de declaração.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ParticipationStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de participações do jogador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/player/tests/{testId}/participations": {
+      "post": {
+        "tags": ["participations"],
+        "summary": "Entrar em um teste",
+        "description": "Reserva a vaga. Valida elegibilidade, vagas restantes, prazo e\ncompatibilidade **no servidor** — a checagem feita para montar o feed\nnão é suficiente, porque o estado pode ter mudado desde então.\n\nRN-02 (Tela 14): não é permitido iniciar duas participações simultâneas\nno mesmo teste. Repetição com a mesma `Idempotency-Key` devolve a\nparticipação existente; sem a chave, um segundo pedido responde `409`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TestId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Participação criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Participation"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Já participa, vagas esgotadas, teste expirado ou dispositivo incompatível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/participations/{id}": {
+      "get": {
+        "tags": ["participations"],
+        "summary": "Obter participação",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Participação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Participation"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/participations/{id}/consents": {
+      "post": {
+        "tags": ["participations"],
+        "summary": "Registrar consentimentos de gravação",
+        "description": "RN-02 (Tela 16) e RN-01 (Tela 17): a gravação só pode começar depois que\no consentimento está **registrado no servidor**. Consentimento é dado\nlegal, não estado de UI — guarda-se quem consentiu, com o quê, quando e\nde qual IP.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Consentimentos registrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentRecord"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Consentimento obrigatório do modelo foi recusado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/participations/{id}/tutorial": {
+      "get": {
+        "tags": ["participations"],
+        "summary": "Tutorial do modelo de teste",
+        "description": "RN-01 (Tela 16): o tutorial corresponde ao **modelo do teste**, não ao\njogo. Inclui quais permissões serão pedidas e quais são obrigatórias.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Passos do tutorial",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tutorial"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/participations/{id}/sessions": {
+      "post": {
+        "tags": ["participations"],
+        "summary": "Iniciar sessão de teste",
+        "description": "RN-03 (Tela 16): a sessão só inicia após o download e a **validação** da\nbuild, e com os consentimentos obrigatórios já registrados.\n\nA emissão de token do Orbit Plug-in acontece aqui quando a telemetria\nvoltar ao escopo (deferido).\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sessão iniciada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStarted"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Build não validada, consentimento ausente ou sessão já ativa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/devices": {
+      "patch": {
+        "tags": ["participations"],
+        "summary": "Registrar mudança de microfone ou webcam",
+        "description": "RN-04 (Tela 17): toda alteração é registrada **com o timestamp da\nsessão** (`tMs`), para poder ser cruzada com o vídeo depois.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Evento registrado"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Sessão já encerrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/heartbeat": {
+      "post": {
+        "tags": ["participations"],
+        "summary": "Sinal de vida da sessão",
+        "description": "Permite detectar conexão instável e sessão abandonada. Sem heartbeat\ndentro da janela configurada, a sessão é encerrada por timeout e entra\nna validação como incompleta.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Heartbeat aceito"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/finish": {
+      "post": {
+        "tags": ["participations"],
+        "summary": "Finalizar a sessão",
+        "description": "RN-03 (Tela 17): a confirmação do usuário acontece na UI; aqui o corpo\ntraz `confirmed: true` para que um clique acidental não encerre a\nsessão.\n\nEnfileira `session.validate`. A participação passa a `in_review`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sessão encerrada e enviada para validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Sessão já encerrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/summary": {
+      "get": {
+        "tags": ["participations"],
+        "summary": "Resumo da sessão para o jogador",
+        "description": "Tela 18. Traz o resumo, a prévia da gravação e o formulário a responder.\n\nRN-05 (Tela 18): os dados brutos da sessão são somente leitura para o\njogador.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumo da sessão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/form-response": {
+      "post": {
+        "tags": ["participations"],
+        "summary": "Enviar a avaliação da sessão",
+        "description": "RN-01 (Tela 18): perguntas obrigatórias não respondidas bloqueiam o\nenvio → `422` com erro por campo (`fieldErrors`, chaveado por\n`questionId`).\n\nRN-02: as respostas ficam vinculadas à sessão e ao jogador autenticado.\n\nRN-03: envio duplicado não gera segunda avaliação — com a mesma\n`Idempotency-Key`, devolve a resposta original; sem ela, `409`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormResponseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Avaliação registrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Avaliação já enviada para esta sessão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/participations/{id}/result": {
+      "get": {
+        "tags": ["participations"],
+        "summary": "Resultado da participação",
+        "description": "Tela 19. RN-01/02: XP, nota e conquistas só saem **depois da validação\nda sessão**; enquanto isso, `status: in_review` e os valores vêm nulos.\n\nRN-03: recarregar não duplica XP nem conquista — a transição é única e\ntransacional. Esta rota é leitura pura.\n\nRN-04: o crédito financeiro está deferido. `rewardCents` é informativo e\n`rewardStatus` permanece `pending`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado ou estado de análise",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/recordings/upload-url": {
+      "post": {
+        "tags": ["media"],
+        "summary": "Obter URL assinada para enviar a gravação",
+        "description": "Suporta envio em partes, para gravações longas e conexões instáveis.\nChamar uma vez por parte, informando `partNumber`.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordingUploadUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "URL de upload assinada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/recordings/complete": {
+      "post": {
+        "tags": ["media"],
+        "summary": "Confirmar a gravação enviada",
+        "description": "Fecha o envio em partes e enfileira `media.transcode` e\n`media.extract-audio`. O áudio extraído fica pronto para o ASR\n(deferido) sem reprocessar o vídeo depois.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordingCompleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Gravação recebida, processamento enfileirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recording"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/recordings/{recordingId}/playback-url": {
+      "get": {
+        "tags": ["media"],
+        "summary": "Obter URL assinada para assistir à gravação",
+        "description": "RN-03 (Tela 12): gravação ausente ou ainda processando **não é erro** —\ndevolve `status` correspondente e `url: null`, para que o resto da tela\ncontinue funcionando.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "recordingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL de reprodução ou estado da mídia",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybackUrlResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/report": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Relatório consolidado do teste",
+        "description": "RN-01 (Tela 11): as métricas refletem **somente sessões válidas**.\n\nRN-02: bloco ainda processando devolve `status: processing` em vez de\nvalor provisório.\n\nO relatório é montado como **blocos independentes**, cada um com o seu\n`status`. Assim um bloco em erro não derruba a página, e os blocos de\ntelemetria e de insights de IA (deferidos) entram depois sem quebrar o\ncontrato.\n\n`stage` reflete a RN-02 da Tela 05: `partial` enquanto o teste corre,\n`final` só com o processamento concluído.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relatório em blocos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestReport"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/report/evolution": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Série temporal de sessões e notas",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["day", "week"],
+              "default": "day"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bloco de evolução",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportBlock"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/report/ratings": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Distribuição das avaliações do formulário",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bloco de avaliações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportBlock"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/report/testers": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Distribuição de testadores e arquétipos",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bloco de testadores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportBlock"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/tests/{id}/sessions": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Sessões do teste",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["recent", "duration", "rating"],
+              "default": "recent"
+            }
+          },
+          {
+            "name": "validity",
+            "in": "query",
+            "description": "Filtrar por validade da sessão",
+            "schema": {
+              "type": "string",
+              "enum": ["valid", "invalid", "all"],
+              "default": "valid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de sessões",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Detalhe de uma sessão",
+        "description": "Tela 12. RN-01: a sessão precisa pertencer ao teste selecionado **e** à\norganização da sessão; caso contrário `404`.\n\nRN-02: vídeo e eventos de dispositivo usam a mesma base temporal\n(`tMs`). Transcrição, telemetria e insights vão se ancorar nela quando\nentrarem.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessão detalhada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sessions/{id}/rate": {
+      "post": {
+        "tags": ["reports"],
+        "summary": "Avaliar a sessão do testador",
+        "description": "Alimenta a \"qualidade de feedback\" do jogador (M12). Uma sessão pode ser\nmarcada como inválida aqui, e isso a remove das métricas do relatório\n(RN-01, Tela 11).\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avaliação registrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRating"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/tests/{id}/report/export": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Exportar o relatório",
+        "description": "Exportação grande roda em job. Enquanto não fica pronta, responde `202`\ncom o id do job; concluída, responde `200` com a URL assinada.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["csv", "pdf"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Arquivo pronto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Exportação enfileirada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/studio/dashboard": {
+      "get": {
+        "tags": ["dashboard"],
+        "summary": "Dashboard do estúdio",
+        "description": "Tela 02. RN-02: os KPIs são **calculados e consolidados no backend**; a\nUI não recalcula valor nenhum.\n\nRN-01: tudo filtrado pela organização e pelo escopo de permissão do\nusuário.\n\nServido de cache (Redis) com invalidação por evento de domínio.\n",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Dashboard consolidado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudioDashboard"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/studio/benchmark": {
+      "get": {
+        "tags": ["dashboard"],
+        "summary": "Benchmark de mercado",
+        "description": "Bloco de benchmark da Tela 02. **A fonte de dados ainda não foi\ndefinida** (pendência 7 da especificação) — o contrato está aqui para\nnão travar a tela, mas a implementação depende dessa decisão.\n",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Benchmark",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportBlock"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/player/progress": {
+      "get": {
+        "tags": ["gamification"],
+        "summary": "Progresso do jogador",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Nível, XP e qualidade de feedback",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerProgress"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/player/achievements": {
+      "get": {
+        "tags": ["gamification"],
+        "summary": "Conquistas do jogador",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de conquistas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerAchievementList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/player/missions": {
+      "get": {
+        "tags": ["gamification"],
+        "summary": "Missões do jogador",
+        "x-status": "todo",
+        "responses": {
+          "200": {
+            "description": "Missões ativas e progresso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlayerMission"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rankings": {
+      "get": {
+        "tags": ["gamification"],
+        "summary": "Ranking de jogadores",
+        "description": "Escopo e periodicidade ainda em aberto (pendência 5 da especificação).\nServido de snapshot materializado, nunca calculado na requisição.\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["global", "game"],
+              "default": "global"
+            }
+          },
+          {
+            "name": "gameId",
+            "in": "query",
+            "description": "Obrigatório quando `scope=game`",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["week", "month", "all"],
+              "default": "month"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página do ranking",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingList"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/games/{gameId}/community/posts": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/GameId"
+        }
+      ],
+      "get": {
+        "tags": ["community"],
+        "summary": "Publicações da comunidade do jogo",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de publicações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPostList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "tags": ["community"],
+        "summary": "Publicar na comunidade do jogo",
+        "description": "RN-04 (Tela 15): sujeito a moderação e vínculo com o jogo.",
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommunityPostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Publicação criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPost"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/community/posts/{id}/report": {
+      "post": {
+        "tags": ["community"],
+        "summary": "Denunciar uma publicação",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": ["spam", "abuse", "spoiler", "other"]
+                  },
+                  "details": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Denúncia registrada"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/community/posts/{id}/moderate": {
+      "patch": {
+        "tags": ["community"],
+        "summary": "Moderar uma publicação",
+        "description": "Papéis do estúdio dono do jogo. Gera registro de auditoria.",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["hide", "restore", "pin", "unpin"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Publicação moderada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPost"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/games/{gameId}/reviews": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/GameId"
+        }
+      ],
+      "get": {
+        "tags": ["community"],
+        "summary": "Avaliações do jogo",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de avaliações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "tags": ["community"],
+        "summary": "Avaliar o jogo",
+        "description": "Só quem concluiu ao menos uma sessão válida do jogo pode avaliar, e uma\nvez por jogador.\n",
+        "x-status": "todo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Avaliação criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem sessão válida concluída neste jogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Jogador já avaliou este jogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["notifications"],
+        "summary": "Notificações do usuário",
+        "description": "A existência do componente in-app ainda precisa ser confirmada no Figma\n(pendência 8 da especificação).\n",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "unreadOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de notificações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "tags": ["notifications"],
+        "summary": "Marcar notificação como lida",
+        "x-status": "todo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Marcada como lida"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Access token de curta duração devolvido por `/auth/login`."
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refresh_token",
+        "description": "Refresh token httpOnly, rotacionado a cada `/auth/refresh`."
+      }
+    },
+    "parameters": {
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "UserId": {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "GameId": {
+        "name": "gameId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "TestId": {
+        "name": "testId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "Itens por página.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        }
+      },
+      "Cursor": {
+        "name": "cursor",
+        "in": "query",
+        "description": "Cursor opaco devolvido como `nextCursor` na página anterior.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "description": "Chave única por tentativa, gerada pelo cliente (UUID). Repetir a chave\n**reproduz a resposta original** em vez de executar a operação de novo.\n",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Ausente, inválido ou expirado",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Papel sem permissão para esta ação",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Recurso inexistente — ou pertencente a outra organização. As duas\nsituações respondem igual, de propósito, para não vazar existência.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Dados inválidos, com erro por campo em `fieldErrors`",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Limite de requisições excedido",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorEnvelope": {
+        "type": "object",
+        "description": "Envelope único de erro da API. Serializado exclusivamente pelo\n`HttpExceptionFilter` — nenhum controller monta erro à mão.\n",
+        "required": ["statusCode", "code", "message", "requestId"],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 422
+          },
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "example": "Dados inválidos"
+          },
+          "fieldErrors": {
+            "type": "object",
+            "description": "Mensagem por campo, presente em falhas de validação.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "title": "Título obrigatório"
+            }
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Correlaciona a resposta com os logs estruturados."
+          }
+        }
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "VALIDATION_ERROR",
+          "UNAUTHORIZED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "CONFLICT",
+          "TOO_MANY_REQUESTS",
+          "UNPROCESSABLE_ENTITY",
+          "INTERNAL_ERROR"
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ProcessingStatus": {
+        "type": "string",
+        "description": "Estado de um recurso que depende de job assíncrono. Enquanto\n`processing`, a UI mostra o estado — nunca um valor provisório\ndisfarçado de definitivo.\n",
+        "enum": ["processing", "ready", "failed", "unavailable"]
+      },
+      "Role": {
+        "type": "string",
+        "enum": ["owner", "admin", "studio", "player"]
+      },
+      "MembershipStatus": {
+        "type": "string",
+        "enum": ["active", "invited", "disabled"]
+      },
+      "GameStatus": {
+        "type": "string",
+        "enum": ["draft", "active", "archived"]
+      },
+      "TestStatus": {
+        "type": "string",
+        "enum": ["draft", "active", "paused", "closed", "expired"]
+      },
+      "ParticipationStatus": {
+        "type": "string",
+        "description": "Máquina de estados da participação, alinhada às telas do fluxo do\njogador: `tutorial` (Tela 16), `playing` (Tela 17), `form_pending`\n(Tela 18) e `in_review` (Tela 19).\n",
+        "enum": [
+          "reserved",
+          "tutorial",
+          "downloading",
+          "ready",
+          "playing",
+          "form_pending",
+          "in_review",
+          "completed",
+          "rejected",
+          "abandoned"
+        ]
+      },
+      "Platform": {
+        "type": "string",
+        "enum": ["windows", "macos", "linux", "android", "ios", "web"]
+      },
+      "HealthReport": {
+        "type": "object",
+        "required": ["status", "checks"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok", "error"]
+          },
+          "checks": {
+            "type": "object",
+            "required": ["database", "redis", "storage"],
+            "properties": {
+              "database": {
+                "$ref": "#/components/schemas/CheckStatus"
+              },
+              "redis": {
+                "$ref": "#/components/schemas/CheckStatus"
+              },
+              "storage": {
+                "$ref": "#/components/schemas/CheckStatus"
+              },
+              "queue": {
+                "$ref": "#/components/schemas/CheckStatus"
+              }
+            }
+          }
+        }
+      },
+      "CheckStatus": {
+        "type": "string",
+        "enum": ["up", "down"]
+      },
+      "UploadUrlResponse": {
+        "type": "object",
+        "description": "URL assinada para o cliente enviar bytes **direto ao storage**. A API\nnunca faz proxy de binário.\n",
+        "required": ["uploadUrl", "storageKey", "expiresAt"],
+        "properties": {
+          "uploadUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "storageKey": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "maxSizeBytes": {
+            "type": "integer"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["identifier", "password"],
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "E-mail ou ID de acesso."
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8
+          },
+          "rememberMe": {
+            "type": "boolean",
+            "default": false,
+            "description": "RN-04: altera apenas o TTL do refresh token."
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "required": ["accessToken", "expiresIn", "user"],
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Segundos até expirar."
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          }
+        }
+      },
+      "AuthUser": {
+        "type": "object",
+        "required": ["userId", "email", "displayName", "organizationId", "role"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        }
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "required": ["token", "password"],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8
+          }
+        }
+      },
+      "SignupStudioRequest": {
+        "type": "object",
+        "required": ["displayName", "email", "password", "birthdate", "organizationName"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date",
+            "description": "Idade mínima 18 anos (DECISIONS.md §1.4)."
+          },
+          "organizationName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "acceptedTerms": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SignupPlayerRequest": {
+        "type": "object",
+        "required": ["displayName", "email", "password", "birthdate"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date"
+          },
+          "acceptedTerms": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Org": {
+        "type": "object",
+        "required": ["id", "name", "slug", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateOrgRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "Member": {
+        "type": "object",
+        "required": ["userId", "email", "displayName", "role", "status"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MembershipStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Usado para detectar edição concorrente."
+          }
+        }
+      },
+      "MemberList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "InviteMemberRequest": {
+        "type": "object",
+        "required": ["email", "role"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        }
+      },
+      "ChangeRoleRequest": {
+        "type": "object",
+        "required": ["role", "confirm"],
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "RN-02: ação crítica, exige confirmação explícita.",
+            "enum": [true]
+          }
+        }
+      },
+      "ChangeStatusRequest": {
+        "type": "object",
+        "required": ["status", "confirm"],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/MembershipStatus"
+          },
+          "confirm": {
+            "type": "boolean",
+            "enum": [true]
+          }
+        }
+      },
+      "AuditLogEntry": {
+        "type": "object",
+        "required": ["id", "action", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "actorEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "action": {
+            "type": "string",
+            "example": "member.role.changed"
+          },
+          "entityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuditLogList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLogEntry"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Game": {
+        "type": "object",
+        "required": ["id", "organizationId", "title", "slug", "status", "createdAt", "updatedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "genre": {
+            "type": "string",
+            "nullable": true
+          },
+          "platform": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/GameStatus"
+          },
+          "coverUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/GameMetrics"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GameMetrics": {
+        "type": "object",
+        "description": "RN-03 (Tela 03): agregados a partir dos testes do jogo, calculados no\nbackend.\n",
+        "properties": {
+          "testsTotal": {
+            "type": "integer"
+          },
+          "testsActive": {
+            "type": "integer"
+          },
+          "sessionsValid": {
+            "type": "integer"
+          },
+          "playersTotal": {
+            "type": "integer"
+          },
+          "averageRating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          }
+        }
+      },
+      "GameList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Game"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateGameRequest": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "description": "Derivado do título quando omitido.",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "genre": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "$ref": "#/components/schemas/GameStatus"
+          }
+        }
+      },
+      "UpdateGameRequest": {
+        "type": "object",
+        "description": "Todos os campos opcionais.",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "genre": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "$ref": "#/components/schemas/GameStatus"
+          }
+        }
+      },
+      "AssetKind": {
+        "type": "string",
+        "enum": ["cover", "banner", "screenshot"]
+      },
+      "AssetUploadUrlRequest": {
+        "type": "object",
+        "required": ["kind", "contentType", "sizeBytes", "fileName"],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/AssetKind"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": ["image/png", "image/jpeg", "image/webp"]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "fileName": {
+            "type": "string"
+          }
+        }
+      },
+      "ConfirmAssetRequest": {
+        "type": "object",
+        "required": ["kind", "storageKey"],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/AssetKind"
+          },
+          "storageKey": {
+            "type": "string"
+          }
+        }
+      },
+      "GameAsset": {
+        "type": "object",
+        "required": ["id", "kind", "url", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AssetKind"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GameSummary": {
+        "type": "object",
+        "description": "Tela 05 — cabeçalho e indicadores do jogo.",
+        "required": ["game", "availability", "metrics"],
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/Game"
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["available", "unavailable"]
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/GameMetrics"
+          },
+          "canEdit": {
+            "type": "boolean",
+            "description": "RN-03 (Tela 05): reflete a permissão real do usuário."
+          }
+        }
+      },
+      "GameSpecs": {
+        "type": "object",
+        "properties": {
+          "minimumRequirements": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "recommendedRequirements": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "supportedPlatforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TestModelKey": {
+        "type": "string",
+        "enum": ["free_exploration_telemetry", "free_exploration", "ab_test", "ab_test_images"]
+      },
+      "TestModel": {
+        "type": "object",
+        "required": ["key", "name", "description", "requiresTelemetry", "available"],
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/TestModelKey"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technicalRequirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiresTelemetry": {
+            "type": "boolean",
+            "description": "'RN-04 (Tela 06): quando `true`, a Etapa 3 exige o Orbit Plug-in\ndetectado e validado. O plug-in está deferido nesta fase, então\nmodelos com esta flag vêm `available: false`.'\n"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Test": {
+        "type": "object",
+        "required": ["id", "gameId", "organizationId", "status", "currentStep"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/TestStatus"
+          },
+          "testModelKey": {
+            "$ref": "#/components/schemas/TestModelKey"
+          },
+          "currentStep": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Etapa em que o wizard está, decidida pelo backend."
+          },
+          "pendingValidations": {
+            "type": "array",
+            "description": "O que ainda falta para publicar. Vazio significa pronto.",
+            "items": {
+              "$ref": "#/components/schemas/PendingValidation"
+            }
+          },
+          "audience": {
+            "$ref": "#/components/schemas/Audience"
+          },
+          "build": {
+            "$ref": "#/components/schemas/Build"
+          },
+          "spotsTotal": {
+            "type": "integer",
+            "nullable": true
+          },
+          "spotsTaken": {
+            "type": "integer",
+            "nullable": true
+          },
+          "rewardCents": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Recompensa por sessão. Informativo nesta fase."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PendingValidation": {
+        "type": "object",
+        "required": ["step", "code", "message"],
+        "properties": {
+          "step": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "example": "BUILD_NOT_VALIDATED"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "TestList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Test"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateTestRequest": {
+        "type": "object",
+        "required": ["testModelKey"],
+        "properties": {
+          "testModelKey": {
+            "$ref": "#/components/schemas/TestModelKey"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "QuestionType": {
+        "type": "string",
+        "enum": [
+          "short_text",
+          "long_text",
+          "single_choice",
+          "multiple_choice",
+          "scale",
+          "rating",
+          "boolean"
+        ]
+      },
+      "FormQuestion": {
+        "type": "object",
+        "required": ["id", "type", "prompt", "required", "position"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestionType"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "helpText": {
+            "type": "string",
+            "nullable": true
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer",
+            "description": "RN-03 (Tela 07): a ordem persistida é esta, não a do array."
+          },
+          "options": {
+            "type": "array",
+            "description": "'RN-02: obrigatório para `single_choice` e `multiple_choice`, com no\nmínimo duas opções.'\n",
+            "items": {
+              "$ref": "#/components/schemas/FormOption"
+            }
+          },
+          "scaleMin": {
+            "type": "integer",
+            "nullable": true
+          },
+          "scaleMax": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "FormOption": {
+        "type": "object",
+        "required": ["label"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      },
+      "FormQuestionInput": {
+        "type": "object",
+        "required": ["type", "prompt", "required", "position"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Presente ao editar uma pergunta existente; ausente ao criar."
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestionType"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "helpText": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "position"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "scaleMin": {
+            "type": "integer"
+          },
+          "scaleMax": {
+            "type": "integer"
+          }
+        }
+      },
+      "PutFormRequest": {
+        "type": "object",
+        "required": ["questions"],
+        "properties": {
+          "questions": {
+            "type": "array",
+            "description": "Conjunto completo de perguntas. Substitui o anterior em uma\ntransação, o que torna a reordenação atômica. Pergunta ausente é\nremovida.\n",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestionInput"
+            }
+          }
+        }
+      },
+      "TestForm": {
+        "type": "object",
+        "required": ["testId", "questions"],
+        "properties": {
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestion"
+            }
+          }
+        }
+      },
+      "BuildUploadUrlRequest": {
+        "type": "object",
+        "required": ["fileName", "contentType", "sizeBytes", "platform"],
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "ConfirmBuildRequest": {
+        "type": "object",
+        "required": ["storageKey", "platform", "version"],
+        "properties": {
+          "storageKey": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "version": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "string",
+            "description": "SHA-256 calculado pelo cliente, conferido na validação."
+          }
+        }
+      },
+      "Build": {
+        "type": "object",
+        "required": ["id", "status", "validationSteps"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["uploading", "processing", "validated", "failed"]
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "checksum": {
+            "type": "string",
+            "nullable": true
+          },
+          "validationSteps": {
+            "type": "array",
+            "description": "Lista de etapas, **não** um booleano. A leitura do manifesto do\nOrbit Plug-in entra aqui como mais uma etapa quando voltar ao\nescopo, sem alterar o formato.\n",
+            "items": {
+              "$ref": "#/components/schemas/ValidationStep"
+            }
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "RN-05 (Tela 08): diz o que corrigir para tentar de novo."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ValidationStep": {
+        "type": "object",
+        "required": ["key", "status"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": ["checksum", "malware_scan", "metadata", "platform_support"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "passed", "failed", "skipped"]
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Audience": {
+        "type": "object",
+        "properties": {
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Código de país ou região."
+            }
+          },
+          "archetypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ageMin": {
+            "type": "integer",
+            "minimum": 18
+          },
+          "ageMax": {
+            "type": "integer",
+            "maximum": 120
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "durationDays": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deviceRequirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          "keepActive": {
+            "type": "boolean"
+          },
+          "estimatedReach": {
+            "type": "integer",
+            "description": "'RN-01 (Tela 09): calculado no backend. Zero impede a publicação.'\n"
+          }
+        }
+      },
+      "AudienceRequest": {
+        "type": "object",
+        "required": ["ageMin", "ageMax", "quantity", "durationDays"],
+        "properties": {
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archetypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ageMin": {
+            "type": "integer",
+            "minimum": 18
+          },
+          "ageMax": {
+            "type": "integer",
+            "maximum": 120
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "durationDays": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deviceRequirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          "keepActive": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "CompatibilityReport": {
+        "type": "object",
+        "required": ["compatible", "reasons"],
+        "properties": {
+          "compatible": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "type": "array",
+            "description": "Motivos legíveis quando incompatível. Vazio quando compatível.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "supportedPlatforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          }
+        }
+      },
+      "DownloadUrlResponse": {
+        "type": "object",
+        "required": ["needsDownload", "version"],
+        "properties": {
+          "needsDownload": {
+            "type": "boolean",
+            "description": "'RN-05 (Tela 16): `false` quando `localVersion` já corresponde à\nversão atual — nesse caso `downloadUrl` vem nulo.'\n"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "version": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "string",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "supportsRange": {
+            "type": "boolean",
+            "description": "RN-04 (Tela 16): permite retomar download interrompido."
+          }
+        }
+      },
+      "FeedPage": {
+        "type": "object",
+        "required": ["items", "nextCursor", "rankingSeed"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedSlot"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Carrega o seed e a posição do ranking congelado."
+          },
+          "rankingSeed": {
+            "type": "string",
+            "description": "Identifica o snapshot de ranking desta navegação."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expirado o snapshot, o cliente recomeça do topo."
+          }
+        }
+      },
+      "FeedSlot": {
+        "type": "object",
+        "description": "Unidade de composição do feed. Nesta fase todo slot é `organic`; o tipo\n`promoted` existe no contrato porque é onde o impulsionamento (deferido)\nse encaixa sem redesenhar o módulo.\n",
+        "required": ["type", "position", "item"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["organic", "promoted"]
+          },
+          "position": {
+            "type": "integer"
+          },
+          "item": {
+            "$ref": "#/components/schemas/FeedItem"
+          }
+        }
+      },
+      "FeedItem": {
+        "type": "object",
+        "required": ["testId", "gameId", "title", "cta", "disabled"],
+        "properties": {
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "genre": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "rewardCents": {
+            "type": "integer",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "spotsLeft": {
+            "type": "integer",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            }
+          },
+          "cta": {
+            "$ref": "#/components/schemas/TestCta"
+          },
+          "disabled": {
+            "type": "boolean",
+            "description": "'RN-03 (Tela 14): incompatível ou indisponível aparece desabilitado\ncom motivo, em vez de sumir sem explicação.'\n"
+          },
+          "disabledReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "promoted": {
+            "type": "boolean",
+            "default": false,
+            "description": "Item pago. Sempre `false` nesta fase. Quando o impulsionamento\nvoltar, a UI **precisa** rotular o item — publicidade não\nidentificada é questão regulatória.\n"
+          }
+        }
+      },
+      "TestCta": {
+        "type": "string",
+        "description": "RN-01 (Tela 15): calculado no backend, nunca inferido na UI.",
+        "enum": ["start", "continue", "completed", "in_review", "downloading", "unavailable"]
+      },
+      "FeedFilters": {
+        "type": "object",
+        "properties": {
+          "platforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            }
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            }
+          }
+        }
+      },
+      "FacetValue": {
+        "type": "object",
+        "required": ["value", "count"],
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "PlayerHome": {
+        "type": "object",
+        "required": ["progress", "highlights"],
+        "properties": {
+          "progress": {
+            "$ref": "#/components/schemas/PlayerProgress"
+          },
+          "currentParticipation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Participation"
+              }
+            ],
+            "nullable": true,
+            "description": "RN-02 (Tela 13): já traz o ponto de retomada permitido."
+          },
+          "highlights": {
+            "type": "array",
+            "description": "Destaques do feed, mesmas regras de elegibilidade.",
+            "items": {
+              "$ref": "#/components/schemas/FeedItem"
+            }
+          },
+          "missions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerMission"
+            }
+          }
+        }
+      },
+      "PlayerProgress": {
+        "type": "object",
+        "required": ["level", "xp", "feedbackQuality"],
+        "properties": {
+          "level": {
+            "type": "integer"
+          },
+          "xp": {
+            "type": "integer"
+          },
+          "xpToNextLevel": {
+            "type": "integer"
+          },
+          "feedbackQuality": {
+            "type": "number",
+            "format": "float",
+            "description": "Nota de qualidade calculada no servidor."
+          },
+          "achievementsUnlocked": {
+            "type": "integer"
+          },
+          "hoursPlayed": {
+            "type": "number",
+            "format": "float"
+          },
+          "testsCompleted": {
+            "type": "integer"
+          }
+        }
+      },
+      "PlayerGame": {
+        "type": "object",
+        "required": ["game", "openTests"],
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/Game"
+          },
+          "playersTotal": {
+            "type": "integer"
+          },
+          "openTests": {
+            "type": "integer"
+          },
+          "maxRewardCents": {
+            "type": "integer",
+            "nullable": true
+          },
+          "specs": {
+            "$ref": "#/components/schemas/GameSpecs"
+          }
+        }
+      },
+      "PlayerTest": {
+        "type": "object",
+        "required": ["testId", "gameId", "cta", "disabled"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FeedItem"
+          }
+        ],
+        "properties": {
+          "modelKey": {
+            "$ref": "#/components/schemas/TestModelKey"
+          },
+          "participation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Participation"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "PlayerTestList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerTest"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Participation": {
+        "type": "object",
+        "required": ["id", "testId", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ParticipationStatus"
+          },
+          "currentSessionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "resumePoint": {
+            "type": "string",
+            "nullable": true,
+            "description": "RN-02 (Tela 13): ponto de retomada permitido pelo modelo."
+          },
+          "consentsGranted": {
+            "type": "boolean"
+          },
+          "build": {
+            "$ref": "#/components/schemas/Build"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ParticipationList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participation"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Tutorial": {
+        "type": "object",
+        "required": ["modelKey", "steps", "requiredConsents"],
+        "properties": {
+          "modelKey": {
+            "$ref": "#/components/schemas/TestModelKey"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title"],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "mediaUrl": {
+                  "type": "string",
+                  "format": "uri",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "requiredConsents": {
+            "type": "array",
+            "description": "Consentimentos obrigatórios para este modelo.",
+            "items": {
+              "$ref": "#/components/schemas/ConsentKind"
+            }
+          }
+        }
+      },
+      "ConsentKind": {
+        "type": "string",
+        "enum": ["screen_recording", "audio", "microphone", "webcam"]
+      },
+      "ConsentRequest": {
+        "type": "object",
+        "required": ["consents"],
+        "properties": {
+          "consents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "granted"],
+              "properties": {
+                "kind": {
+                  "$ref": "#/components/schemas/ConsentKind"
+                },
+                "granted": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ConsentRecord": {
+        "type": "object",
+        "required": ["participationId", "consents", "recordedAt"],
+        "properties": {
+          "participationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "$ref": "#/components/schemas/ConsentKind"
+                },
+                "granted": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "allRequiredGranted": {
+            "type": "boolean",
+            "description": "RN-01 (Tela 17): a gravação só começa quando isto é `true`."
+          }
+        }
+      },
+      "StartSessionRequest": {
+        "type": "object",
+        "required": ["buildVersion", "platform"],
+        "properties": {
+          "buildVersion": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "deviceInfo": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "SessionStarted": {
+        "type": "object",
+        "required": ["sessionId", "startedAt"],
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "maxDurationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "heartbeatIntervalMs": {
+            "type": "integer"
+          },
+          "recordingRequired": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "required": ["id", "participationId", "status", "startedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "participationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "finishing", "in_review", "valid", "invalid", "abandoned"]
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "invalidReason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DeviceEventRequest": {
+        "type": "object",
+        "required": ["kind", "enabled", "tMs"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["microphone", "webcam"]
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "tMs": {
+            "type": "integer",
+            "description": "'RN-04 (Tela 17): milissegundos desde o início da sessão. Mesma base\ntemporal do vídeo.'\n"
+          }
+        }
+      },
+      "HeartbeatRequest": {
+        "type": "object",
+        "required": ["tMs"],
+        "properties": {
+          "tMs": {
+            "type": "integer"
+          },
+          "connectionQuality": {
+            "type": "string",
+            "enum": ["good", "degraded", "poor"]
+          }
+        }
+      },
+      "FinishSessionRequest": {
+        "type": "object",
+        "required": ["tMs", "confirmed"],
+        "properties": {
+          "tMs": {
+            "type": "integer"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "enum": [true],
+            "description": "RN-03 (Tela 17): evita encerramento acidental."
+          },
+          "reason": {
+            "type": "string",
+            "enum": ["completed", "gave_up", "technical_failure"]
+          }
+        }
+      },
+      "SessionSummary": {
+        "type": "object",
+        "required": ["session", "test", "game", "form"],
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "test": {
+            "$ref": "#/components/schemas/PlayerTest"
+          },
+          "game": {
+            "$ref": "#/components/schemas/Game"
+          },
+          "recording": {
+            "$ref": "#/components/schemas/PlaybackUrlResponse"
+          },
+          "form": {
+            "$ref": "#/components/schemas/TestForm"
+          },
+          "alreadySubmitted": {
+            "type": "boolean",
+            "description": "RN-03 (Tela 18): `true` bloqueia novo envio."
+          }
+        }
+      },
+      "FormResponseRequest": {
+        "type": "object",
+        "required": ["answers"],
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnswerInput"
+            }
+          }
+        }
+      },
+      "AnswerInput": {
+        "type": "object",
+        "required": ["questionId", "value"],
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "description": "Texto, número, booleano ou lista de ids de opção, conforme o tipo da\npergunta.\n",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "FormResponse": {
+        "type": "object",
+        "required": ["id", "sessionId", "submittedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ParticipationResult": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["in_review", "completed", "rejected"],
+            "description": "'RN-02 (Tela 19): enquanto `in_review`, os valores abaixo vêm nulos.\nNão exiba número provisório.'\n"
+          },
+          "xpEarned": {
+            "type": "integer",
+            "nullable": true
+          },
+          "level": {
+            "type": "integer",
+            "nullable": true
+          },
+          "feedbackQuality": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "achievementsUnlocked": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Achievement"
+            }
+          },
+          "rewardCents": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Informativo. O crédito em carteira está deferido."
+          },
+          "rewardStatus": {
+            "type": "string",
+            "enum": ["pending", "credited", "rejected"],
+            "description": "Permanece `pending` enquanto a carteira não existir."
+          },
+          "rejectedReason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RecordingUploadUrlRequest": {
+        "type": "object",
+        "required": ["contentType", "sizeBytes"],
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "video/webm"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "partNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Presente em envio multipart."
+          },
+          "uploadId": {
+            "type": "string",
+            "description": "Devolvido na primeira parte."
+          }
+        }
+      },
+      "RecordingCompleteRequest": {
+        "type": "object",
+        "required": ["storageKey", "durationMs"],
+        "properties": {
+          "storageKey": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "type": "integer"
+          },
+          "uploadId": {
+            "type": "string"
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "partNumber": {
+                  "type": "integer"
+                },
+                "etag": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Recording": {
+        "type": "object",
+        "required": ["id", "sessionId", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProcessingStatus"
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PlaybackUrlResponse": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ProcessingStatus"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "description": "Nulo quando `status` não é `ready`."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
+      "ReportBlock": {
+        "type": "object",
+        "description": "Unidade do relatório. Cada bloco carrega o próprio `status`, para que um\nbloco em erro ou ainda processando não derrube a página — e para que\ntelemetria e insights de IA entrem depois como blocos novos.\n",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ProcessingStatus"
+          },
+          "data": {
+            "nullable": true,
+            "description": "Presente apenas quando `status` é `ready`."
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "TestReport": {
+        "type": "object",
+        "required": ["testId", "stage", "blocks"],
+        "properties": {
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stage": {
+            "type": "string",
+            "enum": ["none", "partial", "final"],
+            "description": "'RN-02 (Tela 05): `partial` enquanto o teste corre; `final` só com o\nprocessamento concluído.'\n"
+          },
+          "blocks": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "$ref": "#/components/schemas/ReportBlock"
+              },
+              "evolution": {
+                "$ref": "#/components/schemas/ReportBlock"
+              },
+              "ratings": {
+                "$ref": "#/components/schemas/ReportBlock"
+              },
+              "testers": {
+                "$ref": "#/components/schemas/ReportBlock"
+              }
+            }
+          }
+        }
+      },
+      "SessionListItem": {
+        "type": "object",
+        "required": ["id", "status", "startedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "playerDisplayName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "hasRecording": {
+            "type": "boolean"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SessionList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionListItem"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SessionDetail": {
+        "type": "object",
+        "required": ["session", "blocks"],
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "player": {
+            "type": "object",
+            "properties": {
+              "displayName": {
+                "type": "string"
+              },
+              "level": {
+                "type": "integer"
+              },
+              "feedbackQuality": {
+                "type": "number",
+                "format": "float"
+              },
+              "archetype": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "blocks": {
+            "type": "object",
+            "description": "Mesma estrutura de blocos do relatório. Transcrição, telemetria e\ninsights entram aqui quando saírem do escopo deferido.\n",
+            "properties": {
+              "recording": {
+                "$ref": "#/components/schemas/ReportBlock"
+              },
+              "deviceEvents": {
+                "$ref": "#/components/schemas/ReportBlock"
+              },
+              "formResponse": {
+                "$ref": "#/components/schemas/ReportBlock"
+              }
+            }
+          }
+        }
+      },
+      "RateSessionRequest": {
+        "type": "object",
+        "required": ["rating"],
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "markInvalid": {
+            "type": "boolean",
+            "default": false,
+            "description": "'RN-01 (Tela 11): sessão inválida sai das métricas do relatório.'\n"
+          },
+          "invalidReason": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionRating": {
+        "type": "object",
+        "required": ["sessionId", "rating", "ratedAt"],
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "integer"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "ratedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ExportResponse": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ProcessingStatus"
+          },
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "StudioDashboard": {
+        "type": "object",
+        "required": ["kpis", "games", "recentTests"],
+        "properties": {
+          "kpis": {
+            "type": "object",
+            "description": "'RN-02 (Tela 02): consolidados no backend. A UI não recalcula.'\n",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number"
+                },
+                "delta": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "unit": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "games": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Game"
+            }
+          },
+          "recentTests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Test"
+            }
+          },
+          "stats": {
+            "$ref": "#/components/schemas/ReportBlock"
+          }
+        }
+      },
+      "Achievement": {
+        "type": "object",
+        "required": ["key", "name"],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
+      "PlayerAchievement": {
+        "type": "object",
+        "required": ["achievement", "unlocked"],
+        "properties": {
+          "achievement": {
+            "$ref": "#/components/schemas/Achievement"
+          },
+          "unlocked": {
+            "type": "boolean"
+          },
+          "unlockedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "progress": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          }
+        }
+      },
+      "PlayerAchievementList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerAchievement"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PlayerMission": {
+        "type": "object",
+        "required": ["key", "name", "progress", "target"],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "integer"
+          },
+          "target": {
+            "type": "integer"
+          },
+          "rewardXp": {
+            "type": "integer",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "RankingEntry": {
+        "type": "object",
+        "required": ["position", "displayName", "score"],
+        "properties": {
+          "position": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer"
+          },
+          "score": {
+            "type": "number"
+          },
+          "isCurrentUser": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RankingList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankingEntry"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentUserEntry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankingEntry"
+              }
+            ],
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Snapshot materializado, não cálculo em tempo real."
+          }
+        }
+      },
+      "CommunityPost": {
+        "type": "object",
+        "required": ["id", "gameId", "body", "authorDisplayName", "createdAt", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorDisplayName": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["visible", "hidden", "pinned"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CommunityPostList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommunityPost"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateCommunityPostRequest": {
+        "type": "object",
+        "required": ["body"],
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 5000
+          }
+        }
+      },
+      "Review": {
+        "type": "object",
+        "required": ["id", "gameId", "rating", "authorDisplayName", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorDisplayName": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "averageRating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          }
+        }
+      },
+      "CreateReviewRequest": {
+        "type": "object",
+        "required": ["rating"],
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "required": ["id", "type", "title", "read", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "example": "session.validated"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "link": {
+            "type": "string",
+            "nullable": true
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "NotificationList": {
+        "type": "object",
+        "required": ["data", "nextCursor"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "unreadCount": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
