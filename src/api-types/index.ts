@@ -12,7 +12,10 @@ export type LoginRequest = Schemas['LoginDto']
 export type LoginResponse = Schemas['LoginResponseDto_Output']
 export type ForgotPasswordRequest = Schemas['ForgotPasswordDto']
 export type MessageResponse = Schemas['MessageResponseDto_Output']
-export type Game = Schemas['GameListDto_Output']['data'][number]
+export type GameList = Schemas['GameListDto_Output']
+export type Game = GameList['data'][number]
+export type GameStatus = Game['status']
+export type CreateGameRequest = Schemas['CreateGameDto']
 
 // TestModel: o backend ainda não expõe esse schema no Swagger (funciona em
 // runtime, mas não aparece no OpenAPI gerado). Ver features/tests/types.ts
