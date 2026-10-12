@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -13,7 +14,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': new URL('./src', import.meta.url).pathname,
+      // fileURLToPath decodes %20; URL.pathname breaks when the repo sits in a path with spaces.
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   server: {

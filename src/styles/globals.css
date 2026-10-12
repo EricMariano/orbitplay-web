@@ -225,6 +225,83 @@
   --color-tint-olive-foreground: var(--tint-olive-foreground);
 }
 
+/* Login motion — entrance, ambient glow and button shimmer. Screens use the
+   `animate-login-*` utilities under `motion-safe:` so reduced motion opts out. */
+@theme {
+  --animate-login-card: login-card 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-login-rise: login-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-login-drift: login-drift 22s ease-in-out infinite alternate;
+  --animate-login-float: login-float 14s ease-in-out infinite alternate;
+  --animate-login-shake: login-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  --animate-login-progress: login-progress 5s linear both;
+
+  @keyframes login-card {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.98);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+  @keyframes login-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes login-drift {
+    from {
+      transform: scale(1.04) translate3d(0, 0, 0);
+    }
+    to {
+      transform: scale(1.1) translate3d(-1.5%, -1%, 0);
+    }
+  }
+  @keyframes login-float {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(6%, -8%, 0) scale(1.15);
+    }
+  }
+  @keyframes login-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes login-shake {
+    10%,
+    90% {
+      transform: translateX(-1px);
+    }
+    20%,
+    80% {
+      transform: translateX(3px);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translateX(-5px);
+    }
+    40%,
+    60% {
+      transform: translateX(5px);
+    }
+  }
+}
+
 @layer base {
   * {
     border-color: var(--border);

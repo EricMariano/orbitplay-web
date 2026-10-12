@@ -12,11 +12,23 @@ export type LoginRequest = Schemas['LoginDto']
 export type LoginResponse = Schemas['LoginResponseDto_Output']
 export type ForgotPasswordRequest = Schemas['ForgotPasswordDto']
 export type MessageResponse = Schemas['MessageResponseDto_Output']
-export type Game = Schemas['GameListDto_Output']['data'][number]
-
-// TestModel: o backend ainda não expõe esse schema no Swagger (funciona em
-// runtime, mas não aparece no OpenAPI gerado). Ver features/tests/types.ts
-// (TestModelView / TestModelOption), que já cobre isso manualmente.
+export type GameList = Schemas['GameListDto_Output']
+export type Game = GameList['data'][number]
+export type GameStatus = Game['status']
+export type CreateGameRequest = Schemas['CreateGameDto']
+export type TestModelList = Schemas['TestModelListDto_Output']
+export type TestModel = TestModelList['data'][number]
+export type TestModelKey = TestModel['key']
+export type CreateTestRequest = Schemas['CreateTestDto']
+export type Test = Schemas['TestDto_Output']
+export type PlayerProgress = Schemas['PlayerProgressDto_Output']
+export type PlayerMissionList = Schemas['PlayerMissionListDto_Output']
+export type PlayerMission = PlayerMissionList['data'][number]
+export type RankingList = Schemas['RankingListDto_Output']
+export type SessionSummary = Schemas['SessionSummaryDto_Output']
+export type FormQuestion = SessionSummary['form']['questions'][number]
+export type FormResponseRequest = Schemas['FormResponseRequestDto']
+export type FormResponse = Schemas['FormResponseDto_Output']
 
 // ---------------------------------------------------------------------------
 // ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
@@ -24,8 +36,8 @@ export type Game = Schemas['GameListDto_Output']['data'][number]
 // orbitplay-api). Estes tipos foram recuperados do contrato provisório
 // antigo (commit 262c190) para não quebrar as telas de Jogador que já
 // dependem deles. Substituir por Schemas['...'] assim que o backend
-// implementar cada endpoint (/wallet, /player/profile-stats, /tests/mine,
-// /games/highlighted, /earnings/summary, /missions/ranking, /opportunities,
+// implementar cada endpoint (/wallet, /tests/mine, /tests/continue,
+// /games/highlighted, /earnings/summary, /opportunities,
 // /tests/{id}/report).
 // ---------------------------------------------------------------------------
 
@@ -67,16 +79,6 @@ export type Wallet = {
   balance: number
 }
 
-export type PlayerTier = 'bronze' | 'silver' | 'gold' | 'elite'
-
-export type PlayerStats = {
-  tier: PlayerTier
-  level: number
-  feedbackQuality: number
-  achievements: number
-  hoursPlayed: number
-}
-
 export type TestTrackProgress = {
   label: string
   progress: number
@@ -115,19 +117,6 @@ export type EarningsSummary = {
   totalAccumulated: number
   nextPayoutInDays: number
   series: EarningsPoint[]
-}
-
-export type RankingCategory = {
-  label: string
-  value: number
-}
-
-export type MissionsRanking = {
-  rank: number
-  rankDelta: number
-  pending: number
-  nextGoal: number
-  categories: RankingCategory[]
 }
 
 export type MyTestProgress = {

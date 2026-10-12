@@ -1,20 +1,16 @@
 import { Icon, type IconName } from '@/components/icon'
 import { cn } from '@/lib/utils'
-import type { TestModelOption } from '../types'
+import type { TestModel } from '@/api-types'
 
-const iconByKey: Record<TestModelOption['key'], IconName> = {
+const iconByKey: Record<TestModel['key'], IconName> = {
   free_exploration_telemetry: 'plug',
   free_exploration: 'compass',
   ab_test: 'ab-test',
   ab_test_images: 'ab-test-images',
 }
 
-function formatPrice(cents: number) {
-  return (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-}
-
 type TestModelCardProps = {
-  model: TestModelOption
+  model: TestModel
   isRecommended?: boolean
   selected: boolean
   onSelect: () => void
@@ -63,14 +59,11 @@ export function TestModelCard({ model, isRecommended, selected, onSelect }: Test
           ))}
         </ul>
 
+        {/* Preço por teste: aguardando o campo no catálogo da API (GET /test-models). */}
         <div className="mt-auto flex items-center justify-between pt-2">
-          <div>
-            <span className="text-xs text-white/70">R$</span>
-            <span className="ml-0.5 text-lg font-bold text-white">
-              {formatPrice(model.priceCents)}
-            </span>
-            <span className="ml-1 text-xs text-white/70">Por teste</span>
-          </div>
+          <span className="text-xs text-white/70">
+            {model.requiresBuild ? 'Requer build do jogo' : 'Sem build'}
+          </span>
           <span
             className={cn(
               'size-5 rounded-full border-2',
