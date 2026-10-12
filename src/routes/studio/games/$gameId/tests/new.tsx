@@ -1,19 +1,22 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
+import type { TestModelKey } from '@/api-types'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { Stepper } from '@/components/common/Stepper'
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useGame } from '@/features/games/api/use-game'
 import { TestModelCard } from '@/features/tests/components/TestModelCard'
+import { useCreateTest } from '@/features/tests/api/use-create-test'
 import { useTestModels } from '@/features/tests/api/use-test-models'
-import type { TestModelView } from '@/features/tests/types'
 
 export const Route = createFileRoute('/studio/games/$gameId/tests/new')({
   component: NewTestWizard,
 })
 
-const CARD_ORDER: TestModelView['key'][] = [
+const CARD_ORDER: TestModelKey[] = [
   'free_exploration_telemetry',
   'free_exploration',
   'ab_test',
@@ -23,10 +26,27 @@ const WIZARD_STEPS = ['Tipo', 'Avaliação', 'Build', 'Orçamento']
 
 function NewTestWizard() {
   const { gameId } = Route.useParams()
-  void gameId // TODO: usar quando a rota /studio/games/$gameId existir de verdade
   const navigate = useNavigate()
+  const game = useGame(gameId)
   const testModels = useTestModels()
-  const [selectedKey, setSelectedKey] = useState<TestModelView['key'] | null>(null)
+  const createTest = useCreateTest(gameId)
+  const [selectedKey, setSelectedKey] = useState<TestModelKey | null>(null)
+
+  function handleNext() {
+    if (!selectedKey) return
+    createTest.mutate(
+      { testModelKey: selectedKey },
+      {
+        // Passos 2–4 (avaliação, build, orçamento) ainda não têm tela: o
+        // rascunho fica salvo na API e o estúdio volta para os jogos.
+        onSuccess: () => {
+          toast.success('Rascunho do teste criado.')
+          void navigate({ to: '/studio/games' })
+        },
+        onError: (error) => toast.error(error.message || 'Não foi possível criar o teste.'),
+      },
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -34,11 +54,12 @@ function NewTestWizard() {
         <Link to="/studio" className="hover:text-primary">
           Home
         </Link>{' '}
-        › <span>jogos</span> ›{' '}
+        ›{' '}
         <Link to="/studio/games" className="hover:text-primary">
-          Configuração
+          Jogos
         </Link>{' '}
-        › <span className="text-foreground-strong">Novo teste</span>
+        › <span>{game.data?.title ?? '…'}</span> ›{' '}
+        <span className="text-foreground-strong">Novo teste</span>
       </nav>
 
       <div className="flex items-center gap-3">
@@ -67,7 +88,6 @@ function NewTestWizard() {
         <QueryBoundary
           query={testModels}
           loadingFallback={<Skeleton className="mt-6 h-96 w-full" />}
-          emptyFallback={null}
         >
           {(models) => (
             <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -86,8 +106,10 @@ function NewTestWizard() {
           )}
         </QueryBoundary>
 
-        <div className="mt-6 flex justify-end">
-          <Button disabled={!selectedKey}>Próximo</Button>
+        <div className="mt-10 flex justify-end">
+          <Button disabled={!selectedKey || createTest.isPending} onClick={handleNext}>
+            {createTest.isPending ? 'Criando...' : 'Próximo'}
+          </Button>
         </div>
       </div>
     </div>

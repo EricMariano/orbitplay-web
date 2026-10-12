@@ -30,15 +30,14 @@ const navEntries: NavEntry[] = [
 /** Top navbar for the player area — replaces the sidebar shell used by /studio. */
 export function PlayerTopNav() {
   const user = useAuthStore((s) => s.user)
+  const logout = useLogout()
   const navigate = useNavigate()
-  const logoutMutation = useLogout()
 
-  async function logout() {
-    try {
-      await logoutMutation.mutateAsync()
-    } finally {
-      void navigate({ to: '/login' })
-    }
+  function handleLogout() {
+    // Revoga o refresh cookie na API; sem isso o reload restaura a sessão.
+    logout.mutate(undefined, {
+      onSettled: () => void navigate({ to: '/login' }),
+    })
   }
 
   return (
@@ -104,9 +103,9 @@ export function PlayerTopNav() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => void logout()} disabled={logoutMutation.isPending}>
+            <DropdownMenuItem onSelect={handleLogout} disabled={logout.isPending}>
               <Icon name="logout" />
-              {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
+              {logout.isPending ? 'Saindo...' : 'Sair'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

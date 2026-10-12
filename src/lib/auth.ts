@@ -43,8 +43,11 @@ export const useAuthStore = create<SessionState & SessionActions>((set) => ({
 export const getAccessToken = () => useAuthStore.getState().accessToken
 export const clearSession = () => useAuthStore.getState().clearSession()
 
+/** Papéis com acesso de estúdio — espelha STUDIO_ROLES do orbitplay-api. */
+export const STUDIO_ROLES: Role[] = ['owner', 'admin', 'studio']
+
 export function isStudioRole(role: Role) {
-  return role !== 'player'
+  return STUDIO_ROLES.includes(role)
 }
 
 export function homeRouteForRole(role: Role): '/studio' | '/player' {

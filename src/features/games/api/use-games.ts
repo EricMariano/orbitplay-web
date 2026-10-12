@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Game } from '@/api-types'
+import type { Game, GameList } from '@/api-types'
 import { api } from '@/lib/api-client'
 import { gamesKeys } from './games-keys'
 
-/** List games from the paginated API. */
+// O OpenAPI gerado tipa `nextCursor` como string[], mas a API devolve
+// `string | null` (GameListDto no orbitplay-api). Corrigir no contrato.
+type GamePage = Omit<GameList, 'nextCursor'> & { nextCursor: string | null }
+
+/** Jogos da organização (`GET /games`), percorrendo todas as páginas do cursor. */
 export function useGames() {
   return useQuery({
     queryKey: gamesKeys.list(),
@@ -14,10 +18,7 @@ export function useGames() {
       do {
         const params = new URLSearchParams({ limit: '100' })
         if (cursor) params.set('cursor', cursor)
-        const page: { data: Game[]; nextCursor: string | null } = await api.get(
-          `/games?${params}`,
-          { signal },
-        )
+        const page: GamePage = await api.get(`/games?${params}`, { signal })
         games.push(...page.data)
         cursor = page.nextCursor
         if (cursor && visited.has(cursor)) throw new Error('Repeated pagination cursor')

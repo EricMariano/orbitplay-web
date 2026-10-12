@@ -275,9 +275,6 @@
   border-radius: 50%;
   background: #fff;
 }
-.session-rating .session-scale-option span::after {
-  border-radius: 6px;
-}
 .session-scale-option input:checked + span::after {
   border-color: #76b9ff;
   background: #399af6;

@@ -46,26 +46,6 @@
             }
           },
           {
-            "name": "entity",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            }
-          },
-          {
-            "name": "entityId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            }
-          },
-          {
             "name": "from",
             "required": false,
             "in": "query",
@@ -104,13 +84,27 @@
           }
         ],
         "tags": [
-          "audit-logs"
+          "orgs"
         ]
       }
     },
     "/health": {
       "get": {
         "operationId": "HealthController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
         "parameters": [],
         "responses": {
           "200": {
@@ -142,7 +136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto_Output"
+                  "$ref": "#/components/schemas/LoginResultDto_Output"
                 }
               }
             }
@@ -402,12 +396,104 @@
         "tags": [
           "orgs"
         ]
+      },
+      "patch": {
+        "operationId": "OrgsController_updateCurrent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrgDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
       }
     },
     "/orgs/members": {
       "get": {
         "operationId": "OrgsController_members",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "owner",
+                "admin",
+                "studio",
+                "player"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "invited",
+                "disabled"
+              ]
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "",
@@ -475,7 +561,6 @@
             "required": true,
             "in": "path",
             "schema": {
-              "minLength": 1,
               "type": "string"
             }
           }
@@ -514,14 +599,13 @@
     },
     "/orgs/members/{userId}/status": {
       "patch": {
-        "operationId": "OrgsController_updateStatus",
+        "operationId": "OrgsController_changeStatus",
         "parameters": [
           {
             "name": "userId",
             "required": true,
             "in": "path",
             "schema": {
-              "minLength": 1,
               "type": "string"
             }
           }
@@ -531,7 +615,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateMemberStatusDto"
+                "$ref": "#/components/schemas/ChangeStatusDto"
               }
             }
           }
@@ -558,16 +642,50 @@
         ]
       }
     },
-    "/orgs/members/{userId}": {
-      "delete": {
-        "operationId": "OrgsController_remove",
+    "/orgs/members/{userId}/password-reset": {
+      "post": {
+        "operationId": "OrgsController_triggerPasswordReset",
         "parameters": [
           {
             "name": "userId",
             "required": true,
             "in": "path",
             "schema": {
-              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members/{userId}": {
+      "delete": {
+        "operationId": "OrgsController_removeMember",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
               "type": "string"
             }
           }
@@ -794,6 +912,76 @@
         ]
       }
     },
+    "/games/{id}/summary": {
+      "get": {
+        "operationId": "GamesController_summary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameSummaryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{id}/specs": {
+      "get": {
+        "operationId": "GamesController_specs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameSpecsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      }
+    },
     "/games/{id}/assets/upload-url": {
       "post": {
         "operationId": "GamesController_createAssetUploadUrl",
@@ -823,7 +1011,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UploadUrlResponseDto_Output"
+                  "$ref": "#/components/schemas/AssetUploadUrlResponseDto_Output"
                 }
               }
             }
@@ -949,7 +1137,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UploadUrlResponseDto_Output"
+                  "$ref": "#/components/schemas/RecordingUploadUrlResponseDto_Output"
                 }
               }
             }
@@ -1052,6 +1240,2269 @@
           "media"
         ]
       }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "unreadOnly",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Marcada como lida"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/test-models": {
+      "get": {
+        "operationId": "TestModelsController_list",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestModelListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "test-models"
+        ]
+      }
+    },
+    "/test-models/{key}": {
+      "get": {
+        "operationId": "TestModelsController_get",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestModelDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "test-models"
+        ]
+      }
+    },
+    "/games/{gameId}/tests": {
+      "post": {
+        "operationId": "TestsController_create",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      },
+      "get": {
+        "operationId": "TestsController_listByGame",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "tab",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "active",
+              "type": "string",
+              "enum": [
+                "active",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "paused",
+                "finished",
+                "expired"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}": {
+      "get": {
+        "operationId": "TestsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/model": {
+      "patch": {
+        "operationId": "TestsController_setModel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetModelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/form": {
+      "put": {
+        "operationId": "TestsController_putForm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutFormDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestFormDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/form/preview": {
+      "get": {
+        "operationId": "TestsController_formPreview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestFormDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/build/upload-url": {
+      "post": {
+        "operationId": "TestsController_createBuildUploadUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildUploadUrlRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildUploadUrlResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/build": {
+      "post": {
+        "operationId": "TestsController_confirmBuild",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmBuildRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      },
+      "get": {
+        "operationId": "TestsController_getBuild",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      },
+      "delete": {
+        "operationId": "TestsController_deleteBuild",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/audience": {
+      "patch": {
+        "operationId": "TestsController_setAudience",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudienceRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/publish": {
+      "post": {
+        "operationId": "TestsController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/tests/{id}/status": {
+      "patch": {
+        "operationId": "TestsController_setStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
+    "/builds/{id}": {
+      "get": {
+        "operationId": "BuildsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "builds"
+        ]
+      }
+    },
+    "/builds/{id}/compatibility": {
+      "get": {
+        "operationId": "BuildsController_checkCompatibility",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          {
+            "name": "os",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "arch",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 50,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompatibilityReportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "builds"
+        ]
+      }
+    },
+    "/builds/{id}/download-url": {
+      "get": {
+        "operationId": "BuildsController_getDownloadUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "localVersion",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadUrlResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "builds"
+        ]
+      }
+    },
+    "/player/tests/{testId}/participations": {
+      "post": {
+        "operationId": "ParticipationsController_join",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/participations/{id}": {
+      "get": {
+        "operationId": "ParticipationsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/participations/{id}/tutorial": {
+      "get": {
+        "operationId": "ParticipationsController_tutorial",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TutorialDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/participations/{id}/consents": {
+      "post": {
+        "operationId": "ParticipationsController_consents",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentRecordDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/participations/{id}/sessions": {
+      "post": {
+        "operationId": "ParticipationsController_startSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSessionRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStartedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/participations/{id}/result": {
+      "get": {
+        "operationId": "ParticipationsController_result",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/sessions/{id}/devices": {
+      "patch": {
+        "operationId": "SessionsController_devices",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEventRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/sessions/{id}/heartbeat": {
+      "post": {
+        "operationId": "SessionsController_heartbeat",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/sessions/{id}/finish": {
+      "post": {
+        "operationId": "SessionsController_finish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishSessionRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/sessions/{id}/summary": {
+      "get": {
+        "operationId": "SessionsController_summary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSummaryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/sessions/{id}/form-response": {
+      "post": {
+        "operationId": "SessionsController_formResponse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormResponseRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/games/{gameId}/community/posts": {
+      "get": {
+        "operationId": "CommunityController_listPosts",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPostListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "community"
+        ]
+      },
+      "post": {
+        "operationId": "CommunityController_createPost",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommunityPostRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPostDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/community/posts/{id}/report": {
+      "post": {
+        "operationId": "CommunityController_reportPost",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportPostRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/community/posts/{id}/moderate": {
+      "patch": {
+        "operationId": "CommunityController_moderatePost",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModeratePostRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPostDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/games/{gameId}/reviews": {
+      "get": {
+        "operationId": "CommunityController_listReviews",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "community"
+        ]
+      },
+      "post": {
+        "operationId": "CommunityController_createReview",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/games/{gameId}/chat/channels": {
+      "get": {
+        "operationId": "ChatController_listChannels",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatChannelListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      },
+      "post": {
+        "operationId": "ChatController_createChannel",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatChannelRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatChannelDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/chat/channels/{id}": {
+      "patch": {
+        "operationId": "ChatController_updateChannel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChatChannelRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatChannelDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/chat/channels/{id}/messages": {
+      "get": {
+        "operationId": "ChatController_listMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      },
+      "post": {
+        "operationId": "ChatController_sendMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChatMessageRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/chat/messages/{id}/moderate": {
+      "patch": {
+        "operationId": "ChatController_moderateMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerateChatMessageRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/player/progress": {
+      "get": {
+        "operationId": "GamificationController_getProgress",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerProgressDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/player/achievements": {
+      "get": {
+        "operationId": "GamificationController_listAchievements",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerAchievementListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/player/missions": {
+      "get": {
+        "operationId": "GamificationController_listMissions",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerMissionListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/rankings": {
+      "get": {
+        "operationId": "GamificationController_getRankings",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "global",
+              "type": "string",
+              "enum": [
+                "global",
+                "game"
+              ]
+            }
+          },
+          {
+            "name": "gameId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "month",
+              "type": "string",
+              "enum": [
+                "week",
+                "month",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/tests/{testId}/report": {
+      "get": {
+        "operationId": "ReportsController_getReport",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestReportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/tests/{testId}/report/sessions": {
+      "get": {
+        "operationId": "ReportsController_listSessions",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSessionListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/tests/{testId}/report/sessions/{sessionId}": {
+      "get": {
+        "operationId": "ReportsController_getSessionEvaluation",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionEvaluationDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/tests/{testId}/report/exports": {
+      "post": {
+        "operationId": "ReportsController_requestExport",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportExportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportExportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/tests/{testId}/report/exports/{exportId}": {
+      "get": {
+        "operationId": "ReportsController_getExport",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportExportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
     }
   },
   "info": {
@@ -1087,13 +3538,13 @@
                 "id": {
                   "type": "string"
                 },
-                "organizationId": {
+                "actorUserId": {
                   "type": [
                     "string",
                     "null"
                   ]
                 },
-                "actorUserId": {
+                "actorEmail": {
                   "type": [
                     "string",
                     "null"
@@ -1112,32 +3563,10 @@
                   ]
                 },
                 "before": {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {},
                   "nullable": true
                 },
                 "after": {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {},
                   "nullable": true
-                },
-                "ip": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "requestId": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
                 },
                 "createdAt": {
                   "type": "string"
@@ -1145,15 +3574,13 @@
               },
               "required": [
                 "id",
-                "organizationId",
                 "actorUserId",
+                "actorEmail",
                 "action",
                 "entity",
                 "entityId",
                 "before",
                 "after",
-                "ip",
-                "requestId",
                 "createdAt"
               ],
               "additionalProperties": false
@@ -1184,11 +3611,151 @@
           "password": {
             "type": "string",
             "minLength": 1
+          },
+          "organizationId": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [
           "email",
           "password"
+        ]
+      },
+      "LoginResultDto_Output": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "accessToken": {
+                "type": "string"
+              },
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "owner",
+                      "admin",
+                      "studio",
+                      "player"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "email",
+                  "displayName",
+                  "organizationId",
+                  "role"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "accessToken",
+              "user"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "requiresOrganizationSelection": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              },
+              "organizations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "organizationId": {
+                      "type": "string"
+                    },
+                    "organizationName": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "admin",
+                        "studio",
+                        "player"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "organizationId",
+                    "organizationName",
+                    "role"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "requiresOrganizationSelection",
+              "organizations"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "SignupStudioDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "organizationName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "acceptedTerms": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "displayName",
+          "email",
+          "password",
+          "birthdate",
+          "organizationName"
         ]
       },
       "LoginResponseDto_Output": {
@@ -1237,46 +3804,6 @@
           "user"
         ],
         "additionalProperties": false
-      },
-      "SignupStudioDto": {
-        "type": "object",
-        "properties": {
-          "displayName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "email": {
-            "type": "string",
-            "minLength": 1,
-            "format": "email",
-            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8
-          },
-          "birthdate": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "organizationName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "acceptedTerms": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "displayName",
-          "email",
-          "password",
-          "birthdate",
-          "organizationName"
-        ]
       },
       "SignupPlayerDto": {
         "type": "object",
@@ -1425,6 +3952,22 @@
         ],
         "additionalProperties": false
       },
+      "UpdateOrgDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        }
+      },
       "MemberListDto_Output": {
         "type": "object",
         "properties": {
@@ -1469,10 +4012,17 @@
               ],
               "additionalProperties": false
             }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
-          "data"
+          "data",
+          "nextCursor"
         ],
         "additionalProperties": false
       },
@@ -1568,19 +4118,27 @@
           "confirm"
         ]
       },
-      "UpdateMemberStatusDto": {
+      "ChangeStatusDto": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
             "enum": [
               "active",
+              "invited",
               "disabled"
+            ]
+          },
+          "confirm": {
+            "type": "boolean",
+            "enum": [
+              true
             ]
           }
         },
         "required": [
-          "status"
+          "status",
+          "confirm"
         ]
       },
       "GameListDto_Output": {
@@ -1834,6 +4392,221 @@
         ],
         "additionalProperties": false
       },
+      "GameSummaryDto_Output": {
+        "type": "object",
+        "properties": {
+          "game": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "organizationId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genre": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "platform": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "archived"
+                ]
+              },
+              "coverUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "metrics": {
+                "type": "object",
+                "properties": {
+                  "testsTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "testsActive": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "sessionsValid": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "playersTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "averageRating": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "testsTotal",
+                  "testsActive",
+                  "sessionsValid",
+                  "playersTotal",
+                  "averageRating"
+                ],
+                "additionalProperties": false
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "organizationId",
+              "title",
+              "slug",
+              "description",
+              "genre",
+              "platform",
+              "status",
+              "coverUrl",
+              "bannerUrl",
+              "metrics",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable"
+            ]
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "testsTotal": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "testsActive": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "sessionsValid": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "playersTotal": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "averageRating": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "testsTotal",
+              "testsActive",
+              "sessionsValid",
+              "playersTotal",
+              "averageRating"
+            ],
+            "additionalProperties": false
+          },
+          "canEdit": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "game",
+          "availability",
+          "metrics",
+          "canEdit"
+        ],
+        "additionalProperties": false
+      },
+      "GameSpecsDto_Output": {
+        "type": "object",
+        "properties": {
+          "minimumRequirements": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "recommendedRequirements": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "supportedPlatforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateGameDto": {
         "type": "object",
         "properties": {
@@ -1946,7 +4719,7 @@
           "fileName"
         ]
       },
-      "UploadUrlResponseDto_Output": {
+      "AssetUploadUrlResponseDto_Output": {
         "type": "object",
         "properties": {
           "uploadUrl": {
@@ -1962,15 +4735,13 @@
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
-          },
-          "uploadId": {
-            "type": "string"
           }
         },
         "required": [
           "uploadUrl",
           "storageKey",
-          "expiresAt"
+          "expiresAt",
+          "maxSizeBytes"
         ],
         "additionalProperties": false
       },
@@ -2080,6 +4851,34 @@
           "contentType",
           "sizeBytes"
         ]
+      },
+      "RecordingUploadUrlResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "uploadUrl": {
+            "type": "string"
+          },
+          "storageKey": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "maxSizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "uploadId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uploadUrl",
+          "storageKey",
+          "expiresAt"
+        ],
+        "additionalProperties": false
       },
       "RecordingCompleteRequestDto": {
         "type": "object",
@@ -2212,6 +5011,3634 @@
           "expiresAt",
           "durationMs",
           "thumbnailUrl"
+        ],
+        "additionalProperties": false
+      },
+      "NotificationListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "link": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "read": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "title",
+                "body",
+                "link",
+                "read",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unreadCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor",
+          "unreadCount"
+        ],
+        "additionalProperties": false
+      },
+      "TestModelListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "free_exploration_telemetry",
+                    "free_exploration",
+                    "ab_test",
+                    "ab_test_images"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "deliverables": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "technicalRequirements": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "requiresTelemetry": {
+                  "type": "boolean"
+                },
+                "requiresBuild": {
+                  "type": "boolean"
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "unavailableReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "name",
+                "description",
+                "deliverables",
+                "technicalRequirements",
+                "requiresTelemetry",
+                "requiresBuild",
+                "available",
+                "unavailableReason"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "TestModelDto_Output": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "free_exploration_telemetry",
+              "free_exploration",
+              "ab_test",
+              "ab_test_images"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technicalRequirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiresTelemetry": {
+            "type": "boolean"
+          },
+          "requiresBuild": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description",
+          "deliverables",
+          "technicalRequirements",
+          "requiresTelemetry",
+          "requiresBuild",
+          "available",
+          "unavailableReason"
+        ],
+        "additionalProperties": false
+      },
+      "CreateTestDto": {
+        "type": "object",
+        "properties": {
+          "testModelKey": {
+            "type": "string",
+            "enum": [
+              "free_exploration_telemetry",
+              "free_exploration",
+              "ab_test",
+              "ab_test_images"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "testModelKey"
+        ]
+      },
+      "TestDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "paused",
+              "finished",
+              "expired"
+            ]
+          },
+          "testModelKey": {
+            "type": "string",
+            "enum": [
+              "free_exploration_telemetry",
+              "free_exploration",
+              "ab_test",
+              "ab_test_images"
+            ]
+          },
+          "currentStep": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "pendingValidations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "step": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "step",
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "audience": {
+            "type": "object",
+            "properties": {
+              "locations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "archetypes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "ageMin": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "ageMax": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "durationDays": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "deviceRequirements": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux",
+                    "android",
+                    "ios",
+                    "web"
+                  ]
+                }
+              },
+              "keepActive": {
+                "type": "boolean"
+              },
+              "estimatedReach": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "locations",
+              "archetypes",
+              "ageMin",
+              "ageMax",
+              "quantity",
+              "durationDays",
+              "deviceRequirements",
+              "keepActive",
+              "estimatedReach"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "build": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "testId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "awaiting_upload",
+                  "uploading",
+                  "processing",
+                  "validated",
+                  "failed"
+                ]
+              },
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "windows",
+                  "macos",
+                  "linux",
+                  "android",
+                  "ios",
+                  "web",
+                  null
+                ],
+                "nullable": true
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "checksum": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "validationSteps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "checksum",
+                        "malware_scan",
+                        "metadata",
+                        "plugin_manifest"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "message": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "failureReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "testId",
+              "status",
+              "platform",
+              "version",
+              "sizeBytes",
+              "checksum",
+              "validationSteps",
+              "failureReason",
+              "createdAt"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "spotsTotal": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "spotsTaken": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "rewardCents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publishedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "gameId",
+          "organizationId",
+          "title",
+          "status",
+          "testModelKey",
+          "currentStep",
+          "pendingValidations",
+          "audience",
+          "build",
+          "spotsTotal",
+          "spotsTaken",
+          "rewardCents",
+          "expiresAt",
+          "publishedAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "TestListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "published",
+                    "paused",
+                    "finished",
+                    "expired"
+                  ]
+                },
+                "testModelKey": {
+                  "type": "string",
+                  "enum": [
+                    "free_exploration_telemetry",
+                    "free_exploration",
+                    "ab_test",
+                    "ab_test_images"
+                  ]
+                },
+                "currentStep": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "pendingValidations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "step",
+                      "code",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "audience": {
+                  "type": "object",
+                  "properties": {
+                    "locations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "archetypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ageMin": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "ageMax": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "durationDays": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "deviceRequirements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "windows",
+                          "macos",
+                          "linux",
+                          "android",
+                          "ios",
+                          "web"
+                        ]
+                      }
+                    },
+                    "keepActive": {
+                      "type": "boolean"
+                    },
+                    "estimatedReach": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "locations",
+                    "archetypes",
+                    "ageMin",
+                    "ageMax",
+                    "quantity",
+                    "durationDays",
+                    "deviceRequirements",
+                    "keepActive",
+                    "estimatedReach"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "build": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "testId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "awaiting_upload",
+                        "uploading",
+                        "processing",
+                        "validated",
+                        "failed"
+                      ]
+                    },
+                    "platform": {
+                      "type": "string",
+                      "enum": [
+                        "windows",
+                        "macos",
+                        "linux",
+                        "android",
+                        "ios",
+                        "web",
+                        null
+                      ],
+                      "nullable": true
+                    },
+                    "version": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sizeBytes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "checksum": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "validationSteps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "checksum",
+                              "malware_scan",
+                              "metadata",
+                              "plugin_manifest"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "processing",
+                              "ready",
+                              "failed",
+                              "unavailable"
+                            ]
+                          },
+                          "message": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "status",
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "failureReason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "testId",
+                    "status",
+                    "platform",
+                    "version",
+                    "sizeBytes",
+                    "checksum",
+                    "validationSteps",
+                    "failureReason",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "spotsTotal": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "spotsTaken": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "rewardCents": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "expiresAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "publishedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "gameId",
+                "organizationId",
+                "title",
+                "status",
+                "testModelKey",
+                "currentStep",
+                "pendingValidations",
+                "audience",
+                "build",
+                "spotsTotal",
+                "spotsTaken",
+                "rewardCents",
+                "expiresAt",
+                "publishedAt",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "SetModelDto": {
+        "type": "object",
+        "properties": {
+          "testModelKey": {
+            "type": "string",
+            "enum": [
+              "free_exploration_telemetry",
+              "free_exploration",
+              "ab_test",
+              "ab_test_images"
+            ]
+          }
+        },
+        "required": [
+          "testModelKey"
+        ]
+      },
+      "PutFormDto": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "scale",
+                    "single_choice",
+                    "multiple_choice",
+                    "open_text",
+                    "boolean",
+                    "nps"
+                  ]
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "helpText": {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      },
+                      "position": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "position"
+                    ]
+                  }
+                },
+                "scaleMin": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "scaleMax": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "type",
+                "prompt",
+                "required",
+                "position"
+              ]
+            }
+          }
+        },
+        "required": [
+          "questions"
+        ]
+      },
+      "TestFormDto_Output": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "scale",
+                    "single_choice",
+                    "multiple_choice",
+                    "open_text",
+                    "boolean",
+                    "nps"
+                  ]
+                },
+                "prompt": {
+                  "type": "string"
+                },
+                "helpText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "position": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "position"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "scaleMin": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "scaleMax": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "prompt",
+                "helpText",
+                "required",
+                "position",
+                "options",
+                "scaleMin",
+                "scaleMax"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "testId",
+          "questions"
+        ],
+        "additionalProperties": false
+      },
+      "BuildUploadUrlRequestDto": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "contentType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5368709120
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "windows",
+              "macos",
+              "linux",
+              "android",
+              "ios",
+              "web"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "fileName",
+          "contentType",
+          "sizeBytes",
+          "platform"
+        ]
+      },
+      "BuildUploadUrlResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "uploadUrl": {
+            "type": "string"
+          },
+          "storageKey": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "maxSizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "uploadUrl",
+          "storageKey",
+          "expiresAt",
+          "maxSizeBytes"
+        ],
+        "additionalProperties": false
+      },
+      "ConfirmBuildRequestDto": {
+        "type": "object",
+        "properties": {
+          "storageKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "windows",
+              "macos",
+              "linux",
+              "android",
+              "ios",
+              "web"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "checksum": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "storageKey",
+          "platform"
+        ]
+      },
+      "BuildDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "testId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_upload",
+              "uploading",
+              "processing",
+              "validated",
+              "failed"
+            ]
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "windows",
+              "macos",
+              "linux",
+              "android",
+              "ios",
+              "web",
+              null
+            ],
+            "nullable": true
+          },
+          "version": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "checksum": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validationSteps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "checksum",
+                    "malware_scan",
+                    "metadata",
+                    "plugin_manifest"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "processing",
+                    "ready",
+                    "failed",
+                    "unavailable"
+                  ]
+                },
+                "message": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "status",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "failureReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "testId",
+          "status",
+          "platform",
+          "version",
+          "sizeBytes",
+          "checksum",
+          "validationSteps",
+          "failureReason",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "AudienceRequestDto": {
+        "type": "object",
+        "properties": {
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 10
+            }
+          },
+          "archetypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          "ageMin": {
+            "type": "integer",
+            "minimum": 18,
+            "maximum": 9007199254740991
+          },
+          "ageMax": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 120
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "durationDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "deviceRequirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          "keepActive": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ageMin",
+          "ageMax",
+          "quantity",
+          "durationDays"
+        ]
+      },
+      "SetStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "paused",
+              "published",
+              "finished"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CompatibilityReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "compatible": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "supportedPlatforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          }
+        },
+        "required": [
+          "compatible",
+          "reasons",
+          "supportedPlatforms"
+        ],
+        "additionalProperties": false
+      },
+      "DownloadUrlResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "needsDownload": {
+            "type": "boolean"
+          },
+          "downloadUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiresAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "version": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "checksum": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "supportsRange": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "needsDownload",
+          "downloadUrl",
+          "expiresAt",
+          "version",
+          "checksum",
+          "sizeBytes",
+          "supportsRange"
+        ],
+        "additionalProperties": false
+      },
+      "ParticipationDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "testId": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "reserved",
+              "tutorial",
+              "downloading",
+              "ready",
+              "playing",
+              "form_pending",
+              "in_review",
+              "completed",
+              "rejected",
+              "abandoned"
+            ]
+          },
+          "currentSessionId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resumePoint": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "consentsGranted": {
+            "type": "boolean"
+          },
+          "build": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "testId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "awaiting_upload",
+                  "uploading",
+                  "processing",
+                  "validated",
+                  "failed"
+                ]
+              },
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "windows",
+                  "macos",
+                  "linux",
+                  "android",
+                  "ios",
+                  "web",
+                  null
+                ],
+                "nullable": true
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "checksum": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "validationSteps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "checksum",
+                        "malware_scan",
+                        "metadata",
+                        "plugin_manifest"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "message": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "failureReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "testId",
+              "status",
+              "platform",
+              "version",
+              "sizeBytes",
+              "checksum",
+              "validationSteps",
+              "failureReason",
+              "createdAt"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "completedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "testId",
+          "gameId",
+          "status",
+          "currentSessionId",
+          "resumePoint",
+          "consentsGranted",
+          "build",
+          "startedAt",
+          "completedAt"
+        ],
+        "additionalProperties": false
+      },
+      "TutorialDto_Output": {
+        "type": "object",
+        "properties": {
+          "modelKey": {
+            "type": "string",
+            "enum": [
+              "free_exploration_telemetry",
+              "free_exploration",
+              "ab_test",
+              "ab_test_images"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "mediaUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "title",
+                "body",
+                "mediaUrl"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "requiredConsents": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "screen_recording",
+                "audio",
+                "microphone",
+                "webcam"
+              ]
+            }
+          }
+        },
+        "required": [
+          "modelKey",
+          "steps",
+          "requiredConsents"
+        ],
+        "additionalProperties": false
+      },
+      "ConsentRequestDto": {
+        "type": "object",
+        "properties": {
+          "consents": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "screen_recording",
+                    "audio",
+                    "microphone",
+                    "webcam"
+                  ]
+                },
+                "granted": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "kind",
+                "granted"
+              ]
+            }
+          }
+        },
+        "required": [
+          "consents"
+        ]
+      },
+      "ConsentRecordDto_Output": {
+        "type": "object",
+        "properties": {
+          "participationId": {
+            "type": "string"
+          },
+          "consents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "screen_recording",
+                    "audio",
+                    "microphone",
+                    "webcam"
+                  ]
+                },
+                "granted": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "kind",
+                "granted"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "recordedAt": {
+            "type": "string"
+          },
+          "allRequiredGranted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "participationId",
+          "consents",
+          "recordedAt",
+          "allRequiredGranted"
+        ],
+        "additionalProperties": false
+      },
+      "StartSessionRequestDto": {
+        "type": "object",
+        "properties": {
+          "buildVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "windows",
+              "macos",
+              "linux",
+              "android",
+              "ios",
+              "web"
+            ]
+          },
+          "deviceInfo": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "buildVersion",
+          "platform"
+        ]
+      },
+      "SessionStartedDto_Output": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string"
+          },
+          "maxDurationMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "heartbeatIntervalMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "recordingRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sessionId",
+          "startedAt",
+          "maxDurationMs",
+          "heartbeatIntervalMs",
+          "recordingRequired"
+        ],
+        "additionalProperties": false
+      },
+      "ParticipationResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "in_review",
+              "completed",
+              "rejected"
+            ]
+          },
+          "xpEarned": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "rating": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "rewardCents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "rewardStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "paid"
+            ]
+          },
+          "invalidReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "xpEarned",
+          "rating",
+          "rewardCents",
+          "rewardStatus",
+          "invalidReason"
+        ],
+        "additionalProperties": false
+      },
+      "DeviceEventRequestDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "microphone",
+              "webcam"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "tMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "kind",
+          "enabled",
+          "tMs"
+        ]
+      },
+      "HeartbeatRequestDto": {
+        "type": "object",
+        "properties": {
+          "tMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "connectionQuality": {
+            "type": "string",
+            "enum": [
+              "good",
+              "degraded",
+              "poor"
+            ]
+          }
+        },
+        "required": [
+          "tMs"
+        ]
+      },
+      "FinishSessionRequestDto": {
+        "type": "object",
+        "properties": {
+          "tMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "confirmed": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "gave_up",
+              "technical_failure"
+            ]
+          }
+        },
+        "required": [
+          "tMs",
+          "confirmed"
+        ]
+      },
+      "SessionDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "participationId": {
+            "type": "string"
+          },
+          "testId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "finishing",
+              "in_review",
+              "valid",
+              "invalid",
+              "abandoned"
+            ]
+          },
+          "startedAt": {
+            "type": "string"
+          },
+          "endedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "invalidReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "participationId",
+          "testId",
+          "status",
+          "startedAt",
+          "endedAt",
+          "durationMs",
+          "invalidReason"
+        ],
+        "additionalProperties": false
+      },
+      "SessionSummaryDto_Output": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "participationId": {
+                "type": "string"
+              },
+              "testId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "finishing",
+                  "in_review",
+                  "valid",
+                  "invalid",
+                  "abandoned"
+                ]
+              },
+              "startedAt": {
+                "type": "string"
+              },
+              "endedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "invalidReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "participationId",
+              "testId",
+              "status",
+              "startedAt",
+              "endedAt",
+              "durationMs",
+              "invalidReason"
+            ],
+            "additionalProperties": false
+          },
+          "test": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "gameId": {
+                "type": "string"
+              },
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "testModelKey": {
+                "type": "string",
+                "enum": [
+                  "free_exploration_telemetry",
+                  "free_exploration",
+                  "ab_test",
+                  "ab_test_images"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "published",
+                  "paused",
+                  "finished",
+                  "expired"
+                ]
+              },
+              "rewardCents": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "expiresAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "gameId",
+              "title",
+              "testModelKey",
+              "status",
+              "rewardCents",
+              "expiresAt"
+            ],
+            "additionalProperties": false
+          },
+          "game": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "organizationId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genre": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "platform": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "archived"
+                ]
+              },
+              "coverUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "metrics": {
+                "type": "object",
+                "properties": {
+                  "testsTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "testsActive": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "sessionsValid": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "playersTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "averageRating": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "testsTotal",
+                  "testsActive",
+                  "sessionsValid",
+                  "playersTotal",
+                  "averageRating"
+                ],
+                "additionalProperties": false
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "organizationId",
+              "title",
+              "slug",
+              "description",
+              "genre",
+              "platform",
+              "status",
+              "coverUrl",
+              "bannerUrl",
+              "metrics",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "recording": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "processing",
+                  "ready",
+                  "failed",
+                  "unavailable"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "expiresAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "thumbnailUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "url",
+              "expiresAt",
+              "durationMs",
+              "thumbnailUrl"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "form": {
+            "type": "object",
+            "properties": {
+              "testId": {
+                "type": "string"
+              },
+              "questions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "scale",
+                        "single_choice",
+                        "multiple_choice",
+                        "open_text",
+                        "boolean",
+                        "nps"
+                      ]
+                    },
+                    "prompt": {
+                      "type": "string"
+                    },
+                    "helpText": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "position": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "position": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "position"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "scaleMin": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "scaleMax": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "type",
+                    "prompt",
+                    "helpText",
+                    "required",
+                    "position",
+                    "options",
+                    "scaleMin",
+                    "scaleMax"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "testId",
+              "questions"
+            ],
+            "additionalProperties": false
+          },
+          "alreadySubmitted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session",
+          "test",
+          "game",
+          "recording",
+          "form",
+          "alreadySubmitted"
+        ],
+        "additionalProperties": false
+      },
+      "FormResponseRequestDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "questionId": {
+                  "type": "string"
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "questionId",
+                "value"
+              ]
+            }
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "FormResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "submittedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CommunityPostListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "authorUserId": {
+                  "type": "string"
+                },
+                "authorDisplayName": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "visible",
+                    "hidden",
+                    "removed"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "gameId",
+                "authorUserId",
+                "authorDisplayName",
+                "body",
+                "status",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateCommunityPostRequestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "CommunityPostDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "authorUserId": {
+            "type": "string"
+          },
+          "authorDisplayName": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "visible",
+              "hidden",
+              "removed"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "gameId",
+          "authorUserId",
+          "authorDisplayName",
+          "body",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "ReportPostRequestDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "spam",
+              "abuse",
+              "spoiler",
+              "other"
+            ]
+          },
+          "details": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "ModeratePostRequestDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "hide",
+              "restore",
+              "remove"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "ReviewListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "authorUserId": {
+                  "type": "string"
+                },
+                "authorDisplayName": {
+                  "type": "string"
+                },
+                "rating": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "body": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "gameId",
+                "authorUserId",
+                "authorDisplayName",
+                "rating",
+                "body",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "averageRating": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor",
+          "averageRating"
+        ],
+        "additionalProperties": false
+      },
+      "CreateReviewRequestDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      },
+      "ReviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "authorUserId": {
+            "type": "string"
+          },
+          "authorDisplayName": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "body": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "gameId",
+          "authorUserId",
+          "authorDisplayName",
+          "rating",
+          "body",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "ChatChannelListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "topic": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "archived": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "gameId",
+                "slug",
+                "name",
+                "topic",
+                "archived",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateChatChannelRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "topic": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ChatChannelDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "gameId",
+          "slug",
+          "name",
+          "topic",
+          "archived",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateChatChannelRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "topic": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ChatMessageListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "channelId": {
+                  "type": "string"
+                },
+                "authorUserId": {
+                  "type": "string"
+                },
+                "authorDisplayName": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "visible",
+                    "hidden",
+                    "removed"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "channelId",
+                "authorUserId",
+                "authorDisplayName",
+                "body",
+                "status",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "SendChatMessageRequestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "ChatMessageDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "authorUserId": {
+            "type": "string"
+          },
+          "authorDisplayName": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "visible",
+              "hidden",
+              "removed"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "channelId",
+          "authorUserId",
+          "authorDisplayName",
+          "body",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "ModerateChatMessageRequestDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "hide",
+              "restore",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "PlayerProgressDto_Output": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "xp": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "xpToNextLevel": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "feedbackQuality": {
+            "type": "number"
+          },
+          "achievementsUnlocked": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "hoursPlayed": {
+            "type": "number"
+          },
+          "testsCompleted": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "level",
+          "xp",
+          "xpToNextLevel",
+          "feedbackQuality",
+          "achievementsUnlocked",
+          "hoursPlayed",
+          "testsCompleted"
+        ],
+        "additionalProperties": false
+      },
+      "PlayerAchievementListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "achievement": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "iconUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name",
+                    "description",
+                    "iconUrl"
+                  ],
+                  "additionalProperties": false
+                },
+                "unlocked": {
+                  "type": "boolean"
+                },
+                "unlockedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "progress": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "achievement",
+                "unlocked",
+                "unlockedAt",
+                "progress"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "PlayerMissionListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "progress": {
+                  "type": "number"
+                },
+                "target": {
+                  "type": "number",
+                  "enum": [
+                    1
+                  ]
+                },
+                "rewardXp": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "expiresAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "name",
+                "description",
+                "progress",
+                "target",
+                "rewardXp",
+                "expiresAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "RankingListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "score": {
+                  "type": "number"
+                },
+                "isCurrentUser": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "position",
+                "userId",
+                "displayName",
+                "level",
+                "score",
+                "isCurrentUser"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "currentUserEntry": {
+            "type": "object",
+            "properties": {
+              "position": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "userId": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "level": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "score": {
+                "type": "number"
+              },
+              "isCurrentUser": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "position",
+              "userId",
+              "displayName",
+              "level",
+              "score",
+              "isCurrentUser"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor",
+          "currentUserEntry",
+          "generatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "TestReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string"
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "overview",
+                    "evolution",
+                    "rating_distribution",
+                    "tester_profile"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "processing",
+                    "ready",
+                    "failed",
+                    "unavailable"
+                  ]
+                },
+                "payload": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {},
+                  "nullable": true
+                },
+                "computedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "status",
+                "payload",
+                "computedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "testId",
+          "blocks"
+        ],
+        "additionalProperties": false
+      },
+      "ReportSessionListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sessionId": {
+                  "type": "string"
+                },
+                "participationId": {
+                  "type": "string"
+                },
+                "testerId": {
+                  "type": "string"
+                },
+                "testerName": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "startedAt": {
+                  "type": "string"
+                },
+                "endedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "durationMs": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "valid": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "averageRating": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "sessionId",
+                "participationId",
+                "testerId",
+                "testerName",
+                "status",
+                "startedAt",
+                "endedAt",
+                "durationMs",
+                "valid",
+                "averageRating"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "SessionEvaluationDto_Output": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "object",
+            "properties": {
+              "sessionId": {
+                "type": "string"
+              },
+              "participationId": {
+                "type": "string"
+              },
+              "testerId": {
+                "type": "string"
+              },
+              "testerName": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "startedAt": {
+                "type": "string"
+              },
+              "endedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "valid": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "averageRating": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "sessionId",
+              "participationId",
+              "testerId",
+              "testerName",
+              "status",
+              "startedAt",
+              "endedAt",
+              "durationMs",
+              "valid",
+              "averageRating"
+            ],
+            "additionalProperties": false
+          },
+          "submittedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "questionId": {
+                  "type": "string"
+                },
+                "prompt": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "valueText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "valueNumber": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "valueBoolean": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "optionLabels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "questionId",
+                "prompt",
+                "type",
+                "valueText",
+                "valueNumber",
+                "valueBoolean",
+                "optionLabels"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "session",
+          "submittedAt",
+          "answers"
+        ],
+        "additionalProperties": false
+      },
+      "CreateReportExportDto": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "pdf"
+            ]
+          }
+        },
+        "required": [
+          "format"
+        ]
+      },
+      "ReportExportDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "testId": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "pdf"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "downloadUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failureReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "testId",
+          "format",
+          "status",
+          "downloadUrl",
+          "failureReason",
+          "createdAt",
+          "completedAt"
         ],
         "additionalProperties": false
       }
