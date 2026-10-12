@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
+import type { ParticipationResult } from '@/api-types'
 import { api } from '@/lib/api-client'
 import { sessionsKeys } from './sessions-keys'
-import type { ParticipationResult } from '../session-summary'
 
 /** Reads the server-owned result and polls only while the participation is in review. */
 export function useParticipationResult(participationId: string) {

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
+import type { ParticipationResult } from '@/api-types'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { Icon, type IconName } from '@/components/icon'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useParticipationResult } from '@/features/sessions/api/use-participation-result'
-import type { ParticipationResult } from '@/features/sessions/session-summary'
 import { ApiError } from '@/lib/api-client'
 import { useAuthStore } from '@/lib/auth'
 
@@ -93,7 +93,7 @@ function ParticipationResultPage() {
           ) : result.data!.status === 'completed' ? (
             <ResultCards result={result.data!} />
           ) : (
-            <RejectedState reason={result.data!.rejectedReason} />
+            <RejectedState reason={result.data!.invalidReason} />
           )}
 
           <div className="mt-7 flex justify-end border-t border-border pt-5">
@@ -164,53 +164,16 @@ function ProcessingState() {
   )
 }
 
+// Conquistas e nível ainda não vêm em GET /participations/{id}/result.
 function ResultCards({ result }: { result: ParticipationResult }) {
   return (
-    <section
-      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-      aria-label="Resultado da avaliação"
-    >
-      <ResultCard title="Conquistas" icon="trophy">
-        {result.achievementsUnlocked?.length ? (
-          <ul className="space-y-3">
-            {result.achievementsUnlocked.map((achievement) => (
-              <li key={achievement.key} className="flex items-start gap-3">
-                {achievement.iconUrl ? (
-                  <img
-                    src={achievement.iconUrl}
-                    alt=""
-                    className="size-8 shrink-0 rounded-lg object-cover"
-                  />
-                ) : (
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-raised">
-                    <Icon name="trophy" className="text-primary" />
-                  </span>
-                )}
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium text-foreground-strong">
-                    {achievement.name}
-                  </span>
-                  {achievement.description && (
-                    <span className="block text-xs text-muted">{achievement.description}</span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-center text-sm text-muted">Nenhuma conquista retornada.</p>
-        )}
+    <section className="grid gap-4 sm:grid-cols-3" aria-label="Resultado da avaliação">
+      <ResultCard title="Nota" icon="score">
+        <Metric value={result.rating} />
       </ResultCard>
 
-      <ResultCard title="Qualidade de Feedback" icon="score">
-        <Metric value={result.feedbackQuality} suffix=" / 10" />
-      </ResultCard>
-
-      <ResultCard title="Nível" icon="target">
-        <div className="space-y-2 text-center">
-          <Metric value={result.level} />
-          <Metric value={result.xpEarned} prefix="+" suffix=" XP" />
-        </div>
+      <ResultCard title="Experiência" icon="target">
+        <Metric value={result.xpEarned} prefix="+" suffix=" XP" />
       </ResultCard>
 
       <ResultCard title="Recompensa" icon="wallet">
@@ -274,11 +237,11 @@ function RejectedState({ reason }: { reason?: string | null }) {
 function rewardStatusLabel(status: ParticipationResult['rewardStatus']) {
   switch (status) {
     case 'pending':
-      return 'Aguardando crédito na carteira'
-    case 'credited':
-      return 'Crédito confirmado'
-    case 'rejected':
-      return 'Recompensa rejeitada'
+      return 'Aguardando aprovação'
+    case 'approved':
+      return 'Recompensa aprovada'
+    case 'paid':
+      return 'Recompensa paga'
     default:
       return 'Status indisponível'
   }
