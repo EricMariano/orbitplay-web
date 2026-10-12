@@ -17,6 +17,7 @@ import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as StudioIndexRouteImport } from './routes/studio/index'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
 import { Route as PlayerSessionsSessionIdSummaryRouteImport } from './routes/player/sessions/$sessionId/summary'
+import { Route as PlayerTestsTestIdTutorialRouteImport } from './routes/player/tests/$testId/tutorial'
 import { Route as StudioGamesGameIdTestsNewRouteImport } from './routes/studio/games/$gameId/tests/new'
 
 const IndexRoute = IndexRouteImport.update({
@@ -60,6 +61,12 @@ const PlayerSessionsSessionIdSummaryRoute =
     path: '/sessions/$sessionId/summary',
     getParentRoute: () => PlayerRoute,
   } as any)
+const PlayerTestsTestIdTutorialRoute =
+  PlayerTestsTestIdTutorialRouteImport.update({
+    id: '/tests/$testId/tutorial',
+    path: '/tests/$testId/tutorial',
+    getParentRoute: () => PlayerRoute,
+  } as any)
 const StudioGamesGameIdTestsNewRoute =
   StudioGamesGameIdTestsNewRouteImport.update({
     id: '/games/$gameId/tests/new',
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/studio/': typeof StudioIndexRoute
   '/studio/games/': typeof StudioGamesIndexRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
+  '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +93,7 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioIndexRoute
   '/studio/games': typeof StudioGamesIndexRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
+  '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
 export interface FileRoutesById {
@@ -97,6 +106,7 @@ export interface FileRoutesById {
   '/studio/': typeof StudioIndexRoute
   '/studio/games/': typeof StudioGamesIndexRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
+  '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/studio/games/'
     | '/player/sessions/$sessionId/summary'
+    | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/tests/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/studio/games'
     | '/player/sessions/$sessionId/summary'
+    | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/tests/new'
   id:
     | '__root__'
@@ -130,6 +142,7 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/studio/games/'
     | '/player/sessions/$sessionId/summary'
+    | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/tests/new'
   fileRoutesById: FileRoutesById
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayerSessionsSessionIdSummaryRouteImport
       parentRoute: typeof PlayerRoute
     }
+    '/player/tests/$testId/tutorial': {
+      id: '/player/tests/$testId/tutorial'
+      path: '/tests/$testId/tutorial'
+      fullPath: '/player/tests/$testId/tutorial'
+      preLoaderRoute: typeof PlayerTestsTestIdTutorialRouteImport
+      parentRoute: typeof PlayerRoute
+    }
     '/studio/games/$gameId/tests/new': {
       id: '/studio/games/$gameId/tests/new'
       path: '/games/$gameId/tests/new'
@@ -211,11 +231,13 @@ declare module '@tanstack/react-router' {
 interface PlayerRouteChildren {
   PlayerIndexRoute: typeof PlayerIndexRoute
   PlayerSessionsSessionIdSummaryRoute: typeof PlayerSessionsSessionIdSummaryRoute
+  PlayerTestsTestIdTutorialRoute: typeof PlayerTestsTestIdTutorialRoute
 }
 
 const PlayerRouteChildren: PlayerRouteChildren = {
   PlayerIndexRoute: PlayerIndexRoute,
   PlayerSessionsSessionIdSummaryRoute: PlayerSessionsSessionIdSummaryRoute,
+  PlayerTestsTestIdTutorialRoute: PlayerTestsTestIdTutorialRoute,
 }
 
 const PlayerRouteWithChildren =

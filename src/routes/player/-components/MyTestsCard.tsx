@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import type { MyTestProgress } from '@/api-types'
 import { EmptyState } from '@/components/common/EmptyState'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
@@ -47,13 +48,17 @@ export function MyTestsCard() {
                   <span className="w-16 shrink-0 text-right text-xs text-success">
                     + {formatCurrency(test.reward)}
                   </span>
-                  <Button
-                    size="sm"
-                    variant={test.action === 'complete' ? 'default' : 'secondary'}
-                    className="shrink-0"
-                  >
-                    {actionLabel[test.action]}
-                  </Button>
+                  {test.action === 'complete' ? (
+                    <Button size="sm" className="shrink-0">
+                      {actionLabel[test.action]}
+                    </Button>
+                  ) : (
+                    <Button asChild size="sm" variant="secondary" className="shrink-0">
+                      <Link to="/player/tests/$testId/tutorial" params={{ testId: test.id }}>
+                        {actionLabel[test.action]}
+                      </Link>
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>
