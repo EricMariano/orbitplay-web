@@ -92,18 +92,19 @@ real, edite lá (não duplique o CSS aqui).
 
 ## Tokens semânticos → utilitário Tailwind
 
-| Token semântico        | Utilitário              | Uso típico             |
-| ---------------------- | ----------------------- | ---------------------- |
-| `--background`         | `bg-background`         | fundo da app           |
-| `--surface`            | `bg-surface`            | cartões, painéis       |
-| `--surface-raised`     | `bg-surface-raised`     | popovers, menus        |
-| `--foreground`         | `text-foreground`       | texto principal        |
-| `--muted`              | `text-muted`            | texto secundário       |
-| `--muted-foreground`   | `text-muted-foreground` | legendas, placeholders |
-| `--border` / `--input` | `border-border`         | bordas, divisores      |
-| `--ring`               | `ring-ring`             | foco                   |
-| `--primary`            | `bg-primary`            | ação primária          |
-| `--destructive`        | `bg-destructive`        | ação destrutiva        |
+| Token semântico              | Utilitário                         | Uso típico             |
+| ---------------------------- | ---------------------------------- | ---------------------- |
+| `--background`               | `bg-background`                    | fundo da app           |
+| `--surface`                  | `bg-surface`                       | cartões, painéis       |
+| `--surface-raised`           | `bg-surface-raised`                | popovers, menus        |
+| `--foreground`               | `text-foreground`                  | texto principal        |
+| `--muted`                    | `text-muted`                       | texto secundário       |
+| `--muted-foreground`         | `text-muted-foreground`            | legendas, placeholders |
+| `--border` / `--input`       | `border-border`                    | bordas, divisores      |
+| `--ring`                     | `ring-ring`                        | foco                   |
+| `--primary`                  | `bg-primary`                       | ação primária          |
+| `--destructive`              | `bg-destructive`                   | ação destrutiva        |
+| `--field` / `--field-border` | `bg-field` / `border-field-border` | campos do wizard       |
 
 ## Ícones
 

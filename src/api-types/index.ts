@@ -25,6 +25,24 @@ export type TestModel = TestModelList['data'][number]
 export type TestModelKey = TestModel['key']
 export type CreateTestRequest = Schemas['CreateTestDto']
 export type Test = Schemas['TestDto_Output']
+export type SetTestModelRequest = Schemas['SetModelDto']
+export type PutTestFormRequest = Schemas['PutFormDto']
+export type TestFormQuestionInput = PutTestFormRequest['questions'][number]
+export type QuestionType = TestFormQuestionInput['type']
+export type TestForm = Schemas['TestFormDto_Output']
+export type BuildUploadUrlRequest = Schemas['BuildUploadUrlRequestDto']
+export type BuildUploadUrlResponse = Schemas['BuildUploadUrlResponseDto_Output']
+export type ConfirmBuildRequest = Schemas['ConfirmBuildRequestDto']
+export type BuildSettingsRequest = Schemas['BuildSettingsRequestDto']
+export type Platform = BuildUploadUrlRequest['platform']
+// O OpenAPI gerado tipa `version`, `checksum` e `failureReason` (nullable) como
+// arrays; a API devolve `string | null` (buildSchema no orbitplay-api). Remover
+// o ajuste quando o contrato for corrigido.
+export type TestBuild = Omit<
+  Schemas['BuildDto_Output'],
+  'version' | 'checksum' | 'failureReason'
+> & { version: string | null; checksum: string | null; failureReason: string | null }
+export type TestDetail = Omit<Test, 'build'> & { build: TestBuild | null }
 export type PlayerProgress = Schemas['PlayerProgressDto_Output']
 export type PlayerMissionList = Schemas['PlayerMissionListDto_Output']
 export type PlayerMission = PlayerMissionList['data'][number]

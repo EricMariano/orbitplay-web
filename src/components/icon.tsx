@@ -47,6 +47,15 @@ import {
   Wallet,
   Compass,
   Image as ImageIcon,
+  ArrowDown,
+  ArrowUp,
+  Copy,
+  ImagePlus,
+  Pencil,
+  Trash2,
+  FolderUp,
+  Upload,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -112,6 +121,15 @@ const registry = {
   send: Send,
   'ab-test': Users,
   'ab-test-images': ImageIcon,
+  'arrow-up': ArrowUp,
+  'arrow-down': ArrowDown,
+  copy: Copy,
+  trash: Trash2,
+  'image-plus': ImagePlus,
+  edit: Pencil,
+  'folder-upload': FolderUp,
+  upload: Upload,
+  close: X,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry
