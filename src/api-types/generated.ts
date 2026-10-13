@@ -1301,7 +1301,7 @@ export interface components {
                 after: unknown;
                 createdAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         LoginDto: {
             /** Format: email */
@@ -1401,7 +1401,7 @@ export interface components {
                 /** @enum {string} */
                 status: "active" | "invited" | "disabled";
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         InviteMemberDto: {
             /** Format: email */
@@ -1454,20 +1454,20 @@ export interface components {
                 createdAt: string;
                 updatedAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         GameDto_Output: {
             id: string;
             organizationId: string;
             title: string;
             slug: string;
-            description: string[];
-            genre: string[];
-            platform: string[];
+            description: string | null;
+            genre: string | null;
+            platform: string | null;
             /** @enum {string} */
             status: "draft" | "active" | "archived";
-            coverUrl: string[];
-            bannerUrl: string[];
+            coverUrl: string | null;
+            bannerUrl: string | null;
             metrics: {
                 testsTotal: number;
                 testsActive: number;
@@ -1564,7 +1564,7 @@ export interface components {
             /** @enum {string} */
             kind: "cover" | "banner" | "screenshot";
             url: string;
-            contentType: string[];
+            contentType: string | null;
             sizeBytes: number | null;
             createdAt: string;
         };
@@ -1605,10 +1605,10 @@ export interface components {
         PlaybackUrlResponseDto_Output: {
             /** @enum {string} */
             status: "processing" | "ready" | "failed" | "unavailable";
-            url: string[];
-            expiresAt: string[];
+            url: string | null;
+            expiresAt: string | null;
             durationMs: number | null;
-            thumbnailUrl: string[];
+            thumbnailUrl: string | null;
         };
         NotificationListDto_Output: {
             data: {
@@ -1620,7 +1620,7 @@ export interface components {
                 read: boolean;
                 createdAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
             unreadCount: number;
         };
         TestModelListDto_Output: {
@@ -1647,7 +1647,7 @@ export interface components {
             requiresTelemetry: boolean;
             requiresBuild: boolean;
             available: boolean;
-            unavailableReason: string[];
+            unavailableReason: string | null;
         };
         CreateTestDto: {
             /** @enum {string} */
@@ -1658,7 +1658,7 @@ export interface components {
             id: string;
             gameId: string;
             organizationId: string;
-            title: string[];
+            title: string | null;
             /** @enum {string} */
             status: "draft" | "published" | "paused" | "finished" | "expired";
             /** @enum {string} */
@@ -1707,8 +1707,8 @@ export interface components {
             spotsTaken: number | null;
             rewardCents: number | null;
             gamepadSupported: boolean;
-            expiresAt: string[];
-            publishedAt: string[];
+            expiresAt: string | null;
+            publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
         };
@@ -1771,7 +1771,7 @@ export interface components {
                 createdAt: string;
                 updatedAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         SetModelDto: {
             /** @enum {string} */
@@ -1846,9 +1846,9 @@ export interface components {
             status: "awaiting_upload" | "uploading" | "processing" | "validated" | "failed";
             /** @enum {string|null} */
             platform: "windows" | "macos" | "linux" | "android" | "ios" | "web" | null;
-            version: string[];
+            version: string | null;
             sizeBytes: number | null;
-            checksum: string[];
+            checksum: string | null;
             validationSteps: {
                 /** @enum {string} */
                 key: "checksum" | "malware_scan" | "metadata" | "plugin_manifest";
@@ -1856,7 +1856,7 @@ export interface components {
                 status: "processing" | "ready" | "failed" | "unavailable";
                 message: string | null;
             }[];
-            failureReason: string[];
+            failureReason: string | null;
             createdAt: string;
         };
         BuildSettingsRequestDto: {
@@ -1891,10 +1891,10 @@ export interface components {
         };
         DownloadUrlResponseDto_Output: {
             needsDownload: boolean;
-            downloadUrl: string[];
-            expiresAt: string[];
-            version: string[];
-            checksum: string[];
+            downloadUrl: string | null;
+            expiresAt: string | null;
+            version: string | null;
+            checksum: string | null;
             sizeBytes: number | null;
             supportsRange: boolean;
         };
@@ -1904,8 +1904,8 @@ export interface components {
             gameId: string;
             /** @enum {string} */
             status: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
-            currentSessionId: string[];
-            resumePoint: string[];
+            currentSessionId: string | null;
+            resumePoint: string | null;
             consentsGranted: boolean;
             build: {
                 id: string;
@@ -1927,8 +1927,8 @@ export interface components {
                 failureReason: string | null;
                 createdAt: string;
             } | null;
-            startedAt: string[];
-            completedAt: string[];
+            startedAt: string | null;
+            completedAt: string | null;
         };
         TutorialDto_Output: {
             /** @enum {string} */
@@ -1976,11 +1976,11 @@ export interface components {
             /** @enum {string} */
             status: "in_review" | "completed" | "rejected";
             xpEarned: number | null;
-            rating: number[];
+            rating: number | null;
             rewardCents: number | null;
             /** @enum {string} */
             rewardStatus: "pending" | "approved" | "paid";
-            invalidReason: string[];
+            invalidReason: string | null;
         };
         DeviceEventRequestDto: {
             /** @enum {string} */
@@ -2007,9 +2007,9 @@ export interface components {
             /** @enum {string} */
             status: "active" | "finishing" | "in_review" | "valid" | "invalid" | "abandoned";
             startedAt: string;
-            endedAt: string[];
+            endedAt: string | null;
             durationMs: number | null;
-            invalidReason: string[];
+            invalidReason: string | null;
         };
         SessionSummaryDto_Output: {
             session: {
@@ -2109,7 +2109,7 @@ export interface components {
                 status: "visible" | "hidden" | "removed";
                 createdAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         CreateCommunityPostRequestDto: {
             body: string;
@@ -2144,8 +2144,8 @@ export interface components {
                 body: string | null;
                 createdAt: string;
             }[];
-            nextCursor: string[];
-            averageRating: number[];
+            nextCursor: string | null;
+            averageRating: number | null;
         };
         CreateReviewRequestDto: {
             rating: number;
@@ -2157,7 +2157,7 @@ export interface components {
             authorUserId: string;
             authorDisplayName: string;
             rating: number;
-            body: string[];
+            body: string | null;
             createdAt: string;
         };
         ChatChannelListDto_Output: {
@@ -2170,7 +2170,7 @@ export interface components {
                 archived: boolean;
                 createdAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         CreateChatChannelRequestDto: {
             name: string;
@@ -2181,7 +2181,7 @@ export interface components {
             gameId: string;
             slug: string;
             name: string;
-            topic: string[];
+            topic: string | null;
             archived: boolean;
             createdAt: string;
         };
@@ -2201,7 +2201,7 @@ export interface components {
                 status: "visible" | "hidden" | "removed";
                 createdAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         SendChatMessageRequestDto: {
             body: string;
@@ -2241,7 +2241,7 @@ export interface components {
                 unlockedAt: string | null;
                 progress: number | null;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         PlayerMissionListDto_Output: {
             data: {
@@ -2264,7 +2264,7 @@ export interface components {
                 score: number;
                 isCurrentUser: boolean;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
             currentUserEntry: {
                 position: number;
                 userId: string;
@@ -2273,7 +2273,7 @@ export interface components {
                 score: number;
                 isCurrentUser: boolean;
             } | null;
-            generatedAt: string[];
+            generatedAt: string | null;
         };
         FeedListDto_Output: {
             data: {
@@ -2298,7 +2298,7 @@ export interface components {
                 createdAt: string;
                 updatedAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
             seed: string;
         };
         TestReportDto_Output: {
@@ -2434,7 +2434,7 @@ export interface components {
                 aiQualityScore: number | null;
                 telemetryConnected: boolean;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
             total: number;
         };
         SessionEvaluationDto_Output: {
@@ -2456,7 +2456,7 @@ export interface components {
                 aiQualityScore: number | null;
                 telemetryConnected: boolean;
             };
-            submittedAt: string[];
+            submittedAt: string | null;
             answers: {
                 questionId: string;
                 prompt: string;
@@ -2478,10 +2478,10 @@ export interface components {
             format: "csv" | "pdf";
             /** @enum {string} */
             status: "processing" | "ready" | "failed" | "unavailable";
-            downloadUrl: string[];
-            failureReason: string[];
+            downloadUrl: string | null;
+            failureReason: string | null;
             createdAt: string;
-            completedAt: string[];
+            completedAt: string | null;
         };
         RateSessionDto: {
             rating: number;
@@ -2492,7 +2492,7 @@ export interface components {
         SessionRatingDto_Output: {
             sessionId: string;
             rating: number;
-            comment: string[];
+            comment: string | null;
             markedInvalid: boolean;
             ratedByUserId: string;
             updatedAt: string;
@@ -2500,7 +2500,7 @@ export interface components {
         TestInsightsDto_Output: {
             /** @enum {string} */
             status: "processing" | "ready" | "failed" | "unavailable";
-            model: string[];
+            model: string | null;
             data: {
                 id: string;
                 /** @enum {string} */
@@ -2620,7 +2620,7 @@ export interface components {
             payload: {
                 [key: string]: unknown;
             } | null;
-            computedAt: string[];
+            computedAt: string | null;
         };
     };
     responses: never;

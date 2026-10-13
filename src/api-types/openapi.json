@@ -3843,10 +3843,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -4270,10 +4268,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -4520,10 +4516,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -4548,22 +4542,16 @@
             "type": "string"
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "genre": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "platform": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -4574,16 +4562,12 @@
             ]
           },
           "coverUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "bannerUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "metrics": {
             "type": "object",
@@ -5041,10 +5025,8 @@
             "type": "string"
           },
           "contentType": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "sizeBytes": {
             "type": "integer",
@@ -5237,16 +5219,12 @@
             ]
           },
           "url": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "expiresAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "durationMs": {
             "type": "integer",
@@ -5255,10 +5233,8 @@
             "nullable": true
           },
           "thumbnailUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -5319,10 +5295,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "unreadCount": {
             "type": "integer",
@@ -5448,10 +5422,8 @@
             "type": "boolean"
           },
           "unavailableReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -5502,10 +5474,8 @@
             "type": "string"
           },
           "title": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -5778,16 +5748,12 @@
             "type": "boolean"
           },
           "expiresAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "publishedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -6154,10 +6120,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -6527,10 +6491,8 @@
             "nullable": true
           },
           "version": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "sizeBytes": {
             "type": "integer",
@@ -6539,10 +6501,8 @@
             "nullable": true
           },
           "checksum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "validationSteps": {
             "type": "array",
@@ -6583,10 +6543,8 @@
             }
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -6752,28 +6710,20 @@
             "type": "boolean"
           },
           "downloadUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "expiresAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "version": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "checksum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "sizeBytes": {
             "type": "integer",
@@ -6824,16 +6774,12 @@
             ]
           },
           "currentSessionId": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "resumePoint": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "consentsGranted": {
             "type": "boolean"
@@ -6952,16 +6898,12 @@
             "nullable": true
           },
           "startedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "completedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -7194,10 +7136,8 @@
             "nullable": true
           },
           "rating": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           },
           "rewardCents": {
             "type": "integer",
@@ -7214,10 +7154,8 @@
             ]
           },
           "invalidReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -7331,10 +7269,8 @@
             "type": "string"
           },
           "endedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "durationMs": {
             "type": "integer",
@@ -7343,10 +7279,8 @@
             "nullable": true
           },
           "invalidReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -7881,10 +7815,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8036,16 +7968,12 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "averageRating": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           }
         },
         "required": [
@@ -8093,10 +8021,8 @@
             "maximum": 5
           },
           "body": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -8159,10 +8085,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8204,10 +8128,8 @@
             "type": "string"
           },
           "topic": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "archived": {
             "type": "boolean"
@@ -8293,10 +8215,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8485,10 +8405,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8600,10 +8518,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "currentUserEntry": {
             "type": "object",
@@ -8643,10 +8559,8 @@
             "nullable": true
           },
           "generatedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8780,10 +8694,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "seed": {
             "type": "string"
@@ -9540,10 +9452,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "total": {
             "type": "integer",
@@ -9657,10 +9567,8 @@
             "additionalProperties": false
           },
           "submittedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "answers": {
             "type": "array",
@@ -9762,25 +9670,19 @@
             ]
           },
           "downloadUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
           },
           "completedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -9829,10 +9731,8 @@
             "maximum": 9007199254740991
           },
           "comment": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "markedInvalid": {
             "type": "boolean"
@@ -9867,10 +9767,8 @@
             ]
           },
           "model": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "data": {
             "type": "array",
@@ -10508,10 +10406,8 @@
             "nullable": true
           },
           "computedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
