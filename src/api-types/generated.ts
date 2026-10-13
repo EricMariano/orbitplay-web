@@ -645,6 +645,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tests/{id}/build-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["TestsController_setBuildSettings"];
+        trace?: never;
+    };
     "/tests/{id}/audience": {
         parameters: {
             query?: never;
@@ -1671,6 +1687,7 @@ export interface components {
             spotsTotal: number | null;
             spotsTaken: number | null;
             rewardCents: number | null;
+            gamepadSupported: boolean;
             expiresAt: string[];
             publishedAt: string[];
             createdAt: string;
@@ -1726,6 +1743,7 @@ export interface components {
                 spotsTotal: number | null;
                 spotsTaken: number | null;
                 rewardCents: number | null;
+                gamepadSupported: boolean;
                 expiresAt: string | null;
                 publishedAt: string | null;
                 createdAt: string;
@@ -1818,6 +1836,9 @@ export interface components {
             }[];
             failureReason: string[];
             createdAt: string;
+        };
+        BuildSettingsRequestDto: {
+            gamepadSupported: boolean;
         };
         AudienceRequestDto: {
             locations?: string[];
@@ -2412,6 +2433,7 @@ export interface components {
                 spotsTotal: number | null;
                 spotsTaken: number | null;
                 rewardCents: number | null;
+                gamepadSupported: boolean;
                 expiresAt: string | null;
                 publishedAt: string | null;
                 createdAt: string;
@@ -3487,6 +3509,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    TestsController_setBuildSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildSettingsRequestDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestDto_Output"];
+                };
             };
         };
     };

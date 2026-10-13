@@ -1831,6 +1831,51 @@
         ]
       }
     },
+    "/tests/{id}/build-settings": {
+      "patch": {
+        "operationId": "TestsController_setBuildSettings",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildSettingsRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
     "/tests/{id}/audience": {
       "patch": {
         "operationId": "TestsController_setAudience",
@@ -5656,6 +5701,9 @@
             "maximum": 9007199254740991,
             "nullable": true
           },
+          "gamepadSupported": {
+            "type": "boolean"
+          },
           "expiresAt": {
             "type": "array",
             "items": {
@@ -5689,6 +5737,7 @@
           "spotsTotal",
           "spotsTaken",
           "rewardCents",
+          "gamepadSupported",
           "expiresAt",
           "publishedAt",
           "createdAt",
@@ -5971,6 +6020,9 @@
                   "maximum": 9007199254740991,
                   "nullable": true
                 },
+                "gamepadSupported": {
+                  "type": "boolean"
+                },
                 "expiresAt": {
                   "type": [
                     "string",
@@ -6004,6 +6056,7 @@
                 "spotsTotal",
                 "spotsTaken",
                 "rewardCents",
+                "gamepadSupported",
                 "expiresAt",
                 "publishedAt",
                 "createdAt",
@@ -6464,6 +6517,17 @@
           "createdAt"
         ],
         "additionalProperties": false
+      },
+      "BuildSettingsRequestDto": {
+        "type": "object",
+        "properties": {
+          "gamepadSupported": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gamepadSupported"
+        ]
       },
       "AudienceRequestDto": {
         "type": "object",
@@ -9464,6 +9528,9 @@
                   "maximum": 9007199254740991,
                   "nullable": true
                 },
+                "gamepadSupported": {
+                  "type": "boolean"
+                },
                 "expiresAt": {
                   "type": [
                     "string",
@@ -9497,6 +9564,7 @@
                 "spotsTotal",
                 "spotsTaken",
                 "rewardCents",
+                "gamepadSupported",
                 "expiresAt",
                 "publishedAt",
                 "createdAt",

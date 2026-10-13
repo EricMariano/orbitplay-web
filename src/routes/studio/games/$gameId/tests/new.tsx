@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import type { TestModelKey } from '@/api-types'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
@@ -12,8 +12,11 @@ import { TestFormBuilder } from '@/features/tests/components/TestFormBuilder'
 import { TestModelCard } from '@/features/tests/components/TestModelCard'
 import { useCreateTest } from '@/features/tests/api/use-create-test'
 import { useSaveTestForm } from '@/features/tests/api/use-save-test-form'
+import { useSetBuildSettings } from '@/features/tests/api/use-set-build-settings'
 import { useSetTestModel } from '@/features/tests/api/use-set-test-model'
+import { useTest } from '@/features/tests/api/use-test'
 import { useTestModels } from '@/features/tests/api/use-test-models'
+import { BuildUploadStep } from '@/features/tests/components/BuildUploadStep'
 import {
   createQuestionDraft,
   isTestFormValid,
@@ -46,6 +49,11 @@ function NewTestWizard() {
   const [draft, setDraft] = useState<{ id: string; modelKey: TestModelKey } | null>(null)
   const [questions, setQuestions] = useState<QuestionDraft[]>(() => [createQuestionDraft()])
   const saveTestForm = useSaveTestForm(draft?.id ?? null)
+  const test = useTest(step === 2 ? (draft?.id ?? null) : null)
+  const setBuildSettings = useSetBuildSettings(draft?.id ?? null)
+  const [gamepadSupported, setGamepadSupported] = useState<boolean | null>(null)
+  const requiresBuild =
+    testModels.data?.find((model) => model.key === draft?.modelKey)?.requiresBuild ?? true
 
   function handleModelNext() {
     if (!selectedKey) return
@@ -81,15 +89,31 @@ function NewTestWizard() {
 
   function handleFormNext() {
     saveTestForm.mutate(toPutFormRequest(questions), {
-      // Passos 3–4 (build, orçamento) ainda não têm tela: o rascunho fica
-      // salvo na API e o estúdio volta para os jogos.
-      onSuccess: () => {
-        toast.success('Avaliação do teste salva.')
-        void navigate({ to: '/studio/games' })
-      },
+      onSuccess: () => setStep(2),
       onError: (error) => toast.error(error.message || 'Não foi possível salvar a avaliação.'),
     })
   }
+
+  function handleBuildNext() {
+    setBuildSettings.mutate(
+      { gamepadSupported: gamepadValue },
+      {
+        // Passo 4 (orçamento) ainda não tem tela: o rascunho fica salvo na
+        // API e o estúdio volta para os jogos.
+        onSuccess: () => {
+          toast.success('Rascunho do teste salvo.')
+          void navigate({ to: '/studio/games' })
+        },
+        onError: (error) => toast.error(error.message || 'Não foi possível salvar a build.'),
+      },
+    )
+  }
+
+  const gamepadValue = gamepadSupported ?? test.data?.gamepadSupported ?? false
+  const buildStatus = test.data?.build?.status
+  // A validação continua no worker; o estúdio pode seguir enquanto ela roda.
+  const canLeaveBuildStep =
+    !requiresBuild || buildStatus === 'processing' || buildStatus === 'validated'
 
   const isSavingModel = createTest.isPending || setTestModel.isPending
 
@@ -159,7 +183,9 @@ function NewTestWizard() {
               </Button>
             </div>
           </>
-        ) : (
+        ) : null}
+
+        {step === 1 ? (
           <>
             <div className="mt-6 mb-6 space-y-1">
               <h2 className="text-3xl font-bold text-foreground-strong">
@@ -173,15 +199,12 @@ function NewTestWizard() {
 
             <TestFormBuilder questions={questions} onChange={setQuestions} />
 
-            <div className="mt-6 flex flex-wrap items-center justify-end gap-6">
-              <button
-                type="button"
-                onClick={() => setStep(0)}
-                className="mr-auto flex items-center gap-1 text-base font-bold text-primary hover:opacity-80"
-              >
-                <Icon name="arrow-left" className="size-6" />
-                Voltar
-              </button>
+            <WizardFooter
+              onBack={() => setStep(0)}
+              onNext={handleFormNext}
+              canAdvance={isTestFormValid(questions)}
+              isSaving={saveTestForm.isPending}
+            >
               {/* Pré-visualização está no design, mas ainda não tem tela. */}
               <button
                 type="button"
@@ -192,18 +215,80 @@ function NewTestWizard() {
                 Pré-visualizar
                 <Icon name="eye" className="size-6" />
               </button>
-              <Button
-                size="lg"
-                disabled={!isTestFormValid(questions) || saveTestForm.isPending}
-                onClick={handleFormNext}
-                className="h-12 bg-gradient-to-br from-cta-configure-from to-cta-configure-to px-8 text-base font-bold"
-              >
-                {saveTestForm.isPending ? 'Salvando...' : 'Próximo'}
-              </Button>
-            </div>
+            </WizardFooter>
           </>
-        )}
+        ) : null}
+
+        {step === 2 && draft ? (
+          <>
+            <div className="mt-6 mb-6 space-y-1">
+              <h2 className="text-3xl font-bold text-foreground-strong">
+                Envie a versão que será testada
+              </h2>
+              <p className="text-base text-foreground-strong">
+                Faça upload da build e configure a telemetria. Se o plugin estiver ativo, você terá
+                acesso a dados avançados de comportamento e performance.
+              </p>
+            </div>
+
+            {requiresBuild ? (
+              <BuildUploadStep
+                testId={draft.id}
+                gamepadSupported={gamepadValue}
+                onGamepadSupportedChange={setGamepadSupported}
+              />
+            ) : (
+              <p className="text-base text-muted">
+                Este tipo de teste compara imagens e não precisa de build. Siga para o próximo
+                passo.
+              </p>
+            )}
+
+            <WizardFooter
+              onBack={() => setStep(1)}
+              onNext={handleBuildNext}
+              canAdvance={canLeaveBuildStep}
+              isSaving={setBuildSettings.isPending}
+            />
+          </>
+        ) : null}
       </div>
+    </div>
+  )
+}
+
+function WizardFooter({
+  onBack,
+  onNext,
+  canAdvance,
+  isSaving,
+  children,
+}: {
+  onBack: () => void
+  onNext: () => void
+  canAdvance: boolean
+  isSaving: boolean
+  children?: ReactNode
+}) {
+  return (
+    <div className="mt-6 flex flex-wrap items-center justify-end gap-6">
+      <button
+        type="button"
+        onClick={onBack}
+        className="mr-auto flex items-center gap-1 text-base font-bold text-primary hover:opacity-80"
+      >
+        <Icon name="arrow-left" className="size-6" />
+        Voltar
+      </button>
+      {children}
+      <Button
+        size="lg"
+        disabled={!canAdvance || isSaving}
+        onClick={onNext}
+        className="h-12 bg-gradient-to-br from-cta-configure-from to-cta-configure-to px-8 text-base font-bold"
+      >
+        {isSaving ? 'Salvando...' : 'Próximo'}
+      </Button>
     </div>
   )
 }

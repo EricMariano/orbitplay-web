@@ -53,6 +53,9 @@ import {
   ImagePlus,
   Pencil,
   Trash2,
+  FolderUp,
+  Upload,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -124,6 +127,9 @@ const registry = {
   trash: Trash2,
   'image-plus': ImagePlus,
   edit: Pencil,
+  'folder-upload': FolderUp,
+  upload: Upload,
+  close: X,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry
