@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { RoleGate } from '@/components/common/RoleGate'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -56,6 +57,7 @@ function GamesList() {
                 <TableHead className="text-right">Testes ativos</TableHead>
                 <TableHead className="text-right">Jogadores</TableHead>
                 <TableHead />
+                <TableHead className="text-right">Comunidade</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -79,6 +81,13 @@ function GamesList() {
                         Novo teste
                       </Link>
                     </RoleGate>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/studio/games/$gameId/chat" params={{ gameId: game.id }}>
+                        Gerenciar chat
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
