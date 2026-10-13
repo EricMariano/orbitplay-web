@@ -99,6 +99,22 @@ GET /api/games/highlighted     GET /api/earnings/summary
 GET /api/missions/ranking
 ```
 
+### Orçamento do Novo teste (Tela 09) — preço só no front
+
+A API não tem preço nem cobrança (o contrato diz "preço e impulsionamento
+estão deferidos"). Combinado com o solicitante: o "Resumo da compra" é
+calculado em `src/features/tests/audience.ts` e "Pagar e finalizar!" só salva
+o público (`PATCH /tests/{id}/audience`) e publica — **não cobra nada**.
+
+- Preço base por modelo (centavos/teste): telemetria 69, exploração livre 59,
+  A/B 39, A/B de imagens 19 — a tabela que já existia na tela de Tipo.
+- Impulsionar: +15. Tipo de jogador: Experiente +10 (do design); Todos +10,
+  Tester treinado +20, QA +35 e Casual 0 são **provisórios** (o design só
+  indica a ordem por `$`). Trocar quando a precificação real existir.
+- Formas de pagamento aparecem só como informação.
+- Idade começa em 18 (DECISIONS.md da API §1.4), não em 16 como no Figma;
+  "99+" é enviado como 120 (teto da API).
+
 ## Pendências — só verificáveis quando a API subir
 
 Não contornar; entram quando houver API.

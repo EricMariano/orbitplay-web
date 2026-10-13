@@ -43,6 +43,8 @@ export type TestBuild = Omit<
   'version' | 'checksum' | 'failureReason'
 > & { version: string | null; checksum: string | null; failureReason: string | null }
 export type TestDetail = Omit<Test, 'build'> & { build: TestBuild | null }
+export type AudienceRequest = Schemas['AudienceRequestDto']
+export type PlayerTier = AudienceRequest['playerTier']
 export type PlayerProgress = Schemas['PlayerProgressDto_Output']
 export type PlayerMissionList = Schemas['PlayerMissionListDto_Output']
 export type PlayerMission = PlayerMissionList['data'][number]

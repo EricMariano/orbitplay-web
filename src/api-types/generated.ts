@@ -1663,6 +1663,9 @@ export interface components {
                 deviceRequirements: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
                 keepActive: boolean;
                 estimatedReach: number;
+                /** @enum {string} */
+                playerTier: "all" | "casual" | "experienced" | "trained" | "qa";
+                boosted: boolean;
             } | null;
             build: {
                 id: string;
@@ -1719,6 +1722,9 @@ export interface components {
                     deviceRequirements: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
                     keepActive: boolean;
                     estimatedReach: number;
+                    /** @enum {string} */
+                    playerTier: "all" | "casual" | "experienced" | "trained" | "qa";
+                    boosted: boolean;
                 } | null;
                 build: {
                     id: string;
@@ -1850,6 +1856,13 @@ export interface components {
             deviceRequirements?: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
             /** @default false */
             keepActive: boolean;
+            /**
+             * @default all
+             * @enum {string}
+             */
+            playerTier: "all" | "casual" | "experienced" | "trained" | "qa";
+            /** @default false */
+            boosted: boolean;
         };
         SetStatusDto: {
             /** @enum {string} */
@@ -2409,6 +2422,9 @@ export interface components {
                     deviceRequirements: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
                     keepActive: boolean;
                     estimatedReach: number;
+                    /** @enum {string} */
+                    playerTier: "all" | "casual" | "experienced" | "trained" | "qa";
+                    boosted: boolean;
                 } | null;
                 build: {
                     id: string;

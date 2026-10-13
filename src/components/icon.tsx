@@ -56,6 +56,18 @@ import {
   FolderUp,
   Upload,
   X,
+  Barcode,
+  Bug,
+  Coins,
+  CreditCard,
+  MapPin,
+  MessageCircle,
+  Mountain,
+  QrCode,
+  Rocket,
+  Skull,
+  Tag,
+  UserCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -130,6 +142,18 @@ const registry = {
   'folder-upload': FolderUp,
   upload: Upload,
   close: X,
+  barcode: Barcode,
+  bug: Bug,
+  coins: Coins,
+  'credit-card': CreditCard,
+  'map-pin': MapPin,
+  'message-circle': MessageCircle,
+  mountain: Mountain,
+  'qr-code': QrCode,
+  rocket: Rocket,
+  skull: Skull,
+  tag: Tag,
+  'user-check': UserCheck,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry

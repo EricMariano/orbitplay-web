@@ -5554,6 +5554,19 @@
                 "type": "integer",
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
+              },
+              "playerTier": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "casual",
+                  "experienced",
+                  "trained",
+                  "qa"
+                ]
+              },
+              "boosted": {
+                "type": "boolean"
               }
             },
             "required": [
@@ -5565,7 +5578,9 @@
               "durationDays",
               "deviceRequirements",
               "keepActive",
-              "estimatedReach"
+              "estimatedReach",
+              "playerTier",
+              "boosted"
             ],
             "additionalProperties": false,
             "nullable": true
@@ -5873,6 +5888,19 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
+                    },
+                    "playerTier": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "casual",
+                        "experienced",
+                        "trained",
+                        "qa"
+                      ]
+                    },
+                    "boosted": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -5884,7 +5912,9 @@
                     "durationDays",
                     "deviceRequirements",
                     "keepActive",
-                    "estimatedReach"
+                    "estimatedReach",
+                    "playerTier",
+                    "boosted"
                   ],
                   "additionalProperties": false,
                   "nullable": true
@@ -6581,6 +6611,21 @@
             }
           },
           "keepActive": {
+            "default": false,
+            "type": "boolean"
+          },
+          "playerTier": {
+            "default": "all",
+            "type": "string",
+            "enum": [
+              "all",
+              "casual",
+              "experienced",
+              "trained",
+              "qa"
+            ]
+          },
+          "boosted": {
             "default": false,
             "type": "boolean"
           }
@@ -9381,6 +9426,19 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
+                    },
+                    "playerTier": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "casual",
+                        "experienced",
+                        "trained",
+                        "qa"
+                      ]
+                    },
+                    "boosted": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -9392,7 +9450,9 @@
                     "durationDays",
                     "deviceRequirements",
                     "keepActive",
-                    "estimatedReach"
+                    "estimatedReach",
+                    "playerTier",
+                    "boosted"
                   ],
                   "additionalProperties": false,
                   "nullable": true
