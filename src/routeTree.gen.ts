@@ -21,6 +21,7 @@ import { Route as PlayerParticipationsParticipationIdResultRouteImport } from '.
 import { Route as PlayerSessionsSessionIdSummaryRouteImport } from './routes/player/sessions/$sessionId/summary'
 import { Route as PlayerTestsTestIdTutorialRouteImport } from './routes/player/tests/$testId/tutorial'
 import { Route as StudioGamesGameIdChatRouteImport } from './routes/studio/games/$gameId/chat'
+import { Route as StudioTestsTestIdCompletedRouteImport } from './routes/studio/tests/$testId/completed'
 import { Route as StudioGamesGameIdTestsTestIdRouteImport } from './routes/studio/games/$gameId/tests/$testId'
 import { Route as StudioGamesGameIdTestsNewRouteImport } from './routes/studio/games/$gameId/tests/new'
 
@@ -87,6 +88,12 @@ const StudioGamesGameIdChatRoute = StudioGamesGameIdChatRouteImport.update({
   path: '/games/$gameId/chat',
   getParentRoute: () => StudioRoute,
 } as any)
+const StudioTestsTestIdCompletedRoute =
+  StudioTestsTestIdCompletedRouteImport.update({
+    id: '/tests/$testId/completed',
+    path: '/tests/$testId/completed',
+    getParentRoute: () => StudioRoute,
+  } as any)
 const StudioGamesGameIdTestsTestIdRoute =
   StudioGamesGameIdTestsTestIdRouteImport.update({
     id: '/games/$gameId/tests/$testId',
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
+  '/studio/tests/$testId/completed': typeof StudioTestsTestIdCompletedRoute
   '/studio/games/$gameId/tests/$testId': typeof StudioGamesGameIdTestsTestIdRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
@@ -127,6 +135,7 @@ export interface FileRoutesByTo {
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
+  '/studio/tests/$testId/completed': typeof StudioTestsTestIdCompletedRoute
   '/studio/games/$gameId/tests/$testId': typeof StudioGamesGameIdTestsTestIdRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
@@ -144,6 +153,7 @@ export interface FileRoutesById {
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
+  '/studio/tests/$testId/completed': typeof StudioTestsTestIdCompletedRoute
   '/studio/games/$gameId/tests/$testId': typeof StudioGamesGameIdTestsTestIdRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/player/sessions/$sessionId/summary'
     | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
+    | '/studio/tests/$testId/completed'
     | '/studio/games/$gameId/tests/$testId'
     | '/studio/games/$gameId/tests/new'
   fileRoutesByTo: FileRoutesByTo
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/player/sessions/$sessionId/summary'
     | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
+    | '/studio/tests/$testId/completed'
     | '/studio/games/$gameId/tests/$testId'
     | '/studio/games/$gameId/tests/new'
   id:
@@ -192,6 +204,7 @@ export interface FileRouteTypes {
     | '/player/sessions/$sessionId/summary'
     | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
+    | '/studio/tests/$testId/completed'
     | '/studio/games/$gameId/tests/$testId'
     | '/studio/games/$gameId/tests/new'
   fileRoutesById: FileRoutesById
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioGamesGameIdChatRouteImport
       parentRoute: typeof StudioRoute
     }
+    '/studio/tests/$testId/completed': {
+      id: '/studio/tests/$testId/completed'
+      path: '/tests/$testId/completed'
+      fullPath: '/studio/tests/$testId/completed'
+      preLoaderRoute: typeof StudioTestsTestIdCompletedRouteImport
+      parentRoute: typeof StudioRoute
+    }
     '/studio/games/$gameId/tests/$testId': {
       id: '/studio/games/$gameId/tests/$testId'
       path: '/games/$gameId/tests/$testId'
@@ -330,6 +350,7 @@ interface StudioRouteChildren {
   StudioIndexRoute: typeof StudioIndexRoute
   StudioGamesIndexRoute: typeof StudioGamesIndexRoute
   StudioGamesGameIdChatRoute: typeof StudioGamesGameIdChatRoute
+  StudioTestsTestIdCompletedRoute: typeof StudioTestsTestIdCompletedRoute
   StudioGamesGameIdTestsTestIdRoute: typeof StudioGamesGameIdTestsTestIdRoute
   StudioGamesGameIdTestsNewRoute: typeof StudioGamesGameIdTestsNewRoute
 }
@@ -338,6 +359,7 @@ const StudioRouteChildren: StudioRouteChildren = {
   StudioIndexRoute: StudioIndexRoute,
   StudioGamesIndexRoute: StudioGamesIndexRoute,
   StudioGamesGameIdChatRoute: StudioGamesGameIdChatRoute,
+  StudioTestsTestIdCompletedRoute: StudioTestsTestIdCompletedRoute,
   StudioGamesGameIdTestsTestIdRoute: StudioGamesGameIdTestsTestIdRoute,
   StudioGamesGameIdTestsNewRoute: StudioGamesGameIdTestsNewRoute,
 }
