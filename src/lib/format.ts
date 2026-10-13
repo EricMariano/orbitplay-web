@@ -25,3 +25,36 @@ export function formatCountdown(endsAt: string, now: Date = new Date()): string 
   const minutes = totalMinutes % 60
   return `${hours}h ${minutes}m`
 }
+
+/**
+ * Format a duration as `"32m 54s"` (seconds zero-padded, as in the design);
+ * from one hour on, `"1h 05m"`.
+ */
+export function formatDuration(ms: number): string {
+  const totalSeconds = Math.round(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  if (hours > 0) return `${hours}h ${String(minutes).padStart(2, '0')}m`
+  return `${minutes}m ${String(seconds).padStart(2, '0')}s`
+}
+
+const decimalFormatter = new Intl.NumberFormat('pt-BR', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
+/** Format a score/average with one decimal, e.g. `4.66` → `"4,7"`. */
+export function formatDecimal(value: number): string {
+  return decimalFormatter.format(value)
+}
+
+const percentFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'percent',
+  maximumFractionDigits: 0,
+})
+
+/** Format a 0–1 ratio as a whole percentage, e.g. `0.783` → `"78%"`. */
+export function formatPercent(ratio: number): string {
+  return percentFormatter.format(ratio)
+}

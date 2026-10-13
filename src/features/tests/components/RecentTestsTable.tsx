@@ -1,3 +1,4 @@
+import { PageSizeSelect, Pagination } from '@/components/common/TablePagination'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,13 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Icon } from '@/components/icon'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -58,82 +52,6 @@ function DetailsAction({ status }: { status: RecentTest['status'] }) {
     <Button size="sm" className="bg-gradient-to-r from-cta-configure-from to-cta-configure-to">
       Detalhes
     </Button>
-  )
-}
-
-function PageSizeSelect({ value, onChange }: { value: number; onChange: (value: number) => void }) {
-  return (
-    <div className="flex items-center gap-2 text-sm text-stat-card-muted">
-      <span>Mostrar:</span>
-      <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
-        <SelectTrigger className="h-8 w-16">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {[5, 10, 25, 50].map((size) => (
-            <SelectItem key={size} value={String(size)}>
-              {size}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  )
-}
-
-function Pagination({
-  page,
-  totalPages,
-  onPageChange,
-}: {
-  page: number
-  totalPages: number
-  onPageChange: (page: number) => void
-}) {
-  const pages =
-    totalPages <= 5
-      ? Array.from({ length: totalPages }, (_, i) => i + 1)
-      : [1, 2, 3, -1, totalPages]
-
-  return (
-    <div className="flex items-center gap-1">
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        disabled={page <= 1}
-        onClick={() => onPageChange(page - 1)}
-        aria-label="Página anterior"
-      >
-        <Icon name="chevron-left" />
-      </Button>
-
-      {pages.map((p, i) =>
-        p === -1 ? (
-          <span key={`ellipsis-${i}`} className="px-1 text-sm text-stat-card-muted">
-            …
-          </span>
-        ) : (
-          <Button
-            key={p}
-            size="icon-sm"
-            variant={p === page ? 'default' : 'ghost'}
-            onClick={() => onPageChange(p)}
-          >
-            {p}
-          </Button>
-        ),
-      )}
-
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        disabled={page >= totalPages}
-        onClick={() => onPageChange(page + 1)}
-        aria-label="Próxima página"
-      >
-        <Icon name="chevron-right" />
-      </Button>
-    </div>
   )
 }
 

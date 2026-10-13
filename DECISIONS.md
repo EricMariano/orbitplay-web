@@ -115,6 +115,29 @@ o público (`PATCH /tests/{id}/audience`) e publica — **não cobra nada**.
 - Idade começa em 18 (DECISIONS.md da API §1.4), não em 16 como no Figma;
   "99+" é enviado como 120 (teto da API).
 
+### Relatório do teste (Tela 11) — o que o design pede e a API ainda não tem
+
+Rota `/studio/games/$gameId/tests/$testId` (abas por `?tab=`). Cada bloco
+mostra o próprio estado (`processing`/`failed`/`unavailable`) sem derrubar
+os demais. Sem dado fixo:
+
+- **IA deferida** (DECISIONS.md da API, M10): "Nota média da IA", "Fator
+  diversão", "Bugs e Glitches", "Qualidade do teste IA", descobertas e
+  sugestões do plug-in mostram "—" com a explicação no `title`; os Insights
+  de IA mostram o estado "ainda não disponíveis". Os botões de exportar
+  insights e o de filtros do cabeçalho ficam desabilitados.
+- **Telemetria** só aparece com o Orbit Plug-in na build; sem ele, o cartão
+  explica como integrar.
+- **Arquétipo / tipo de jogador** usam o vocabulário do público da Tela 09
+  (`ARCHETYPE_OPTIONS`/`PLAYER_TIER_OPTIONS`), não o "Hardcore/Testador/
+  Desenvolvedor" do Figma; cada perfil tem **uma** cor nas tags e nos donuts
+  (o Figma usa cores diferentes para o mesmo arquétipo na tabela e no donut).
+- **Tabela de sessões**: a API pagina por cursor — dá para voltar a páginas
+  já vistas e avançar uma por vez; a ordenação reordena só a página atual.
+  "Mostrar teste" (Tela 12) fica desabilitado até a tela de sessão existir.
+- Badges do cabeçalho: modelo do teste (catálogo `/test-models`) e status;
+  a descrição é a do modelo.
+
 ## Pendências — só verificáveis quando a API subir
 
 Não contornar; entram quando houver API.

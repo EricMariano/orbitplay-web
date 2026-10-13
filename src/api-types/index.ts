@@ -60,6 +60,29 @@ export type ParticipationResult = Omit<
   Schemas['ParticipationResultDto_Output'],
   'rating' | 'invalidReason'
 > & { rating: number | null; invalidReason: string | null }
+// Relatório do teste (M10, Tela 11). Cada bloco é uma união discriminada por
+// `key`, com payload tipado — use `ReportBlockOf<'overview'>` etc.
+export type TestReport = Schemas['TestReportDto_Output']
+export type ReportBlock = TestReport['blocks'][number]
+export type ReportBlockKey = ReportBlock['key']
+export type ReportBlockStatus = ReportBlock['status']
+export type ReportBlockOf<K extends ReportBlockKey> = Extract<ReportBlock, { key: K }>
+export type ReportPayload<K extends ReportBlockKey> = NonNullable<ReportBlockOf<K>['payload']>
+// O OpenAPI gerado tipa `nextCursor` e `model` (nullable) como arrays; a API
+// devolve `string | null` (report.dto no orbitplay-api). Remover o ajuste
+// quando o contrato for corrigido.
+export type ReportSessionList = Omit<Schemas['ReportSessionListDto_Output'], 'nextCursor'> & {
+  nextCursor: string | null
+}
+export type ReportSession = ReportSessionList['data'][number]
+export type PlayerArchetype = NonNullable<ReportSession['archetype']>
+export type PlayerProfileTier = NonNullable<ReportSession['playerTier']>
+export type EvaluationQuestionSummary = ReportPayload<'evaluations'>['questions'][number]
+export type TestInsights = Omit<Schemas['TestInsightsDto_Output'], 'model'> & {
+  model: string | null
+}
+export type Insight = TestInsights['data'][number]
+export type InsightCategory = Insight['category']
 
 // ---------------------------------------------------------------------------
 // ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
@@ -68,8 +91,7 @@ export type ParticipationResult = Omit<
 // antigo (commit 262c190) para não quebrar as telas de Jogador que já
 // dependem deles. Substituir por Schemas['...'] assim que o backend
 // implementar cada endpoint (/wallet, /tests/mine, /tests/continue,
-// /games/highlighted, /earnings/summary, /opportunities,
-// /tests/{id}/report).
+// /games/highlighted, /earnings/summary, /opportunities).
 // ---------------------------------------------------------------------------
 
 export type ApiErrorCode =
@@ -96,14 +118,6 @@ export type Opportunity = {
   gameId: string | null
   reward: number
   status: 'open' | 'in_progress' | 'closed'
-}
-
-export type TestReport = {
-  id: string
-  testId: string
-  summary: string
-  score: number | null
-  sections?: { title: string; content: string }[]
 }
 
 export type Wallet = {

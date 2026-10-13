@@ -1237,6 +1237,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tests/{testId}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TestInsightsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/studio/dashboard": {
         parameters: {
             query?: never;
@@ -2287,16 +2303,117 @@ export interface components {
         };
         TestReportDto_Output: {
             testId: string;
-            blocks: {
+            blocks: ({
                 /** @enum {string} */
-                key: "overview" | "evolution" | "rating_distribution" | "tester_profile";
+                key: "overview";
                 /** @enum {string} */
                 status: "processing" | "ready" | "failed" | "unavailable";
                 payload: {
-                    [key: string]: unknown;
+                    totalParticipations: number;
+                    completedSessions: number;
+                    validSessions: number;
+                    completionRate: number | null;
+                    averageDurationMs: number | null;
+                    averageRating: number | null;
+                    testersCount: number;
+                    aiScore: number | null;
+                    funFactor: number | null;
+                    bugsCount: number | null;
                 } | null;
                 computedAt: string | null;
-            }[];
+            } | {
+                /** @enum {string} */
+                key: "evolution";
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                payload: {
+                    points: {
+                        date: string;
+                        sessions: number;
+                    }[];
+                    weeks: {
+                        week: number;
+                        startDate: string;
+                        sessions: number;
+                    }[];
+                } | null;
+                computedAt: string | null;
+            } | {
+                /** @enum {string} */
+                key: "rating_distribution";
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                payload: {
+                    buckets: {
+                        rating: number;
+                        count: number;
+                    }[];
+                } | null;
+                computedAt: string | null;
+            } | {
+                /** @enum {string} */
+                key: "tester_profile";
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                payload: {
+                    ageBrackets: {
+                        bracket: string;
+                        count: number;
+                    }[];
+                    archetypes: {
+                        /** @enum {string} */
+                        key: "achiever" | "explorer" | "socializer" | "killer" | "unknown";
+                        count: number;
+                    }[];
+                    playerTiers: {
+                        /** @enum {string} */
+                        key: "casual" | "experienced" | "trained" | "qa" | "unknown";
+                        count: number;
+                    }[];
+                } | null;
+                computedAt: string | null;
+            } | {
+                /** @enum {string} */
+                key: "evaluations";
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                payload: {
+                    questionsCount: number;
+                    responsesCount: number;
+                    averageResponseTimeMs: number | null;
+                    dropoutRate: number | null;
+                    questions: {
+                        questionId: string;
+                        position: number;
+                        label: string;
+                        type: string;
+                        responsesCount: number;
+                        average: number | null;
+                        distribution: {
+                            value: number;
+                            count: number;
+                        }[];
+                        options: {
+                            label: string;
+                            count: number;
+                        }[];
+                        samples: string[];
+                    }[];
+                } | null;
+                computedAt: string | null;
+            } | {
+                /** @enum {string} */
+                key: "telemetry";
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                payload: {
+                    sessionsAnalyzed: number;
+                    activeTriggers: number;
+                    discoveries: string[] | null;
+                    aiSuggestions: string[] | null;
+                } | null;
+                computedAt: string | null;
+            })[];
         };
         ReportSessionListDto_Output: {
             data: {
@@ -2310,8 +2427,15 @@ export interface components {
                 durationMs: number | null;
                 valid: boolean | null;
                 averageRating: number | null;
+                /** @enum {string|null} */
+                archetype: "achiever" | "explorer" | "socializer" | "killer" | null;
+                /** @enum {string|null} */
+                playerTier: "casual" | "experienced" | "trained" | "qa" | null;
+                aiQualityScore: number | null;
+                telemetryConnected: boolean;
             }[];
             nextCursor: string[];
+            total: number;
         };
         SessionEvaluationDto_Output: {
             session: {
@@ -2325,6 +2449,12 @@ export interface components {
                 durationMs: number | null;
                 valid: boolean | null;
                 averageRating: number | null;
+                /** @enum {string|null} */
+                archetype: "achiever" | "explorer" | "socializer" | "killer" | null;
+                /** @enum {string|null} */
+                playerTier: "casual" | "experienced" | "trained" | "qa" | null;
+                aiQualityScore: number | null;
+                telemetryConnected: boolean;
             };
             submittedAt: string[];
             answers: {
@@ -2366,6 +2496,24 @@ export interface components {
             markedInvalid: boolean;
             ratedByUserId: string;
             updatedAt: string;
+        };
+        TestInsightsDto_Output: {
+            /** @enum {string} */
+            status: "processing" | "ready" | "failed" | "unavailable";
+            model: string[];
+            data: {
+                id: string;
+                /** @enum {string} */
+                category: "ux_ui" | "bugs_accessibility" | "fun" | "narrative_social";
+                title: string;
+                body: string;
+                sessionId: string | null;
+                tMs: number | null;
+                sourceType: string;
+                /** @enum {boolean} */
+                generatedByAi: true;
+                createdAt: string;
+            }[];
         };
         StudioDashboardDto_Output: {
             kpis: {
@@ -4481,6 +4629,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionRatingDto_Output"];
+                };
+            };
+        };
+    };
+    TestInsightsController_list: {
+        parameters: {
+            query?: {
+                q?: string;
+                category?: "ux_ui" | "bugs_accessibility" | "fun" | "narrative_social";
+            };
+            header?: never;
+            path: {
+                testId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestInsightsDto_Output"];
                 };
             };
         };

@@ -50,6 +50,10 @@ import {
   ArrowDown,
   ArrowUp,
   Copy,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  SlidersHorizontal,
   ImagePlus,
   Pencil,
   Trash2,
@@ -154,6 +158,11 @@ const registry = {
   skull: Skull,
   tag: Tag,
   'user-check': UserCheck,
+  download: Download,
+  'file-pdf': FileText,
+  'file-sheet': FileSpreadsheet,
+  sliders: SlidersHorizontal,
+  sparkles: Sparkles,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry

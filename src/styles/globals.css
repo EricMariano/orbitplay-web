@@ -59,6 +59,29 @@
   --danger: #ef4444; /* TODO */
   --info: #38bdf8; /* TODO */
   --g-teal: #0cf8c4;
+  /* Figma "Graphic" pairs (cor viva / fundo escuro) — tags e gráficos. */
+  --g-topaz: #ffd52e;
+  --g-golden: #806b17;
+  --g-emerald: #00ff78;
+  --g-deep: #00803c;
+  --g-amber: #ef780b;
+  --g-burnt: #783c05;
+  --g-azure: #0289ff; /* Figma "G-Sapphire" (o --g-sapphire acima é placeholder) */
+  --g-midnight: #014580;
+  --g-ruby: #eb3723;
+  --g-crimson: #761b12;
+  --g-imperial: #067c62;
+  --g-amethyst: #b400ff;
+  --g-plum: #5a0080;
+  --g-sunrise-start: #f8643b;
+  --g-sunrise-end: #ee7e5f;
+  --b-blue: #248ff7;
+  --b-violet: #875af2;
+  --e-light: #e7e8e9;
+  --e-medium: #c5c9ce;
+  --e-dark: #33323d;
+  --e-ink: #111827;
+  --s-info-background: #e8edf9;
   --app-gradient:
     radial-gradient(120% 90% at 100% 100%, #5b2ea6 0%, transparent 60%),
     linear-gradient(180deg, #0b0d1f 0%, #080321 100%);
@@ -136,6 +159,50 @@
   --tint-violet-foreground: var(--g-violet);
   --tint-olive-background: #a3a51640;
   --tint-olive-foreground: #d4d654;
+
+  /* Tags diagonais (Badge-Tag do Figma): fundo escuro + texto vivo. */
+  --tag-yellow-background: var(--g-golden);
+  --tag-yellow-foreground: var(--g-topaz);
+  --tag-green-background: var(--g-deep);
+  --tag-green-foreground: var(--g-emerald);
+  --tag-orange-background: var(--g-burnt);
+  --tag-orange-foreground: var(--g-amber);
+  --tag-blue-background: var(--g-midnight);
+  --tag-blue-foreground: var(--g-azure);
+  --tag-red-background: var(--g-crimson);
+  --tag-red-foreground: var(--g-ruby);
+  --tag-teal-background: var(--g-imperial);
+  --tag-teal-foreground: var(--g-teal);
+  --tag-violet-background: var(--g-plum);
+  --tag-violet-foreground: var(--g-amethyst);
+
+  /* Relatório do teste (Tela 11). */
+  --report-card-border: var(--field-border);
+  --report-action-start: var(--b-blue);
+  --report-action-end: var(--b-violet);
+  --report-icon-button: var(--e-light);
+  --report-icon-button-foreground: var(--e-dark);
+  --report-table-header: var(--s-info-background);
+  --report-table-header-foreground: var(--e-ink);
+  --report-progress-track: var(--white);
+  --report-progress: var(--b-blue);
+  --plugin-card-background: rgb(237 111 23 / 20%);
+  --plugin-card-border: var(--g-sunrise-start);
+  --plugin-accent-start: var(--g-sunrise-start);
+  --plugin-accent-end: var(--g-sunrise-end);
+
+  /* Séries de gráfico (barras, donuts, legendas). */
+  --chart-bar: var(--g-azure);
+  --chart-grid: var(--e-medium);
+  --chart-axis: var(--e-light);
+  --chart-yellow: var(--g-topaz);
+  --chart-green: var(--g-emerald);
+  --chart-orange: var(--g-amber);
+  --chart-blue: var(--g-azure);
+  --chart-red: var(--g-ruby);
+  --chart-teal: var(--g-teal);
+  --chart-violet: var(--g-amethyst);
+  --chart-neutral: var(--n-400);
 }
 
 /* Mirror for the dark variant so `dark:` utilities resolve to the same
@@ -228,6 +295,50 @@
   --color-tint-violet-foreground: var(--tint-violet-foreground);
   --color-tint-olive-background: var(--tint-olive-background);
   --color-tint-olive-foreground: var(--tint-olive-foreground);
+
+  --color-tag-yellow-background: var(--tag-yellow-background);
+  --color-tag-yellow-foreground: var(--tag-yellow-foreground);
+  --color-tag-green-background: var(--tag-green-background);
+  --color-tag-green-foreground: var(--tag-green-foreground);
+  --color-tag-orange-background: var(--tag-orange-background);
+  --color-tag-orange-foreground: var(--tag-orange-foreground);
+  --color-tag-blue-background: var(--tag-blue-background);
+  --color-tag-blue-foreground: var(--tag-blue-foreground);
+  --color-tag-red-background: var(--tag-red-background);
+  --color-tag-red-foreground: var(--tag-red-foreground);
+  --color-tag-teal-background: var(--tag-teal-background);
+  --color-tag-teal-foreground: var(--tag-teal-foreground);
+  --color-tag-violet-background: var(--tag-violet-background);
+  --color-tag-violet-foreground: var(--tag-violet-foreground);
+
+  --color-report-card-border: var(--report-card-border);
+  --color-report-action-start: var(--report-action-start);
+  --color-report-action-end: var(--report-action-end);
+  --color-report-icon-button: var(--report-icon-button);
+  --color-report-icon-button-foreground: var(--report-icon-button-foreground);
+  --color-report-table-header: var(--report-table-header);
+  --color-report-table-header-foreground: var(--report-table-header-foreground);
+  --color-report-progress-track: var(--report-progress-track);
+  --color-report-progress: var(--report-progress);
+  --color-plugin-card-background: var(--plugin-card-background);
+  --color-plugin-card-border: var(--plugin-card-border);
+  --color-plugin-accent-start: var(--plugin-accent-start);
+  --color-plugin-accent-end: var(--plugin-accent-end);
+
+  --color-chart-bar: var(--chart-bar);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-green: var(--chart-green);
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-red: var(--chart-red);
+  --color-chart-teal: var(--chart-teal);
+  --color-chart-violet: var(--chart-violet);
+  --color-chart-neutral: var(--chart-neutral);
+
+  --font-brand: 'Montserrat', 'Segoe UI', sans-serif;
+  --font-label: 'Ubuntu', 'Segoe UI', sans-serif;
 }
 
 /* Login motion — entrance, ambient glow and button shimmer. Screens use the
