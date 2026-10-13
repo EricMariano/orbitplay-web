@@ -117,6 +117,9 @@
   --stat-card-background: #ffffff33;
   --stat-card-foreground: var(white);
   --stat-card-muted: var(--n-300);
+  /* Campo de formulário do wizard (Figma "Tipos e Elementos/Claro" #E5E5ED a 20%). */
+  --field: rgb(229 229 237 / 20%);
+  --field-border: #e5e5ed;
 
   --radius: 0.625rem;
   --radius-diagonal: 16px 0px 16px 0px;
@@ -179,6 +182,8 @@
   --color-stat-card-background: var(--stat-card-background);
   --color-stat-card-foreground: var(--stat-card-foreground);
   --color-stat-card-muted: var(--stat-card-muted);
+  --color-field: var(--field);
+  --color-field-border: var(--field-border);
 
   --color-success: var(--success);
   --color-warning: var(--warning);

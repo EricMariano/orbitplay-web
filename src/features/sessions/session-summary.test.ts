@@ -17,6 +17,8 @@ const question = (overrides: Partial<FormQuestion> = {}): FormQuestion => ({
   options: [],
   scaleMin: null,
   scaleMax: null,
+  scaleMinLabel: null,
+  scaleMaxLabel: null,
   ...overrides,
 })
 

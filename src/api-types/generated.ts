@@ -1109,6 +1109,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/player/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FeedController_getFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tests/{testId}/report": {
         parameters: {
             query?: never;
@@ -1181,6 +1197,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ReportsController_getExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sessions/{id}/rate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SessionRatingsController_rate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/studio/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DashboardController_getDashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/studio/benchmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DashboardController_getBenchmark"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1689,6 +1753,8 @@ export interface components {
                 }[];
                 scaleMin?: number;
                 scaleMax?: number;
+                scaleMinLabel?: string;
+                scaleMaxLabel?: string;
             }[];
         };
         TestFormDto_Output: {
@@ -1708,6 +1774,8 @@ export interface components {
                 }[];
                 scaleMin: number | null;
                 scaleMax: number | null;
+                scaleMinLabel: string | null;
+                scaleMaxLabel: string | null;
             }[];
         };
         BuildUploadUrlRequestDto: {
@@ -1963,6 +2031,8 @@ export interface components {
                     }[];
                     scaleMin: number | null;
                     scaleMax: number | null;
+                    scaleMinLabel: string | null;
+                    scaleMaxLabel: string | null;
                 }[];
             };
             alreadySubmitted: boolean;
@@ -2155,6 +2225,32 @@ export interface components {
             } | null;
             generatedAt: string[];
         };
+        FeedListDto_Output: {
+            data: {
+                id: string;
+                organizationId: string;
+                title: string;
+                slug: string;
+                description: string | null;
+                genre: string | null;
+                platform: string | null;
+                /** @enum {string} */
+                status: "draft" | "active" | "archived";
+                coverUrl: string | null;
+                bannerUrl: string | null;
+                metrics: {
+                    testsTotal: number;
+                    testsActive: number;
+                    sessionsValid: number;
+                    playersTotal: number;
+                    averageRating: number | null;
+                };
+                createdAt: string;
+                updatedAt: string;
+            }[];
+            nextCursor: string[];
+            seed: string;
+        };
         TestReportDto_Output: {
             testId: string;
             blocks: {
@@ -2222,6 +2318,123 @@ export interface components {
             failureReason: string[];
             createdAt: string;
             completedAt: string[];
+        };
+        RateSessionDto: {
+            rating: number;
+            comment?: string | null;
+            /** @default false */
+            markedInvalid: boolean;
+        };
+        SessionRatingDto_Output: {
+            sessionId: string;
+            rating: number;
+            comment: string[];
+            markedInvalid: boolean;
+            ratedByUserId: string;
+            updatedAt: string;
+        };
+        StudioDashboardDto_Output: {
+            kpis: {
+                [key: string]: {
+                    value: number | null;
+                    delta: number | null;
+                    unit: string | null;
+                };
+            };
+            games: {
+                id: string;
+                organizationId: string;
+                title: string;
+                slug: string;
+                description: string | null;
+                genre: string | null;
+                platform: string | null;
+                /** @enum {string} */
+                status: "draft" | "active" | "archived";
+                coverUrl: string | null;
+                bannerUrl: string | null;
+                metrics: {
+                    testsTotal: number;
+                    testsActive: number;
+                    sessionsValid: number;
+                    playersTotal: number;
+                    averageRating: number | null;
+                };
+                createdAt: string;
+                updatedAt: string;
+            }[];
+            recentTests: {
+                id: string;
+                gameId: string;
+                organizationId: string;
+                title: string | null;
+                /** @enum {string} */
+                status: "draft" | "published" | "paused" | "finished" | "expired";
+                /** @enum {string} */
+                testModelKey: "free_exploration_telemetry" | "free_exploration" | "ab_test" | "ab_test_images";
+                currentStep: number;
+                pendingValidations: {
+                    step: number;
+                    code: string;
+                    message: string;
+                }[];
+                audience: {
+                    locations: string[];
+                    archetypes: string[];
+                    ageMin: number;
+                    ageMax: number;
+                    quantity: number;
+                    durationDays: number;
+                    deviceRequirements: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                    keepActive: boolean;
+                    estimatedReach: number;
+                } | null;
+                build: {
+                    id: string;
+                    testId: string;
+                    /** @enum {string} */
+                    status: "awaiting_upload" | "uploading" | "processing" | "validated" | "failed";
+                    /** @enum {string|null} */
+                    platform: "windows" | "macos" | "linux" | "android" | "ios" | "web" | null;
+                    version: string | null;
+                    sizeBytes: number | null;
+                    checksum: string | null;
+                    validationSteps: {
+                        /** @enum {string} */
+                        key: "checksum" | "malware_scan" | "metadata" | "plugin_manifest";
+                        /** @enum {string} */
+                        status: "processing" | "ready" | "failed" | "unavailable";
+                        message: string | null;
+                    }[];
+                    failureReason: string | null;
+                    createdAt: string;
+                } | null;
+                spotsTotal: number | null;
+                spotsTaken: number | null;
+                rewardCents: number | null;
+                expiresAt: string | null;
+                publishedAt: string | null;
+                createdAt: string;
+                updatedAt: string;
+            }[];
+            stats: {
+                key: string;
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                payload: {
+                    [key: string]: unknown;
+                } | null;
+                computedAt: string | null;
+            };
+        };
+        DashboardBlockDto_Output: {
+            key: string;
+            /** @enum {string} */
+            status: "processing" | "ready" | "failed" | "unavailable";
+            payload: {
+                [key: string]: unknown;
+            } | null;
+            computedAt: string[];
         };
     };
     responses: never;
@@ -4047,6 +4260,29 @@ export interface operations {
             };
         };
     };
+    FeedController_getFeed: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                seed?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedListDto_Output"];
+                };
+            };
+        };
+    };
     ReportsController_getReport: {
         parameters: {
             query?: never;
@@ -4157,6 +4393,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReportExportDto_Output"];
+                };
+            };
+        };
+    };
+    SessionRatingsController_rate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RateSessionDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRatingDto_Output"];
+                };
+            };
+        };
+    };
+    DashboardController_getDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioDashboardDto_Output"];
+                };
+            };
+        };
+    };
+    DashboardController_getBenchmark: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardBlockDto_Output"];
                 };
             };
         };
