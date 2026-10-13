@@ -18,6 +18,7 @@ import { Route as StudioIndexRouteImport } from './routes/studio/index'
 import { Route as PlayerGamesGameIdRouteImport } from './routes/player/games/$gameId'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
 import { Route as PlayerSessionsSessionIdSummaryRouteImport } from './routes/player/sessions/$sessionId/summary'
+import { Route as PlayerTestsTestIdTutorialRouteImport } from './routes/player/tests/$testId/tutorial'
 import { Route as StudioGamesGameIdChatRouteImport } from './routes/studio/games/$gameId/chat'
 import { Route as StudioGamesGameIdTestsNewRouteImport } from './routes/studio/games/$gameId/tests/new'
 
@@ -67,6 +68,12 @@ const PlayerSessionsSessionIdSummaryRoute =
     path: '/sessions/$sessionId/summary',
     getParentRoute: () => PlayerRoute,
   } as any)
+const PlayerTestsTestIdTutorialRoute =
+  PlayerTestsTestIdTutorialRouteImport.update({
+    id: '/tests/$testId/tutorial',
+    path: '/tests/$testId/tutorial',
+    getParentRoute: () => PlayerRoute,
+  } as any)
 const StudioGamesGameIdChatRoute = StudioGamesGameIdChatRouteImport.update({
   id: '/games/$gameId/chat',
   path: '/games/$gameId/chat',
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
+  '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games': typeof StudioGamesIndexRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
+  '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
+  '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
   '/studio/games/$gameId/tests/new': typeof StudioGamesGameIdTestsNewRoute
 }
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/player/games/$gameId'
     | '/studio/games/'
     | '/player/sessions/$sessionId/summary'
+    | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
     | '/studio/games/$gameId/tests/new'
   fileRoutesByTo: FileRoutesByTo
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/player/games/$gameId'
     | '/studio/games'
     | '/player/sessions/$sessionId/summary'
+    | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
     | '/studio/games/$gameId/tests/new'
   id:
@@ -153,6 +165,7 @@ export interface FileRouteTypes {
     | '/player/games/$gameId'
     | '/studio/games/'
     | '/player/sessions/$sessionId/summary'
+    | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
     | '/studio/games/$gameId/tests/new'
   fileRoutesById: FileRoutesById
@@ -229,6 +242,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayerSessionsSessionIdSummaryRouteImport
       parentRoute: typeof PlayerRoute
     }
+    '/player/tests/$testId/tutorial': {
+      id: '/player/tests/$testId/tutorial'
+      path: '/tests/$testId/tutorial'
+      fullPath: '/player/tests/$testId/tutorial'
+      preLoaderRoute: typeof PlayerTestsTestIdTutorialRouteImport
+      parentRoute: typeof PlayerRoute
+    }
     '/studio/games/$gameId/chat': {
       id: '/studio/games/$gameId/chat'
       path: '/games/$gameId/chat'
@@ -250,12 +270,14 @@ interface PlayerRouteChildren {
   PlayerIndexRoute: typeof PlayerIndexRoute
   PlayerGamesGameIdRoute: typeof PlayerGamesGameIdRoute
   PlayerSessionsSessionIdSummaryRoute: typeof PlayerSessionsSessionIdSummaryRoute
+  PlayerTestsTestIdTutorialRoute: typeof PlayerTestsTestIdTutorialRoute
 }
 
 const PlayerRouteChildren: PlayerRouteChildren = {
   PlayerIndexRoute: PlayerIndexRoute,
   PlayerGamesGameIdRoute: PlayerGamesGameIdRoute,
   PlayerSessionsSessionIdSummaryRoute: PlayerSessionsSessionIdSummaryRoute,
+  PlayerTestsTestIdTutorialRoute: PlayerTestsTestIdTutorialRoute,
 }
 
 const PlayerRouteWithChildren =

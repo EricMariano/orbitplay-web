@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "gen:api": "node scripts/gen-api.mjs",
+    "gen:api-design": "openapi-typescript src/api-types/orbitplay-design-openapi.json -o src/api-types/orbitplay-design.generated.ts",
     "prepare": "husky"
   },
   "dependencies": {
