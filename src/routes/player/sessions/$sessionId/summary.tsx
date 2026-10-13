@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, createFileRoute, useBlocker } from '@tanstack/react-router'
+import { Link, createFileRoute, useBlocker, useNavigate } from '@tanstack/react-router'
 import { useForm, useWatch } from 'react-hook-form'
 import type { FormQuestion, SessionSummary } from '@/api-types'
 import { ErrorState } from '@/components/common/ErrorState'
@@ -78,6 +78,7 @@ function SessionSummaryPage() {
 }
 
 function SessionContent({ sessionId, summary }: { sessionId: string; summary: SessionSummary }) {
+  const navigate = useNavigate()
   const questions = useMemo(
     () => orderedQuestions(summary.form.questions),
     [summary.form.questions],
@@ -92,10 +93,12 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
   const [alreadySubmitted, setAlreadySubmitted] = useState(Boolean(summary.alreadySubmitted))
   const pendingKey = useRef<string | null>(null)
   const submitting = useRef(false)
+  // Liberado antes de ir para o resultado: o estado de envio ainda não re-renderizou.
+  const leavingToResult = useRef(false)
   const mutation = useSubmitSessionForm(sessionId)
   const hasDraft = formState.isDirty && !submitted && !alreadySubmitted
   const blocker = useBlocker({
-    shouldBlockFn: () => hasDraft,
+    shouldBlockFn: () => hasDraft && !leavingToResult.current,
     enableBeforeUnload: hasDraft,
     disabled: !hasDraft,
     withResolver: true,
@@ -110,6 +113,14 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
     })
     setGeneralError(null)
     pendingKey.current = null
+  }
+
+  function goToResult() {
+    leavingToResult.current = true
+    return navigate({
+      to: '/player/participations/$participationId/result',
+      params: { participationId: summary.session.participationId },
+    })
   }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -130,6 +141,7 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
           values: currentAnswers,
         })
         setSubmitted(true)
+        await goToResult()
       } catch (error) {
         if (error instanceof ApiError && error.status === 422 && error.fieldErrors) {
           setErrors(error.fieldErrors)
@@ -137,6 +149,7 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
         } else if (error instanceof ApiError && error.status === 409) {
           setAlreadySubmitted(true)
           setGeneralError(null)
+          await goToResult()
         } else if (error instanceof ApiError && error.status === 403) {
           setGeneralError('Você não tem permissão para enviar esta avaliação.')
         } else if (error instanceof ApiError && error.status === 404) {
@@ -167,10 +180,14 @@ function SessionContent({ sessionId, summary }: { sessionId: string; summary: Se
             </span>
             <div>
               <h3>{submitted ? 'Avaliação enviada' : 'Avaliação já enviada'}</h3>
-              <p>Esta sessão não aceita um novo envio.</p>
+              <p>Esta sessão não aceita um novo envio. Consulte o resultado da participação.</p>
             </div>
-            <Link to="/player" className="session-home-link">
-              Voltar para Home
+            <Link
+              to="/player/participations/$participationId/result"
+              params={{ participationId: summary.session.participationId }}
+              className="session-home-link"
+            >
+              Acompanhar resultado
             </Link>
           </div>
         ) : (

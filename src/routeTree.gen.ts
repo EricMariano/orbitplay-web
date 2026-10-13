@@ -17,6 +17,7 @@ import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as StudioIndexRouteImport } from './routes/studio/index'
 import { Route as PlayerGamesGameIdRouteImport } from './routes/player/games/$gameId'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
+import { Route as PlayerParticipationsParticipationIdResultRouteImport } from './routes/player/participations/$participationId/result'
 import { Route as PlayerSessionsSessionIdSummaryRouteImport } from './routes/player/sessions/$sessionId/summary'
 import { Route as PlayerTestsTestIdTutorialRouteImport } from './routes/player/tests/$testId/tutorial'
 import { Route as StudioGamesGameIdChatRouteImport } from './routes/studio/games/$gameId/chat'
@@ -62,6 +63,12 @@ const StudioGamesIndexRoute = StudioGamesIndexRouteImport.update({
   path: '/games/',
   getParentRoute: () => StudioRoute,
 } as any)
+const PlayerParticipationsParticipationIdResultRoute =
+  PlayerParticipationsParticipationIdResultRouteImport.update({
+    id: '/participations/$participationId/result',
+    path: '/participations/$participationId/result',
+    getParentRoute: () => PlayerRoute,
+  } as any)
 const PlayerSessionsSessionIdSummaryRoute =
   PlayerSessionsSessionIdSummaryRouteImport.update({
     id: '/sessions/$sessionId/summary',
@@ -95,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/studio/': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
+  '/player/participations/$participationId/result': typeof PlayerParticipationsParticipationIdResultRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games': typeof StudioGamesIndexRoute
+  '/player/participations/$participationId/result': typeof PlayerParticipationsParticipationIdResultRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/studio/': typeof StudioIndexRoute
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/': typeof StudioGamesIndexRoute
+  '/player/participations/$participationId/result': typeof PlayerParticipationsParticipationIdResultRoute
   '/player/sessions/$sessionId/summary': typeof PlayerSessionsSessionIdSummaryRoute
   '/player/tests/$testId/tutorial': typeof PlayerTestsTestIdTutorialRoute
   '/studio/games/$gameId/chat': typeof StudioGamesGameIdChatRoute
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/player/games/$gameId'
     | '/studio/games/'
+    | '/player/participations/$participationId/result'
     | '/player/sessions/$sessionId/summary'
     | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/games/$gameId'
     | '/studio/games'
+    | '/player/participations/$participationId/result'
     | '/player/sessions/$sessionId/summary'
     | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/studio/'
     | '/player/games/$gameId'
     | '/studio/games/'
+    | '/player/participations/$participationId/result'
     | '/player/sessions/$sessionId/summary'
     | '/player/tests/$testId/tutorial'
     | '/studio/games/$gameId/chat'
@@ -235,6 +248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioGamesIndexRouteImport
       parentRoute: typeof StudioRoute
     }
+    '/player/participations/$participationId/result': {
+      id: '/player/participations/$participationId/result'
+      path: '/participations/$participationId/result'
+      fullPath: '/player/participations/$participationId/result'
+      preLoaderRoute: typeof PlayerParticipationsParticipationIdResultRouteImport
+      parentRoute: typeof PlayerRoute
+    }
     '/player/sessions/$sessionId/summary': {
       id: '/player/sessions/$sessionId/summary'
       path: '/sessions/$sessionId/summary'
@@ -269,6 +289,7 @@ declare module '@tanstack/react-router' {
 interface PlayerRouteChildren {
   PlayerIndexRoute: typeof PlayerIndexRoute
   PlayerGamesGameIdRoute: typeof PlayerGamesGameIdRoute
+  PlayerParticipationsParticipationIdResultRoute: typeof PlayerParticipationsParticipationIdResultRoute
   PlayerSessionsSessionIdSummaryRoute: typeof PlayerSessionsSessionIdSummaryRoute
   PlayerTestsTestIdTutorialRoute: typeof PlayerTestsTestIdTutorialRoute
 }
@@ -276,6 +297,8 @@ interface PlayerRouteChildren {
 const PlayerRouteChildren: PlayerRouteChildren = {
   PlayerIndexRoute: PlayerIndexRoute,
   PlayerGamesGameIdRoute: PlayerGamesGameIdRoute,
+  PlayerParticipationsParticipationIdResultRoute:
+    PlayerParticipationsParticipationIdResultRoute,
   PlayerSessionsSessionIdSummaryRoute: PlayerSessionsSessionIdSummaryRoute,
   PlayerTestsTestIdTutorialRoute: PlayerTestsTestIdTutorialRoute,
 }

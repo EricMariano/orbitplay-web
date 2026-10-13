@@ -33,6 +33,13 @@ export type SessionSummary = Schemas['SessionSummaryDto_Output']
 export type FormQuestion = SessionSummary['form']['questions'][number]
 export type FormResponseRequest = Schemas['FormResponseRequestDto']
 export type FormResponse = Schemas['FormResponseDto_Output']
+// O OpenAPI gerado tipa `rating` e `invalidReason` (nullable) como arrays; a API
+// devolve `number | null` e `string | null` (participationResultSchema no
+// orbitplay-api). Remover o ajuste quando o contrato for corrigido.
+export type ParticipationResult = Omit<
+  Schemas['ParticipationResultDto_Output'],
+  'rating' | 'invalidReason'
+> & { rating: number | null; invalidReason: string | null }
 
 // ---------------------------------------------------------------------------
 // ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
