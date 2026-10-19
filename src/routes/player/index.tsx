@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { DashboardPlaceholder } from '@/components/common/DashboardPlaceholder'
+import { HighlightedGamesSection } from './-components/HighlightedGamesSection'
 import { MissionsRankingCard } from './-components/MissionsRankingCard'
 import { SectionHeader } from './-components/SectionHeader'
 import { WelcomeHeader } from './-components/WelcomeHeader'
@@ -8,9 +9,8 @@ export const Route = createFileRoute('/player/')({
   component: PlayerHome,
 })
 
-// "Continue seu teste", destaques, ganhos e meus testes dependem de
-// /tests/continue, /games/highlighted, /earnings/summary e /tests/mine, que a
-// API ainda não expõe. Ficam como placeholder (sem mock); os componentes e
+// "Continue seu teste", ganhos e meus testes dependem de /tests/continue,
+// /earnings/summary e /tests/mine, que a API ainda não expõe. Ficam como placeholder (sem mock); os componentes e
 // hooks já existem em ./-components e features/.
 function PlayerHome() {
   return (
@@ -20,10 +20,7 @@ function PlayerHome() {
         <SectionHeader title="Continue seu teste" />
         <DashboardPlaceholder title="Teste em andamento" />
       </section>
-      <section>
-        <SectionHeader title="Destaques para você" />
-        <DashboardPlaceholder title="Jogos em destaque" />
-      </section>
+      <HighlightedGamesSection />
       <section>
         <SectionHeader title="Estatísticas" />
         <div className="flex flex-col gap-4">

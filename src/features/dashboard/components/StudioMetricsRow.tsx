@@ -1,63 +1,45 @@
+import type { DashboardKpis } from '@/api-types'
 import { Icon, type IconName } from '@/components/icon'
-import type { StudioSummary } from '../types'
 
-type MetricConfig = {
-  key: keyof StudioSummary
+type KpiConfig = {
+  key: string
   label: string
   icon: IconName
   format: (value: number) => string
 }
 
-const metrics: MetricConfig[] = [
-  { key: 'gamesTestedCount', label: 'Jogos Testados', icon: 'gamepad', format: String },
-  { key: 'testsCompletedCount', label: 'Testes Realizados', icon: 'tests', format: String },
-  {
-    key: 'gameplayHoursTested',
-    label: 'Horas de Gameplay Testadas',
-    icon: 'clock',
-    format: String,
-  },
-  {
-    key: 'averageTestScore',
-    label: 'Nota Média dos Testes',
-    icon: 'score',
-    format: (v) => v.toFixed(1).replace('.', ','),
-  },
-  {
-    key: 'averageEngagementRate',
-    label: 'Engajamento Médio',
-    icon: 'target',
-    format: (v) => `${Math.round(v * 100)}%`,
-  },
-  {
-    key: 'aiInsightsGeneratedCount',
-    label: 'Insights Gerados pela IA',
-    icon: 'insights',
-    format: String,
-  },
-  {
-    key: 'testsWithActivePluginCount',
-    label: 'Testes com Plugin Ativo',
-    icon: 'plug',
-    format: String,
-  },
+const formatRating = (value: number) => value.toFixed(1).replace('.', ',')
+const formatRatio = (value: number) => `${Math.round(value * 100)}%`
+
+/** Ordem e rótulos dos KPIs que a API calcula (RN-02). */
+const kpis: KpiConfig[] = [
+  { key: 'gamesTotal', label: 'Jogos', icon: 'gamepad', format: String },
+  { key: 'testsTotal', label: 'Testes no total', icon: 'tests', format: String },
+  { key: 'testsActive', label: 'Testes ativos', icon: 'checklist', format: String },
+  { key: 'sessionsValid', label: 'Sessões válidas', icon: 'clock', format: String },
+  { key: 'playersTotal', label: 'Jogadores', icon: 'users', format: String },
+  { key: 'averageRating', label: 'Nota média', icon: 'score', format: formatRating },
+  { key: 'completionRate', label: 'Taxa de conclusão', icon: 'target', format: formatRatio },
 ]
 
-/** Tira de KPIs gerais do estúdio (Tela 02). Puramente apresentacional. */
-export function StudioMetricsRow({ summary }: { summary: StudioSummary }) {
+/** Tira de KPIs gerais do estúdio (Tela 02). Valor ausente (`null`) aparece como "—". */
+export function StudioMetricsRow({ values }: { values: DashboardKpis }) {
   return (
     <dl className="flex flex-wrap gap-x-8 gap-y-3">
-      {metrics.map((metric) => (
-        <div key={metric.key} className="flex items-center gap-2">
-          <Icon name={metric.icon} className="size-4 text-muted" />
-          <div>
-            <dt className="text-xs text-foreground-strong">{metric.label}</dt>
-            <dd className="text-base font-semibold text-foreground-strong">
-              {metric.format(summary[metric.key])}
-            </dd>
+      {kpis.map((kpi) => {
+        const value = values[kpi.key]?.value ?? null
+        return (
+          <div key={kpi.key} className="flex items-center gap-2">
+            <Icon name={kpi.icon} className="size-4 text-muted" />
+            <div>
+              <dt className="text-xs text-foreground-strong">{kpi.label}</dt>
+              <dd className="text-base font-semibold text-foreground-strong">
+                {value === null ? '—' : kpi.format(value)}
+              </dd>
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </dl>
   )
 }

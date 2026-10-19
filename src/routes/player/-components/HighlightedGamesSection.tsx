@@ -1,16 +1,19 @@
-import type { HighlightedGame } from '@/api-types'
+import type { Game } from '@/api-types'
 import { Link } from '@tanstack/react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { Icon } from '@/components/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useHighlightedGames } from '@/features/games/api/use-highlighted-games'
-import { formatCompactNumber, formatCountdown, formatCurrency } from '@/lib/format'
+import { usePlayerFeed } from '@/features/player/api/use-player-feed'
+import { formatCompactNumber } from '@/lib/format'
 import { SectionHeader } from './SectionHeader'
 
+/** Quantos jogos do feed aparecem na Home. */
+const HIGHLIGHT_LIMIT = 4
+
 export function HighlightedGamesSection() {
-  const games = useHighlightedGames()
+  const games = usePlayerFeed(HIGHLIGHT_LIMIT)
 
   return (
     <section>
@@ -37,8 +40,8 @@ export function HighlightedGamesSection() {
   )
 }
 
-function HighlightedGameCard({ game }: { game: HighlightedGame }) {
-  const countdown = formatCountdown(game.endsAt)
+function HighlightedGameCard({ game }: { game: Game }) {
+  const available = game.metrics.testsActive > 0
 
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface">
@@ -51,41 +54,38 @@ function HighlightedGameCard({ game }: { game: HighlightedGame }) {
           </div>
         )}
         <div className="absolute top-2 left-2 flex gap-1">
-          <Badge className={game.status === 'available' ? 'bg-success text-white' : ''}>
-            {game.status === 'available' ? 'Disponível' : 'Indisponível'}
+          <Badge className={available ? 'bg-success text-white' : ''}>
+            {available ? 'Disponível' : 'Indisponível'}
           </Badge>
-          {game.isNew ? <Badge variant="secondary">Novo</Badge> : null}
         </div>
-        {countdown ? (
-          <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-background/80 px-2 py-0.5 text-[11px] text-foreground">
-            <Icon name="clock" className="size-3" />
-            {countdown}
-          </span>
-        ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="truncate text-sm font-semibold text-foreground">{game.title}</h3>
           <span className="flex shrink-0 items-center gap-1 text-xs text-muted">
             <Icon name="users" className="size-3" />
-            {formatCompactNumber(game.playersCount)}
+            {formatCompactNumber(game.metrics.playersTotal)}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div>
             <p className="flex items-center gap-1 text-foreground">
               <Icon name="list-checks" className="size-3" />
-              {game.openTests}
+              {game.metrics.testsActive}
             </p>
             <p className="text-muted">Testes abertos</p>
           </div>
           <div>
-            <p className="text-foreground">{formatCurrency(game.maxReward)}</p>
-            <p className="text-muted">Prêmio máximo</p>
+            <p className="text-foreground">{game.metrics.sessionsValid}</p>
+            <p className="text-muted">Sessões válidas</p>
           </div>
           <div>
-            <p className="text-foreground">{formatCurrency(game.remainingReward)}</p>
-            <p className="text-muted">Prêmio restante</p>
+            <p className="text-foreground">
+              {game.metrics.averageRating === null
+                ? '—'
+                : game.metrics.averageRating.toFixed(1).replace('.', ',')}
+            </p>
+            <p className="text-muted">Nota média</p>
           </div>
         </div>
         <Button asChild size="sm" className="mt-auto">
