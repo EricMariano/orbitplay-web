@@ -1831,6 +1831,51 @@
         ]
       }
     },
+    "/tests/{id}/build-settings": {
+      "patch": {
+        "operationId": "TestsController_setBuildSettings",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildSettingsRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "tests"
+        ]
+      }
+    },
     "/tests/{id}/audience": {
       "patch": {
         "operationId": "TestsController_setAudience",
@@ -2124,6 +2169,73 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ParticipationDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
+    "/player/participations": {
+      "get": {
+        "operationId": "ParticipationsController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "reserved",
+                "tutorial",
+                "downloading",
+                "ready",
+                "playing",
+                "form_pending",
+                "in_review",
+                "completed",
+                "rejected",
+                "abandoned"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationListDto_Output"
                 }
               }
             }
@@ -2532,6 +2644,131 @@
         ],
         "tags": [
           "participations"
+        ]
+      }
+    },
+    "/player/games/{gameId}": {
+      "get": {
+        "operationId": "PlayerCatalogController_getGame",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerGameDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "player"
+        ]
+      }
+    },
+    "/player/games/{gameId}/tests": {
+      "get": {
+        "operationId": "PlayerCatalogController_listGameTests",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerTestListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "player"
+        ]
+      }
+    },
+    "/player/tests/{testId}": {
+      "get": {
+        "operationId": "PlayerCatalogController_getTest",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerTestDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "player"
         ]
       }
     },
@@ -3283,6 +3520,62 @@
         ]
       }
     },
+    "/player/feed": {
+      "get": {
+        "operationId": "FeedController_getFeed",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "seed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "player"
+        ]
+      }
+    },
     "/tests/{testId}/report": {
       "get": {
         "operationId": "ReportsController_getReport",
@@ -3503,6 +3796,161 @@
           "reports"
         ]
       }
+    },
+    "/sessions/{id}/rate": {
+      "post": {
+        "operationId": "SessionRatingsController_rate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRatingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/tests/{testId}/insights": {
+      "get": {
+        "operationId": "TestInsightsController_list",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ux_ui",
+                "bugs_accessibility",
+                "fun",
+                "narrative_social"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestInsightsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/studio/dashboard": {
+      "get": {
+        "operationId": "DashboardController_getDashboard",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudioDashboardDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/studio/benchmark": {
+      "get": {
+        "operationId": "DashboardController_getBenchmark",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardBlockDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "dashboard"
+        ]
+      }
     }
   },
   "info": {
@@ -3587,10 +4035,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -4014,10 +4460,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -4264,10 +4708,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -4292,22 +4734,16 @@
             "type": "string"
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "genre": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "platform": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -4318,16 +4754,12 @@
             ]
           },
           "coverUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "bannerUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "metrics": {
             "type": "object",
@@ -4785,10 +5217,8 @@
             "type": "string"
           },
           "contentType": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "sizeBytes": {
             "type": "integer",
@@ -4981,16 +5411,12 @@
             ]
           },
           "url": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "expiresAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "durationMs": {
             "type": "integer",
@@ -4999,10 +5425,8 @@
             "nullable": true
           },
           "thumbnailUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -5063,10 +5487,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "unreadCount": {
             "type": "integer",
@@ -5192,10 +5614,8 @@
             "type": "boolean"
           },
           "unavailableReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -5246,10 +5666,8 @@
             "type": "string"
           },
           "title": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -5356,6 +5774,19 @@
                 "type": "integer",
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
+              },
+              "playerTier": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "casual",
+                  "experienced",
+                  "trained",
+                  "qa"
+                ]
+              },
+              "boosted": {
+                "type": "boolean"
               }
             },
             "required": [
@@ -5367,7 +5798,9 @@
               "durationDays",
               "deviceRequirements",
               "keepActive",
-              "estimatedReach"
+              "estimatedReach",
+              "playerTier",
+              "boosted"
             ],
             "additionalProperties": false,
             "nullable": true
@@ -5503,17 +5936,16 @@
             "maximum": 9007199254740991,
             "nullable": true
           },
+          "gamepadSupported": {
+            "type": "boolean"
+          },
           "expiresAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "publishedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -5536,6 +5968,7 @@
           "spotsTotal",
           "spotsTaken",
           "rewardCents",
+          "gamepadSupported",
           "expiresAt",
           "publishedAt",
           "createdAt",
@@ -5671,6 +6104,19 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
+                    },
+                    "playerTier": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "casual",
+                        "experienced",
+                        "trained",
+                        "qa"
+                      ]
+                    },
+                    "boosted": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -5682,7 +6128,9 @@
                     "durationDays",
                     "deviceRequirements",
                     "keepActive",
-                    "estimatedReach"
+                    "estimatedReach",
+                    "playerTier",
+                    "boosted"
                   ],
                   "additionalProperties": false,
                   "nullable": true
@@ -5818,6 +6266,9 @@
                   "maximum": 9007199254740991,
                   "nullable": true
                 },
+                "gamepadSupported": {
+                  "type": "boolean"
+                },
                 "expiresAt": {
                   "type": [
                     "string",
@@ -5851,6 +6302,7 @@
                 "spotsTotal",
                 "spotsTaken",
                 "rewardCents",
+                "gamepadSupported",
                 "expiresAt",
                 "publishedAt",
                 "createdAt",
@@ -5860,10 +6312,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -5962,6 +6412,14 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
+                },
+                "scaleMinLabel": {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "scaleMaxLabel": {
+                  "type": "string",
+                  "maxLength": 300
                 }
               },
               "required": [
@@ -6055,6 +6513,18 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991,
                   "nullable": true
+                },
+                "scaleMinLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scaleMaxLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -6066,7 +6536,9 @@
                 "position",
                 "options",
                 "scaleMin",
-                "scaleMax"
+                "scaleMax",
+                "scaleMinLabel",
+                "scaleMaxLabel"
               ],
               "additionalProperties": false
             }
@@ -6211,10 +6683,8 @@
             "nullable": true
           },
           "version": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "sizeBytes": {
             "type": "integer",
@@ -6223,10 +6693,8 @@
             "nullable": true
           },
           "checksum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "validationSteps": {
             "type": "array",
@@ -6267,10 +6735,8 @@
             }
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -6289,6 +6755,17 @@
           "createdAt"
         ],
         "additionalProperties": false
+      },
+      "BuildSettingsRequestDto": {
+        "type": "object",
+        "properties": {
+          "gamepadSupported": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gamepadSupported"
+        ]
       },
       "AudienceRequestDto": {
         "type": "object",
@@ -6342,6 +6819,21 @@
             }
           },
           "keepActive": {
+            "default": false,
+            "type": "boolean"
+          },
+          "playerTier": {
+            "default": "all",
+            "type": "string",
+            "enum": [
+              "all",
+              "casual",
+              "experienced",
+              "trained",
+              "qa"
+            ]
+          },
+          "boosted": {
             "default": false,
             "type": "boolean"
           }
@@ -6410,28 +6902,20 @@
             "type": "boolean"
           },
           "downloadUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "expiresAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "version": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "checksum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "sizeBytes": {
             "type": "integer",
@@ -6482,16 +6966,12 @@
             ]
           },
           "currentSessionId": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "resumePoint": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "consentsGranted": {
             "type": "boolean"
@@ -6610,16 +7090,12 @@
             "nullable": true
           },
           "startedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "completedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -6633,6 +7109,205 @@
           "build",
           "startedAt",
           "completedAt"
+        ],
+        "additionalProperties": false
+      },
+      "ParticipationListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "testId": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "reserved",
+                    "tutorial",
+                    "downloading",
+                    "ready",
+                    "playing",
+                    "form_pending",
+                    "in_review",
+                    "completed",
+                    "rejected",
+                    "abandoned"
+                  ]
+                },
+                "currentSessionId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resumePoint": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "consentsGranted": {
+                  "type": "boolean"
+                },
+                "build": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "testId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "awaiting_upload",
+                        "uploading",
+                        "processing",
+                        "validated",
+                        "failed"
+                      ]
+                    },
+                    "platform": {
+                      "type": "string",
+                      "enum": [
+                        "windows",
+                        "macos",
+                        "linux",
+                        "android",
+                        "ios",
+                        "web",
+                        null
+                      ],
+                      "nullable": true
+                    },
+                    "version": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sizeBytes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "checksum": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "validationSteps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "checksum",
+                              "malware_scan",
+                              "metadata",
+                              "plugin_manifest"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "processing",
+                              "ready",
+                              "failed",
+                              "unavailable"
+                            ]
+                          },
+                          "message": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "status",
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "failureReason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "testId",
+                    "status",
+                    "platform",
+                    "version",
+                    "sizeBytes",
+                    "checksum",
+                    "validationSteps",
+                    "failureReason",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "startedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "completedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "testId",
+                "gameId",
+                "status",
+                "currentSessionId",
+                "resumePoint",
+                "consentsGranted",
+                "build",
+                "startedAt",
+                "completedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
         ],
         "additionalProperties": false
       },
@@ -6852,10 +7527,8 @@
             "nullable": true
           },
           "rating": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           },
           "rewardCents": {
             "type": "integer",
@@ -6872,10 +7545,8 @@
             ]
           },
           "invalidReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -6989,10 +7660,8 @@
             "type": "string"
           },
           "endedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "durationMs": {
             "type": "integer",
@@ -7001,10 +7670,8 @@
             "nullable": true
           },
           "invalidReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -7378,6 +8045,18 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
                       "nullable": true
+                    },
+                    "scaleMinLabel": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "scaleMaxLabel": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
@@ -7389,7 +8068,9 @@
                     "position",
                     "options",
                     "scaleMin",
-                    "scaleMax"
+                    "scaleMax",
+                    "scaleMinLabel",
+                    "scaleMaxLabel"
                   ],
                   "additionalProperties": false
                 }
@@ -7477,6 +8158,794 @@
         ],
         "additionalProperties": false
       },
+      "PlayerGameDto_Output": {
+        "type": "object",
+        "properties": {
+          "game": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "organizationId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genre": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "platform": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "archived"
+                ]
+              },
+              "coverUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "metrics": {
+                "type": "object",
+                "properties": {
+                  "testsTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "testsActive": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "sessionsValid": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "playersTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "averageRating": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "testsTotal",
+                  "testsActive",
+                  "sessionsValid",
+                  "playersTotal",
+                  "averageRating"
+                ],
+                "additionalProperties": false
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "organizationId",
+              "title",
+              "slug",
+              "description",
+              "genre",
+              "platform",
+              "status",
+              "coverUrl",
+              "bannerUrl",
+              "metrics",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "playersTotal": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "openTests": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "maxRewardCents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "specs": {
+            "type": "object",
+            "properties": {
+              "minimumRequirements": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "recommendedRequirements": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "supportedPlatforms": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux",
+                    "android",
+                    "ios",
+                    "web"
+                  ]
+                }
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "game",
+          "playersTotal",
+          "openTests",
+          "maxRewardCents",
+          "specs"
+        ],
+        "additionalProperties": false
+      },
+      "PlayerTestListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "testId": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "genre": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "coverUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "rewardCents": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "durationMinutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "spotsLeft": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "expiresAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "platforms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "windows",
+                      "macos",
+                      "linux",
+                      "android",
+                      "ios",
+                      "web"
+                    ]
+                  }
+                },
+                "cta": {
+                  "type": "string",
+                  "enum": [
+                    "start",
+                    "continue",
+                    "completed",
+                    "in_review",
+                    "downloading",
+                    "unavailable"
+                  ]
+                },
+                "disabled": {
+                  "type": "boolean"
+                },
+                "disabledReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "promoted": {
+                  "type": "boolean"
+                },
+                "modelKey": {
+                  "type": "string",
+                  "enum": [
+                    "free_exploration_telemetry",
+                    "free_exploration",
+                    "ab_test",
+                    "ab_test_images"
+                  ]
+                },
+                "participation": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "testId": {
+                      "type": "string"
+                    },
+                    "gameId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "reserved",
+                        "tutorial",
+                        "downloading",
+                        "ready",
+                        "playing",
+                        "form_pending",
+                        "in_review",
+                        "completed",
+                        "rejected",
+                        "abandoned"
+                      ]
+                    },
+                    "currentSessionId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "resumePoint": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "consentsGranted": {
+                      "type": "boolean"
+                    },
+                    "build": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "testId": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "awaiting_upload",
+                            "uploading",
+                            "processing",
+                            "validated",
+                            "failed"
+                          ]
+                        },
+                        "platform": {
+                          "type": "string",
+                          "enum": [
+                            "windows",
+                            "macos",
+                            "linux",
+                            "android",
+                            "ios",
+                            "web",
+                            null
+                          ],
+                          "nullable": true
+                        },
+                        "version": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "sizeBytes": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "nullable": true
+                        },
+                        "checksum": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "validationSteps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string",
+                                "enum": [
+                                  "checksum",
+                                  "malware_scan",
+                                  "metadata",
+                                  "plugin_manifest"
+                                ]
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "processing",
+                                  "ready",
+                                  "failed",
+                                  "unavailable"
+                                ]
+                              },
+                              "message": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "status",
+                              "message"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "failureReason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "testId",
+                        "status",
+                        "platform",
+                        "version",
+                        "sizeBytes",
+                        "checksum",
+                        "validationSteps",
+                        "failureReason",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "startedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "completedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "testId",
+                    "gameId",
+                    "status",
+                    "currentSessionId",
+                    "resumePoint",
+                    "consentsGranted",
+                    "build",
+                    "startedAt",
+                    "completedAt"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                }
+              },
+              "required": [
+                "testId",
+                "gameId",
+                "title",
+                "genre",
+                "coverUrl",
+                "rewardCents",
+                "durationMinutes",
+                "spotsLeft",
+                "expiresAt",
+                "platforms",
+                "cta",
+                "disabled",
+                "disabledReason",
+                "promoted",
+                "modelKey",
+                "participation"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "PlayerTestDto_Output": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "genre": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "rewardCents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "spotsLeft": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          "cta": {
+            "type": "string",
+            "enum": [
+              "start",
+              "continue",
+              "completed",
+              "in_review",
+              "downloading",
+              "unavailable"
+            ]
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "disabledReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "promoted": {
+            "type": "boolean"
+          },
+          "modelKey": {
+            "type": "string",
+            "enum": [
+              "free_exploration_telemetry",
+              "free_exploration",
+              "ab_test",
+              "ab_test_images"
+            ]
+          },
+          "participation": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "testId": {
+                "type": "string"
+              },
+              "gameId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reserved",
+                  "tutorial",
+                  "downloading",
+                  "ready",
+                  "playing",
+                  "form_pending",
+                  "in_review",
+                  "completed",
+                  "rejected",
+                  "abandoned"
+                ]
+              },
+              "currentSessionId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "resumePoint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "consentsGranted": {
+                "type": "boolean"
+              },
+              "build": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "testId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "awaiting_upload",
+                      "uploading",
+                      "processing",
+                      "validated",
+                      "failed"
+                    ]
+                  },
+                  "platform": {
+                    "type": "string",
+                    "enum": [
+                      "windows",
+                      "macos",
+                      "linux",
+                      "android",
+                      "ios",
+                      "web",
+                      null
+                    ],
+                    "nullable": true
+                  },
+                  "version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sizeBytes": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "nullable": true
+                  },
+                  "checksum": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "validationSteps": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "enum": [
+                            "checksum",
+                            "malware_scan",
+                            "metadata",
+                            "plugin_manifest"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "processing",
+                            "ready",
+                            "failed",
+                            "unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "status",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "failureReason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "testId",
+                  "status",
+                  "platform",
+                  "version",
+                  "sizeBytes",
+                  "checksum",
+                  "validationSteps",
+                  "failureReason",
+                  "createdAt"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "startedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "testId",
+              "gameId",
+              "status",
+              "currentSessionId",
+              "resumePoint",
+              "consentsGranted",
+              "build",
+              "startedAt",
+              "completedAt"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "testId",
+          "gameId",
+          "title",
+          "genre",
+          "coverUrl",
+          "rewardCents",
+          "durationMinutes",
+          "spotsLeft",
+          "expiresAt",
+          "platforms",
+          "cta",
+          "disabled",
+          "disabledReason",
+          "promoted",
+          "modelKey",
+          "participation"
+        ],
+        "additionalProperties": false
+      },
       "CommunityPostListDto_Output": {
         "type": "object",
         "properties": {
@@ -7525,10 +8994,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -7680,16 +9147,12 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "averageRating": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           }
         },
         "required": [
@@ -7737,10 +9200,8 @@
             "maximum": 5
           },
           "body": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -7803,10 +9264,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -7848,10 +9307,8 @@
             "type": "string"
           },
           "topic": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "archived": {
             "type": "boolean"
@@ -7937,10 +9394,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8129,10 +9584,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8244,10 +9697,8 @@
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "currentUserEntry": {
             "type": "object",
@@ -8287,10 +9738,8 @@
             "nullable": true
           },
           "generatedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8298,6 +9747,143 @@
           "nextCursor",
           "currentUserEntry",
           "generatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "FeedListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genre": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "platform": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "active",
+                    "archived"
+                  ]
+                },
+                "coverUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "bannerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "testsTotal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "testsActive": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "sessionsValid": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "playersTotal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "averageRating": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "testsTotal",
+                    "testsActive",
+                    "sessionsValid",
+                    "playersTotal",
+                    "averageRating"
+                  ],
+                  "additionalProperties": false
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "organizationId",
+                "title",
+                "slug",
+                "description",
+                "genre",
+                "platform",
+                "status",
+                "coverUrl",
+                "bannerUrl",
+                "metrics",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "seed": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor",
+          "seed"
         ],
         "additionalProperties": false
       },
@@ -8310,48 +9896,630 @@
           "blocks": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string",
-                  "enum": [
-                    "overview",
-                    "evolution",
-                    "rating_distribution",
-                    "tester_profile"
-                  ]
-                },
-                "status": {
-                  "type": "string",
-                  "enum": [
-                    "processing",
-                    "ready",
-                    "failed",
-                    "unavailable"
-                  ]
-                },
-                "payload": {
+              "oneOf": [
+                {
                   "type": "object",
-                  "propertyNames": {
-                    "type": "string"
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "overview"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "totalParticipations": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "completedSessions": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "validSessions": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "completionRate": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "averageDurationMs": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "averageRating": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "testersCount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "aiScore": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "funFactor": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "bugsCount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "totalParticipations",
+                        "completedSessions",
+                        "validSessions",
+                        "completionRate",
+                        "averageDurationMs",
+                        "averageRating",
+                        "testersCount",
+                        "aiScore",
+                        "funFactor",
+                        "bugsCount"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "computedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
                   },
-                  "additionalProperties": {},
-                  "nullable": true
+                  "required": [
+                    "key",
+                    "status",
+                    "payload",
+                    "computedAt"
+                  ],
+                  "additionalProperties": false
                 },
-                "computedAt": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "evolution"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "points": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "sessions": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "sessions"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "weeks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "week": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "startDate": {
+                                "type": "string"
+                              },
+                              "sessions": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "week",
+                              "startDate",
+                              "sessions"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "points",
+                        "weeks"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "computedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "payload",
+                    "computedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "rating_distribution"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "buckets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rating": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "rating",
+                              "count"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "buckets"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "computedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "payload",
+                    "computedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "tester_profile"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "ageBrackets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "bracket": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "bracket",
+                              "count"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "archetypes": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string",
+                                "enum": [
+                                  "achiever",
+                                  "explorer",
+                                  "socializer",
+                                  "killer",
+                                  "unknown"
+                                ]
+                              },
+                              "count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "count"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "playerTiers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string",
+                                "enum": [
+                                  "casual",
+                                  "experienced",
+                                  "trained",
+                                  "qa",
+                                  "unknown"
+                                ]
+                              },
+                              "count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "count"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "ageBrackets",
+                        "archetypes",
+                        "playerTiers"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "computedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "payload",
+                    "computedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "evaluations"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "questionsCount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "responsesCount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "averageResponseTimeMs": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "dropoutRate": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "questions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "questionId": {
+                                "type": "string"
+                              },
+                              "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "responsesCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "average": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "distribution": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "count": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "value",
+                                    "count"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "label": {
+                                      "type": "string"
+                                    },
+                                    "count": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "label",
+                                    "count"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "samples": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "questionId",
+                              "position",
+                              "label",
+                              "type",
+                              "responsesCount",
+                              "average",
+                              "distribution",
+                              "options",
+                              "samples"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "questionsCount",
+                        "responsesCount",
+                        "averageResponseTimeMs",
+                        "dropoutRate",
+                        "questions"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "computedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "payload",
+                    "computedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "telemetry"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "processing",
+                        "ready",
+                        "failed",
+                        "unavailable"
+                      ]
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "sessionsAnalyzed": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "activeTriggers": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "discoveries": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "nullable": true
+                        },
+                        "aiSuggestions": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "sessionsAnalyzed",
+                        "activeTriggers",
+                        "discoveries",
+                        "aiSuggestions"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "computedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "status",
+                    "payload",
+                    "computedAt"
+                  ],
+                  "additionalProperties": false
                 }
-              },
-              "required": [
-                "key",
-                "status",
-                "payload",
-                "computedAt"
-              ],
-              "additionalProperties": false
+              ]
             }
           }
         },
@@ -8410,6 +10578,37 @@
                     "number",
                     "null"
                   ]
+                },
+                "archetype": {
+                  "type": "string",
+                  "enum": [
+                    "achiever",
+                    "explorer",
+                    "socializer",
+                    "killer",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "playerTier": {
+                  "type": "string",
+                  "enum": [
+                    "casual",
+                    "experienced",
+                    "trained",
+                    "qa",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "aiQualityScore": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "telemetryConnected": {
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -8422,21 +10621,29 @@
                 "endedAt",
                 "durationMs",
                 "valid",
-                "averageRating"
+                "averageRating",
+                "archetype",
+                "playerTier",
+                "aiQualityScore",
+                "telemetryConnected"
               ],
               "additionalProperties": false
             }
           },
           "nextCursor": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           }
         },
         "required": [
           "data",
-          "nextCursor"
+          "nextCursor",
+          "total"
         ],
         "additionalProperties": false
       },
@@ -8487,6 +10694,37 @@
                   "number",
                   "null"
                 ]
+              },
+              "archetype": {
+                "type": "string",
+                "enum": [
+                  "achiever",
+                  "explorer",
+                  "socializer",
+                  "killer",
+                  null
+                ],
+                "nullable": true
+              },
+              "playerTier": {
+                "type": "string",
+                "enum": [
+                  "casual",
+                  "experienced",
+                  "trained",
+                  "qa",
+                  null
+                ],
+                "nullable": true
+              },
+              "aiQualityScore": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "telemetryConnected": {
+                "type": "boolean"
               }
             },
             "required": [
@@ -8499,15 +10737,17 @@
               "endedAt",
               "durationMs",
               "valid",
-              "averageRating"
+              "averageRating",
+              "archetype",
+              "playerTier",
+              "aiQualityScore",
+              "telemetryConnected"
             ],
             "additionalProperties": false
           },
           "submittedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "answers": {
             "type": "array",
@@ -8609,25 +10849,19 @@
             ]
           },
           "downloadUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
           },
           "completedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -8639,6 +10873,727 @@
           "failureReason",
           "createdAt",
           "completedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RateSessionDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "markedInvalid": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      },
+      "SessionRatingDto_Output": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "markedInvalid": {
+            "type": "boolean"
+          },
+          "ratedByUserId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId",
+          "rating",
+          "comment",
+          "markedInvalid",
+          "ratedByUserId",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "TestInsightsDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "model": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "ux_ui",
+                    "bugs_accessibility",
+                    "fun",
+                    "narrative_social"
+                  ]
+                },
+                "title": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "sessionId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tMs": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "sourceType": {
+                  "type": "string"
+                },
+                "generatedByAi": {
+                  "type": "boolean",
+                  "enum": [
+                    true
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "category",
+                "title",
+                "body",
+                "sessionId",
+                "tMs",
+                "sourceType",
+                "generatedByAi",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "model",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "StudioDashboardDto_Output": {
+        "type": "object",
+        "properties": {
+          "kpis": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "delta": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "value",
+                "delta",
+                "unit"
+              ],
+              "additionalProperties": false
+            },
+            "required": [
+              "gamesTotal",
+              "testsTotal",
+              "testsActive",
+              "sessionsValid",
+              "playersTotal",
+              "averageRating",
+              "completionRate"
+            ]
+          },
+          "games": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genre": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "platform": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "active",
+                    "archived"
+                  ]
+                },
+                "coverUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "bannerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "testsTotal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "testsActive": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "sessionsValid": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "playersTotal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "averageRating": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "testsTotal",
+                    "testsActive",
+                    "sessionsValid",
+                    "playersTotal",
+                    "averageRating"
+                  ],
+                  "additionalProperties": false
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "organizationId",
+                "title",
+                "slug",
+                "description",
+                "genre",
+                "platform",
+                "status",
+                "coverUrl",
+                "bannerUrl",
+                "metrics",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "recentTests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "published",
+                    "paused",
+                    "finished",
+                    "expired"
+                  ]
+                },
+                "testModelKey": {
+                  "type": "string",
+                  "enum": [
+                    "free_exploration_telemetry",
+                    "free_exploration",
+                    "ab_test",
+                    "ab_test_images"
+                  ]
+                },
+                "currentStep": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "pendingValidations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "step",
+                      "code",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "audience": {
+                  "type": "object",
+                  "properties": {
+                    "locations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "archetypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ageMin": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "ageMax": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "durationDays": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "deviceRequirements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "windows",
+                          "macos",
+                          "linux",
+                          "android",
+                          "ios",
+                          "web"
+                        ]
+                      }
+                    },
+                    "keepActive": {
+                      "type": "boolean"
+                    },
+                    "estimatedReach": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "playerTier": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "casual",
+                        "experienced",
+                        "trained",
+                        "qa"
+                      ]
+                    },
+                    "boosted": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "locations",
+                    "archetypes",
+                    "ageMin",
+                    "ageMax",
+                    "quantity",
+                    "durationDays",
+                    "deviceRequirements",
+                    "keepActive",
+                    "estimatedReach",
+                    "playerTier",
+                    "boosted"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "build": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "testId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "awaiting_upload",
+                        "uploading",
+                        "processing",
+                        "validated",
+                        "failed"
+                      ]
+                    },
+                    "platform": {
+                      "type": "string",
+                      "enum": [
+                        "windows",
+                        "macos",
+                        "linux",
+                        "android",
+                        "ios",
+                        "web",
+                        null
+                      ],
+                      "nullable": true
+                    },
+                    "version": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sizeBytes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "checksum": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "validationSteps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "checksum",
+                              "malware_scan",
+                              "metadata",
+                              "plugin_manifest"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "processing",
+                              "ready",
+                              "failed",
+                              "unavailable"
+                            ]
+                          },
+                          "message": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "status",
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "failureReason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "testId",
+                    "status",
+                    "platform",
+                    "version",
+                    "sizeBytes",
+                    "checksum",
+                    "validationSteps",
+                    "failureReason",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "spotsTotal": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "spotsTaken": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "rewardCents": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "gamepadSupported": {
+                  "type": "boolean"
+                },
+                "expiresAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "publishedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "gameId",
+                "organizationId",
+                "title",
+                "status",
+                "testModelKey",
+                "currentStep",
+                "pendingValidations",
+                "audience",
+                "build",
+                "spotsTotal",
+                "spotsTaken",
+                "rewardCents",
+                "gamepadSupported",
+                "expiresAt",
+                "publishedAt",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "processing",
+                  "ready",
+                  "failed",
+                  "unavailable"
+                ]
+              },
+              "payload": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "nullable": true
+              },
+              "computedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "status",
+              "payload",
+              "computedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "kpis",
+          "games",
+          "recentTests",
+          "stats"
+        ],
+        "additionalProperties": false
+      },
+      "DashboardBlockDto_Output": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "computedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "key",
+          "status",
+          "payload",
+          "computedAt"
         ],
         "additionalProperties": false
       }

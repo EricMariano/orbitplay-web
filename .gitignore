@@ -29,3 +29,6 @@ coverage
 playwright-report
 test-results
 /playwright/.cache
+
+# TanStack Router temp files
+.tanstack/

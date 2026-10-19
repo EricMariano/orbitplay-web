@@ -99,6 +99,45 @@ GET /api/games/highlighted     GET /api/earnings/summary
 GET /api/missions/ranking
 ```
 
+### Orçamento do Novo teste (Tela 09) — preço só no front
+
+A API não tem preço nem cobrança (o contrato diz "preço e impulsionamento
+estão deferidos"). Combinado com o solicitante: o "Resumo da compra" é
+calculado em `src/features/tests/audience.ts` e "Pagar e finalizar!" só salva
+o público (`PATCH /tests/{id}/audience`) e publica — **não cobra nada**.
+
+- Preço base por modelo (centavos/teste): telemetria 69, exploração livre 59,
+  A/B 39, A/B de imagens 19 — a tabela que já existia na tela de Tipo.
+- Impulsionar: +15. Tipo de jogador: Experiente +10 (do design); Todos +10,
+  Tester treinado +20, QA +35 e Casual 0 são **provisórios** (o design só
+  indica a ordem por `$`). Trocar quando a precificação real existir.
+- Formas de pagamento aparecem só como informação.
+- Idade começa em 18 (DECISIONS.md da API §1.4), não em 16 como no Figma;
+  "99+" é enviado como 120 (teto da API).
+
+### Relatório do teste (Tela 11) — o que o design pede e a API ainda não tem
+
+Rota `/studio/games/$gameId/tests/$testId` (abas por `?tab=`). Cada bloco
+mostra o próprio estado (`processing`/`failed`/`unavailable`) sem derrubar
+os demais. Sem dado fixo:
+
+- **IA deferida** (DECISIONS.md da API, M10): "Nota média da IA", "Fator
+  diversão", "Bugs e Glitches", "Qualidade do teste IA", descobertas e
+  sugestões do plug-in mostram "—" com a explicação no `title`; os Insights
+  de IA mostram o estado "ainda não disponíveis". Os botões de exportar
+  insights e o de filtros do cabeçalho ficam desabilitados.
+- **Telemetria** só aparece com o Orbit Plug-in na build; sem ele, o cartão
+  explica como integrar.
+- **Arquétipo / tipo de jogador** usam o vocabulário do público da Tela 09
+  (`ARCHETYPE_OPTIONS`/`PLAYER_TIER_OPTIONS`), não o "Hardcore/Testador/
+  Desenvolvedor" do Figma; cada perfil tem **uma** cor nas tags e nos donuts
+  (o Figma usa cores diferentes para o mesmo arquétipo na tabela e no donut).
+- **Tabela de sessões**: a API pagina por cursor — dá para voltar a páginas
+  já vistas e avançar uma por vez; a ordenação reordena só a página atual.
+  "Mostrar teste" (Tela 12) fica desabilitado até a tela de sessão existir.
+- Badges do cabeçalho: modelo do teste (catálogo `/test-models`) e status;
+  a descrição é a do modelo.
+
 ## Pendências — só verificáveis quando a API subir
 
 Não contornar; entram quando houver API.

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  useGameAchievements,
   useGameCommunity,
   useGameReviews,
   useGameSpecs,
@@ -16,7 +15,7 @@ import {
   usePlayerAchievements,
   usePlayerGameTests,
 } from '@/features/games/api/use-player-game-details'
-import type { Achievement } from '@/features/games/player-game-types'
+import type { PlayerAchievement } from '@/features/games/player-game-types'
 import { gameDetailsErrorMessage } from '@/features/games/game-details-utils'
 import { GameTestTable } from './GameTestTable'
 import { GameTestDetails } from './GameTestDetails'
@@ -110,7 +109,7 @@ function AchievementCard({
   achievement,
   unlocked,
 }: {
-  achievement: Achievement
+  achievement: PlayerAchievement['achievement']
   unlocked: boolean
 }) {
   return (
@@ -148,45 +147,36 @@ function AchievementCard({
   )
 }
 
-function AchievementsContent({ gameId }: { gameId: string }) {
-  const configured = useGameAchievements(gameId)
+/**
+ * Conquistas do jogador (`GET /player/achievements`). No backend o catálogo de
+ * conquistas é global — não existe conquista por jogo (`achievements` não tem
+ * `game_id`), então a aba mostra as conquistas da conta, bloqueadas e
+ * desbloqueadas.
+ */
+function AchievementsContent() {
   const player = usePlayerAchievements()
 
-  const unlockedByKey = useMemo(
-    () => new Map(player.data?.data.map((item) => [item.achievement.key, item.unlocked])),
-    [player.data],
-  )
-
-  if (configured.isPending || player.isPending) return tabSkeleton
-  if (configured.isError || player.isError) {
-    const failed = configured.isError ? configured : player
-    return (
-      <ErrorState
-        message={queryMessage(failed.error)}
-        onRetry={() => {
-          void configured.refetch()
-          void player.refetch()
-        }}
-      />
-    )
+  if (player.isPending) return tabSkeleton
+  if (player.isError) {
+    return <ErrorState message={queryMessage(player.error)} onRetry={() => void player.refetch()} />
   }
-  if (configured.data.data.length === 0) {
+  if (player.data.data.length === 0) {
     return (
       <EmptyState
         icon="trophy"
-        title="Nenhuma conquista configurada"
-        description="As conquistas deste jogo aparecerão aqui."
+        title="Nenhuma conquista disponível"
+        description="As conquistas da sua conta aparecerão aqui."
       />
     )
   }
 
   return (
     <div className="grid grid-cols-2 gap-x-14 gap-y-5 xl:grid-cols-4">
-      {configured.data.data.map((achievement) => (
+      {player.data.data.map((item) => (
         <AchievementCard
-          key={achievement.key}
-          achievement={achievement}
-          unlocked={unlockedByKey.get(achievement.key) ?? false}
+          key={item.achievement.key}
+          achievement={item.achievement}
+          unlocked={item.unlocked}
         />
       ))}
     </div>
@@ -229,9 +219,8 @@ function CommunityFeedContent({ gameId }: { gameId: string }) {
         <div className="space-y-3">
           {posts.data.data.map((post) => (
             <article key={post.id} className="rounded-lg border border-white/20 bg-white/10 p-4">
-              <div className="mb-2 flex items-center justify-between gap-4">
+              <div className="mb-2">
                 <strong className="text-sm">{post.authorDisplayName}</strong>
-                {post.status === 'pinned' ? <Badge className="bg-primary">Fixado</Badge> : null}
               </div>
               <p className="text-sm leading-6 text-white/75">{post.body}</p>
             </article>
@@ -401,7 +390,7 @@ export function GameDetailsTabs({ gameId, value, onValueChange }: GameDetailsTab
           <TestsContent gameId={gameId} mine />
         </TabsContent>
         <TabsContent value="achievements">
-          <AchievementsContent gameId={gameId} />
+          <AchievementsContent />
         </TabsContent>
         <TabsContent value="community">
           <CommunityContent gameId={gameId} />

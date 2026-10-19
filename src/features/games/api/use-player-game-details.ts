@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import type {
-  Achievement,
   CommunityPostList,
   GameSpecs,
   Participation,
@@ -69,14 +68,6 @@ export function useMyGameTests(gameId: string, enabled = true) {
       return { data: rows, nextCursor: null }
     },
     enabled: isGameId(gameId) && enabled,
-  })
-}
-
-export function useGameAchievements(gameId: string, enabled = true) {
-  return useQuery({
-    queryKey: gamesKeys.achievements(gameId),
-    queryFn: () => api.get<{ data: Achievement[] }>(`/games/${gamePath(gameId)}/achievements`),
-    enabled: Boolean(gameId) && enabled,
   })
 }
 

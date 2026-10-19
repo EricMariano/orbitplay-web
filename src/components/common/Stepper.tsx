@@ -9,40 +9,66 @@ type StepperProps = {
 /** Indicador de progresso em etapas (fluxos tipo wizard). Não conhece o conteúdo de cada etapa. */
 export function Stepper({ steps, currentStep }: StepperProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-center gap-3">
-        {steps.map((label, index) => (
-          <div key={label} className="flex items-center gap-3">
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  'flex size-9 items-center justify-center rounded-full border-2',
-                  index < currentStep && 'border-primary bg-primary text-primary-foreground',
-                  index === currentStep && 'border-primary text-primary',
-                  index > currentStep && 'border-dashed border-muted text-muted',
-                )}
-              >
-                {index < currentStep ? <Icon name="check" className="size-4" /> : index + 1}
+    <div className="space-y-6">
+      <ol className="mx-auto flex w-full max-w-[560px] items-start">
+        {steps.map((label, index) => {
+          const isDone = index < currentStep
+          const isCurrent = index === currentStep
+          return (
+            <li
+              key={label}
+              aria-current={isCurrent ? 'step' : undefined}
+              className="flex flex-1 flex-col items-center gap-1"
+            >
+              <div className="flex w-full items-center gap-3">
+                <StepLine hidden={index === 0} done={index <= currentStep} />
+                <div
+                  className={cn(
+                    'flex size-8 shrink-0 items-center justify-center rounded-full text-foreground-strong',
+                    isDone && 'bg-success',
+                    isCurrent && 'bg-primary',
+                    !isDone && !isCurrent && 'border-2 border-dashed border-foreground',
+                  )}
+                >
+                  {isDone ? <Icon name="check" className="size-5" /> : null}
+                  {isCurrent ? <Icon name="edit" className="size-4" /> : null}
+                </div>
+                <StepLine hidden={index === steps.length - 1} done={index < currentStep} />
               </div>
               <span
-                className={cn('text-sm', index === currentStep ? 'text-primary' : 'text-muted')}
+                className={cn(
+                  'text-center text-base',
+                  isDone && 'font-bold text-success',
+                  isCurrent && 'font-bold text-primary',
+                  !isDone && !isCurrent && 'text-foreground',
+                )}
               >
                 {label}
               </span>
-            </div>
-            {index < steps.length - 1 ? (
-              <div className={cn('h-px w-16', index < currentStep ? 'bg-primary' : 'bg-muted')} />
-            ) : null}
-          </div>
-        ))}
-      </div>
+            </li>
+          )
+        })}
+      </ol>
 
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/30">
+      <div className="h-1.5 w-full overflow-hidden bg-muted-foreground">
         <div
-          className="h-full bg-primary transition-all"
+          className="h-full bg-gradient-to-r from-cta-configure-from to-cta-configure-to transition-all"
           style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
         />
       </div>
     </div>
+  )
+}
+
+function StepLine({ hidden, done }: { hidden: boolean; done: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'h-[3px] flex-1 rounded-full',
+        done ? 'bg-success' : 'bg-foreground',
+        hidden && 'invisible',
+      )}
+    />
   )
 }

@@ -3,8 +3,7 @@ export const testsKeys = {
   all: ['tests'] as const,
   models: () => [...testsKeys.all, 'models'] as const,
   byGame: (gameId: string) => [...testsKeys.all, 'game', gameId] as const,
-  recent: (page: number, pageSize: number) =>
-    [...testsKeys.all, 'recent', { page, pageSize }] as const,
+  detail: (testId: string) => [...testsKeys.all, 'detail', testId] as const,
   continue: () => [...testsKeys.all, 'continue'] as const,
   mine: () => [...testsKeys.all, 'mine'] as const,
   playerDetail: (testId: string) => [...testsKeys.all, 'player-detail', testId] as const,
