@@ -773,6 +773,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/player/participations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ParticipationsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/participations/{id}": {
         parameters: {
             query?: never;
@@ -927,6 +943,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["SessionsController_formResponse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/player/games/{gameId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlayerCatalogController_getGame"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/player/games/{gameId}/tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlayerCatalogController_listGameTests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/player/tests/{testId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlayerCatalogController_getTest"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1930,6 +1994,41 @@ export interface components {
             startedAt: string | null;
             completedAt: string | null;
         };
+        ParticipationListDto_Output: {
+            data: {
+                id: string;
+                testId: string;
+                gameId: string;
+                /** @enum {string} */
+                status: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+                currentSessionId: string | null;
+                resumePoint: string | null;
+                consentsGranted: boolean;
+                build: {
+                    id: string;
+                    testId: string;
+                    /** @enum {string} */
+                    status: "awaiting_upload" | "uploading" | "processing" | "validated" | "failed";
+                    /** @enum {string|null} */
+                    platform: "windows" | "macos" | "linux" | "android" | "ios" | "web" | null;
+                    version: string | null;
+                    sizeBytes: number | null;
+                    checksum: string | null;
+                    validationSteps: {
+                        /** @enum {string} */
+                        key: "checksum" | "malware_scan" | "metadata" | "plugin_manifest";
+                        /** @enum {string} */
+                        status: "processing" | "ready" | "failed" | "unavailable";
+                        message: string | null;
+                    }[];
+                    failureReason: string | null;
+                    createdAt: string;
+                } | null;
+                startedAt: string | null;
+                completedAt: string | null;
+            }[];
+            nextCursor: string | null;
+        };
         TutorialDto_Output: {
             /** @enum {string} */
             modelKey: "free_exploration_telemetry" | "free_exploration" | "ab_test" | "ab_test_images";
@@ -2097,6 +2196,148 @@ export interface components {
             id: string;
             sessionId: string;
             submittedAt: string;
+        };
+        PlayerGameDto_Output: {
+            game: {
+                id: string;
+                organizationId: string;
+                title: string;
+                slug: string;
+                description: string | null;
+                genre: string | null;
+                platform: string | null;
+                /** @enum {string} */
+                status: "draft" | "active" | "archived";
+                coverUrl: string | null;
+                bannerUrl: string | null;
+                metrics: {
+                    testsTotal: number;
+                    testsActive: number;
+                    sessionsValid: number;
+                    playersTotal: number;
+                    averageRating: number | null;
+                };
+                createdAt: string;
+                updatedAt: string;
+            };
+            playersTotal: number;
+            openTests: number;
+            maxRewardCents: number | null;
+            specs: {
+                minimumRequirements?: {
+                    [key: string]: string;
+                };
+                recommendedRequirements?: {
+                    [key: string]: string;
+                };
+                supportedPlatforms?: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                languages?: string[];
+            };
+        };
+        PlayerTestListDto_Output: {
+            data: {
+                testId: string;
+                gameId: string;
+                title: string;
+                genre: string | null;
+                coverUrl: string | null;
+                rewardCents: number | null;
+                durationMinutes: number | null;
+                spotsLeft: number | null;
+                expiresAt: string | null;
+                platforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                /** @enum {string} */
+                cta: "start" | "continue" | "completed" | "in_review" | "downloading" | "unavailable";
+                disabled: boolean;
+                disabledReason: string | null;
+                promoted: boolean;
+                /** @enum {string} */
+                modelKey: "free_exploration_telemetry" | "free_exploration" | "ab_test" | "ab_test_images";
+                participation: {
+                    id: string;
+                    testId: string;
+                    gameId: string;
+                    /** @enum {string} */
+                    status: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+                    currentSessionId: string | null;
+                    resumePoint: string | null;
+                    consentsGranted: boolean;
+                    build: {
+                        id: string;
+                        testId: string;
+                        /** @enum {string} */
+                        status: "awaiting_upload" | "uploading" | "processing" | "validated" | "failed";
+                        /** @enum {string|null} */
+                        platform: "windows" | "macos" | "linux" | "android" | "ios" | "web" | null;
+                        version: string | null;
+                        sizeBytes: number | null;
+                        checksum: string | null;
+                        validationSteps: {
+                            /** @enum {string} */
+                            key: "checksum" | "malware_scan" | "metadata" | "plugin_manifest";
+                            /** @enum {string} */
+                            status: "processing" | "ready" | "failed" | "unavailable";
+                            message: string | null;
+                        }[];
+                        failureReason: string | null;
+                        createdAt: string;
+                    } | null;
+                    startedAt: string | null;
+                    completedAt: string | null;
+                } | null;
+            }[];
+            nextCursor: string | null;
+        };
+        PlayerTestDto_Output: {
+            testId: string;
+            gameId: string;
+            title: string;
+            genre: string | null;
+            coverUrl: string | null;
+            rewardCents: number | null;
+            durationMinutes: number | null;
+            spotsLeft: number | null;
+            expiresAt: string | null;
+            platforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+            /** @enum {string} */
+            cta: "start" | "continue" | "completed" | "in_review" | "downloading" | "unavailable";
+            disabled: boolean;
+            disabledReason: string | null;
+            promoted: boolean;
+            /** @enum {string} */
+            modelKey: "free_exploration_telemetry" | "free_exploration" | "ab_test" | "ab_test_images";
+            participation: {
+                id: string;
+                testId: string;
+                gameId: string;
+                /** @enum {string} */
+                status: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+                currentSessionId: string | null;
+                resumePoint: string | null;
+                consentsGranted: boolean;
+                build: {
+                    id: string;
+                    testId: string;
+                    /** @enum {string} */
+                    status: "awaiting_upload" | "uploading" | "processing" | "validated" | "failed";
+                    /** @enum {string|null} */
+                    platform: "windows" | "macos" | "linux" | "android" | "ios" | "web" | null;
+                    version: string | null;
+                    sizeBytes: number | null;
+                    checksum: string | null;
+                    validationSteps: {
+                        /** @enum {string} */
+                        key: "checksum" | "malware_scan" | "metadata" | "plugin_manifest";
+                        /** @enum {string} */
+                        status: "processing" | "ready" | "failed" | "unavailable";
+                        message: string | null;
+                    }[];
+                    failureReason: string | null;
+                    createdAt: string;
+                } | null;
+                startedAt: string | null;
+                completedAt: string | null;
+            } | null;
         };
         CommunityPostListDto_Output: {
             data: {
@@ -3862,6 +4103,29 @@ export interface operations {
             };
         };
     };
+    ParticipationsController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                status?: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParticipationListDto_Output"];
+                };
+            };
+        };
+    };
     ParticipationsController_get: {
         parameters: {
             query?: never;
@@ -4088,6 +4352,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FormResponseDto_Output"];
+                };
+            };
+        };
+    };
+    PlayerCatalogController_getGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerGameDto_Output"];
+                };
+            };
+        };
+    };
+    PlayerCatalogController_listGameTests: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerTestListDto_Output"];
+                };
+            };
+        };
+    };
+    PlayerCatalogController_getTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                testId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerTestDto_Output"];
                 };
             };
         };

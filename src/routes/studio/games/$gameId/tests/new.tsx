@@ -123,12 +123,18 @@ function NewTestWizard() {
 
   // Sem cobrança: a API ainda não tem preço nem pagamento (DECISIONS.md).
   function handleFinish() {
+    if (!draft) return
+    const publishedTestId = draft.id
+
     saveAudience.mutate(toAudienceRequest(audience), {
       onSuccess: () =>
         publishTest.mutate(undefined, {
           onSuccess: () => {
             toast.success('Teste publicado!')
-            void navigate({ to: '/studio/games' })
+            void navigate({
+              to: '/studio/tests/$testId/completed',
+              params: { testId: publishedTestId },
+            })
           },
           onError: (error) => {
             const pending =

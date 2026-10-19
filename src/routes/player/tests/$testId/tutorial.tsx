@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import type { DesignSchemas } from '@/api-types'
+import type { Build, ConsentKind, Participation, Tutorial } from '@/api-types'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
@@ -84,7 +84,7 @@ function PreparationFlow({
   participation,
   onRefresh,
 }: {
-  participation: DesignSchemas['Participation']
+  participation: Participation
   onRefresh: () => void
 }) {
   const build = participation.build
@@ -125,9 +125,9 @@ function PreparationContent({
   compatibility,
   onRefresh,
 }: {
-  participation: DesignSchemas['Participation']
-  build: DesignSchemas['Build']
-  tutorial: DesignSchemas['Tutorial']
+  participation: Participation
+  build: Build
+  tutorial: Tutorial
   compatibility: ReturnType<typeof useBuildCompatibility>
   onRefresh: () => void
 }) {
@@ -135,9 +135,9 @@ function PreparationContent({
   const [tutorialComplete, setTutorialComplete] = useState(tutorial.steps.length === 0)
   const [downloadStarted, setDownloadStarted] = useState(false)
   const [forceDownload, setForceDownload] = useState(false)
-  const [selectedConsents, setSelectedConsents] = useState<
-    Partial<Record<DesignSchemas['ConsentKind'], boolean>>
-  >({})
+  const [selectedConsents, setSelectedConsents] = useState<Partial<Record<ConsentKind, boolean>>>(
+    {},
+  )
   const consentMutation = useRecordParticipationConsents(participation.id)
   const sessionMutation = useStartParticipationSession(participation.id)
   const versionKey = `orbitplay:build-version:${build.id}`
@@ -186,7 +186,7 @@ function PreparationContent({
   }
 
   function startSession() {
-    if (!ready || !download.data) return
+    if (!ready || !download.data?.version) return
     sessionMutation.mutate({ buildVersion: download.data.version, platform: 'web' })
   }
 
@@ -541,7 +541,7 @@ function formatBytes(size: number | null | undefined) {
   return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`
 }
 
-const consentLabel: Record<DesignSchemas['ConsentKind'], string> = {
+const consentLabel: Record<ConsentKind, string> = {
   screen_recording: 'gravação da tela',
   audio: 'áudio',
   microphone: 'uso do microfone',

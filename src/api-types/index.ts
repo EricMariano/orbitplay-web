@@ -45,7 +45,34 @@ export type TestBuild = Omit<
 export type TestDetail = Omit<Test, 'build'> & { build: TestBuild | null }
 export type AudienceRequest = Schemas['AudienceRequestDto']
 export type PlayerTier = AudienceRequest['playerTier']
+export type TestStatus = Test['status']
+export type StudioDashboard = Schemas['StudioDashboardDto_Output']
+export type DashboardKpis = StudioDashboard['kpis']
+/** Bloco calculado de forma assíncrona (dashboard e relatórios): só tem dado com `status: 'ready'`. */
+export type DashboardBlock = Schemas['DashboardBlockDto_Output']
+export type BlockStatus = DashboardBlock['status']
 export type PlayerProgress = Schemas['PlayerProgressDto_Output']
+export type FeedList = Schemas['FeedListDto_Output']
+export type PlayerGame = Schemas['PlayerGameDto_Output']
+export type PlayerTest = Schemas['PlayerTestDto_Output']
+export type PlayerTestList = Schemas['PlayerTestListDto_Output']
+export type TestCta = PlayerTest['cta']
+export type Participation = Schemas['ParticipationDto_Output']
+export type ParticipationList = Schemas['ParticipationListDto_Output']
+export type Build = Schemas['BuildDto_Output']
+export type Tutorial = Schemas['TutorialDto_Output']
+export type ConsentRequest = Schemas['ConsentRequestDto']
+export type ConsentKind = ConsentRequest['consents'][number]['kind']
+export type ConsentRecord = Schemas['ConsentRecordDto_Output']
+export type CompatibilityReport = Schemas['CompatibilityReportDto_Output']
+export type DownloadUrlResponse = Schemas['DownloadUrlResponseDto_Output']
+export type StartSessionRequest = Schemas['StartSessionRequestDto']
+export type SessionStarted = Schemas['SessionStartedDto_Output']
+export type PlayerAchievementList = Schemas['PlayerAchievementListDto_Output']
+export type PlayerAchievement = PlayerAchievementList['data'][number]
+export type CommunityPostList = Schemas['CommunityPostListDto_Output']
+export type ReviewList = Schemas['ReviewListDto_Output']
+export type GameSpecs = Schemas['GameSpecsDto_Output']
 export type PlayerMissionList = Schemas['PlayerMissionListDto_Output']
 export type PlayerMission = PlayerMissionList['data'][number]
 export type RankingList = Schemas['RankingListDto_Output']
@@ -53,13 +80,7 @@ export type SessionSummary = Schemas['SessionSummaryDto_Output']
 export type FormQuestion = SessionSummary['form']['questions'][number]
 export type FormResponseRequest = Schemas['FormResponseRequestDto']
 export type FormResponse = Schemas['FormResponseDto_Output']
-// O OpenAPI gerado tipa `rating` e `invalidReason` (nullable) como arrays; a API
-// devolve `number | null` e `string | null` (participationResultSchema no
-// orbitplay-api). Remover o ajuste quando o contrato for corrigido.
-export type ParticipationResult = Omit<
-  Schemas['ParticipationResultDto_Output'],
-  'rating' | 'invalidReason'
-> & { rating: number | null; invalidReason: string | null }
+export type ParticipationResult = Schemas['ParticipationResultDto_Output']
 // Relatório do teste (M10, Tela 11). Cada bloco é uma união discriminada por
 // `key`, com payload tipado — use `ReportBlockOf<'overview'>` etc.
 export type TestReport = Schemas['TestReportDto_Output']
@@ -91,7 +112,7 @@ export type InsightCategory = Insight['category']
 // antigo (commit 262c190) para não quebrar as telas de Jogador que já
 // dependem deles. Substituir por Schemas['...'] assim que o backend
 // implementar cada endpoint (/wallet, /tests/mine, /tests/continue,
-// /games/highlighted, /earnings/summary, /opportunities).
+// /earnings/summary, /opportunities).
 // ---------------------------------------------------------------------------
 
 export type ApiErrorCode =
@@ -137,19 +158,6 @@ export type ContinueTest = {
   playersCount: number
   endsAt: string
   tracks: TestTrackProgress[]
-}
-
-export type HighlightedGame = {
-  id: string
-  title: string
-  coverUrl: string | null
-  status: 'available' | 'unavailable'
-  isNew: boolean
-  playersCount: number
-  endsAt: string
-  openTests: number
-  maxReward: number
-  remainingReward: number
 }
 
 export type EarningsPoint = {
