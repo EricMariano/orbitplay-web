@@ -965,6 +965,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sessions/{id}/gameplay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SessionsController_gameplay"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sessions/{id}/summary": {
         parameters: {
             query?: never;
@@ -991,6 +1007,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["SessionsController_formResponse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/player/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlayerCatalogController_home"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2297,6 +2329,68 @@ export interface components {
             durationMs: number | null;
             invalidReason: string | null;
         };
+        SessionGameplayDto_Output: {
+            session: {
+                id: string;
+                participationId: string;
+                testId: string;
+                /** @enum {string} */
+                status: "active" | "finishing" | "in_review" | "valid" | "invalid" | "abandoned";
+                startedAt: string;
+                endedAt: string | null;
+                durationMs: number | null;
+                invalidReason: string | null;
+            };
+            test: {
+                id: string;
+                gameId: string;
+                title: string | null;
+                /** @enum {string} */
+                testModelKey: "free_exploration_telemetry" | "free_exploration" | "ab_test" | "ab_test_images";
+                /** @enum {string} */
+                status: "draft" | "published" | "paused" | "finished" | "expired";
+                rewardCents: number | null;
+                expiresAt: string | null;
+            };
+            game: {
+                id: string;
+                organizationId: string;
+                title: string;
+                slug: string;
+                description: string | null;
+                genre: string | null;
+                platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
+                /** @enum {string} */
+                status: "draft" | "active" | "archived";
+                coverUrl: string | null;
+                bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
+                metrics: {
+                    testsTotal: number;
+                    testsActive: number;
+                    sessionsValid: number;
+                    playersTotal: number;
+                    averageRating: number | null;
+                };
+                createdAt: string;
+                updatedAt: string;
+            };
+            heartbeatIntervalMs: number;
+            recordingRequired: boolean;
+        };
         SessionSummaryDto_Output: {
             session: {
                 id: string;
@@ -2397,6 +2491,41 @@ export interface components {
             id: string;
             sessionId: string;
             submittedAt: string;
+        };
+        PlayerHomeDto_Output: {
+            continuing: {
+                participationId: string;
+                testId: string;
+                gameId: string;
+                title: string;
+                coverUrl: string | null;
+                /** @enum {string} */
+                status: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+                progress: number;
+                rewardCents: number | null;
+                endsAt: string | null;
+            } | null;
+            tests: {
+                participationId: string;
+                testId: string;
+                gameId: string;
+                title: string;
+                coverUrl: string | null;
+                /** @enum {string} */
+                status: "reserved" | "tutorial" | "downloading" | "ready" | "playing" | "form_pending" | "in_review" | "completed" | "rejected" | "abandoned";
+                progress: number;
+                rewardCents: number | null;
+                endsAt: string | null;
+            }[];
+            earnings: {
+                currency: string;
+                last7DaysCents: number;
+                totalValidatedCents: number;
+                series: {
+                    date: string;
+                    amountCents: number;
+                }[];
+            };
         };
         PlayerGameDto_Output: {
             game: {
@@ -4790,6 +4919,27 @@ export interface operations {
             };
         };
     };
+    SessionsController_gameplay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionGameplayDto_Output"];
+                };
+            };
+        };
+    };
     SessionsController_summary: {
         parameters: {
             query?: never;
@@ -4832,6 +4982,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FormResponseDto_Output"];
+                };
+            };
+        };
+    };
+    PlayerCatalogController_home: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerHomeDto_Output"];
                 };
             };
         };

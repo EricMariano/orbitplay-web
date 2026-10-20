@@ -6,5 +6,6 @@ export const playerKeys = {
   catalog: (userId?: string) =>
     [...playerKeys.all, 'catalog', ...(userId ? [userId] : [])] as const,
   progress: () => [...playerKeys.all, 'progress'] as const,
+  home: () => [...playerKeys.all, 'home'] as const,
   feed: (limit: number) => [...playerKeys.all, 'feed', { limit }] as const,
 }

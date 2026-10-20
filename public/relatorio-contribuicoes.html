@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OrbitPlay — Contribuições por tela</title>
+    <style>
+      :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2c; --line:#28354e; --text:#eef4ff; --muted:#9eacc2; --blue:#56a5ff; --green:#52cf92; --yellow:#e1b560; }
+      * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 Inter, ui-sans-serif, system-ui, sans-serif; }
+      main { max-width:1280px; margin:0 auto; padding:42px 24px 64px; } h1 { margin:0; font-size:30px; } h2 { margin:34px 0 8px; font-size:21px; } p { margin:0; } .muted { color:var(--muted); } .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:28px 0; }.stat { padding:18px; border:1px solid var(--line); border-radius:12px; background:var(--panel); }.stat b { display:block; margin-top:4px; font-size:25px; }.note { padding:14px 16px; border-left:3px solid var(--blue); background:#10233a; color:#d6e8ff; border-radius:6px; }.filters { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }.filters button { border:1px solid var(--line); border-radius:20px; padding:7px 13px; color:var(--text); background:transparent; cursor:pointer; }.filters button.active { background:var(--blue); color:#07111f; border-color:var(--blue); font-weight:700; } table { width:100%; border-collapse:separate; border-spacing:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--panel); } th,td { padding:13px 14px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); } th { color:var(--muted); font-size:12px; letter-spacing:.06em; text-transform:uppercase; background:#111b30; } tr:last-child td { border-bottom:0; } .area { display:inline-block; border-radius:99px; padding:3px 8px; font-size:12px; font-weight:700; background:#17365a; color:#abd3ff; }.area.jogador { background:#143b2b; color:#a8e9c6; }.area.acesso { background:#463819; color:#f1d591; }.pending { color:var(--yellow); }.grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:22px; }.card { border:1px solid var(--line); border-radius:12px; padding:18px; background:var(--panel); }.card h3 { margin:0 0 12px; font-size:16px; }.card p + p { margin-top:10px; } .bar-row { display:grid; grid-template-columns:190px 1fr 75px; gap:10px; align-items:center; margin:9px 0; }.track { height:10px; background:#202b40; border-radius:8px; overflow:hidden; }.bar { height:100%; background:var(--blue); }.bar.api { background:var(--green); } .legend { display:flex; gap:15px; color:var(--muted); font-size:13px; }.dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; background:var(--blue); }.dot.api { background:var(--green); } @media(max-width:800px) { main { padding:26px 14px; } .stats,.grid { grid-template-columns:1fr; } .bar-row { grid-template-columns:120px 1fr 45px; font-size:12px; } table { display:block; overflow:auto; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Contribuições por tela — OrbitPlay</h1>
+      <p class="muted">Baseado no histórico Git sincronizado com os remotos GitHub dos repositórios <code>orbitplay-web</code> e <code>orbitplay-api</code>. Período: 28 ago a 20 out de 2026.</p>
+      <section class="stats"><div class="stat">Telas mapeadas<b>19</b></div><div class="stat">Com evidência commitada<b>17 / 19</b></div><div class="stat">Repositórios analisados<b>2</b></div></section>
+      <p class="note">A atribuição mostra quem teve commits diretamente ligados à tela, à integração ou ao endpoint que a sustenta. Não representa contagem de linhas de código. “EricMariano” e “Eric Bomfim Mariano” foram consolidados, pois usam o mesmo e-mail no Git.</p>
+
+      <h2>Volume de commits por autoria</h2><p class="muted">Fonte: histórico Git · unidade: commits com autoria registrada.</p>
+      <div class="legend"><span><i class="dot"></i>Frontend</span><span><i class="dot api"></i>Backend</span></div>
+      <div id="bars"></div>
+
+      <h2>Telas e responsáveis identificados</h2><p class="muted">Filtre por área. As duas últimas linhas ainda não têm commit no GitHub.</p>
+      <div class="filters"><button class="active" data-area="Todos">Todos</button><button data-area="Estúdio">Estúdio</button><button data-area="Jogador">Jogador</button><button data-area="Acesso">Acesso</button></div>
+      <table><thead><tr><th>Área</th><th>Tela</th><th>Frontend</th><th>Backend relacionado</th><th>Evidência</th></tr></thead><tbody id="rows"></tbody></table>
+      <section class="grid"><article class="card"><h3>Principais marcos de frontend</h3><p><b>paulofontes-cyber:</b> login inicial, comunidade, detalhes de jogo, tutorial, preparação e resumo.</p><p><b>IancaCarregosa:</b> header do estúdio, home inicial e etapas iniciais do wizard.</p><p><b>Eduardo:</b> integrações com API, login responsivo, Home do Jogador, Home do Estúdio e Meus Jogos.</p><p><b>EricMariano:</b> integrações posteriores, wizard completo, relatórios, detalhes e sessões.</p><p><b>Gui-Guimaraes06 e Viitorjoao:</b> feed inicial do jogador e biblioteca.</p></article><article class="card"><h3>Principais marcos de backend</h3><p><b>EricMariano:</b> jogos, testes, builds, mídia, comunidade, gamificação, relatórios e integrações recentes.</p><p><b>Rafael Rodrigues:</b> dashboard, membros, convites e papéis.</p><p><b>LeonardoGentil:</b> participações, ciclo de sessão e avaliação de sessão.</p><p><b>Lucas Brandi:</b> relatórios/exportação, auditoria e operações de membros.</p><p><b>Eduardo:</b> mídia, assets, filas e transações de testes.</p></article></section>
+      <p class="note" style="margin-top:22px;border-left-color:var(--yellow);background:#322815;color:#f7e5bd">Limite da evidência: Membros, acessos, gameplay com gravação e rotas complementares existem no diretório local atual, mas ainda não foram commitados. Por isso não há atribuição GitHub para o frontend dessas telas.</p>
+    </main>
+    <script>
+      const contributors=[['EricMariano / Eric Bomfim Mariano',42,61],['IancaCarregosa / Ianca Carregosa',18,0],['Eduardo',16,13],['Gui-Guimaraes06',9,0],['paulofontes-cyber',7,0],['Rafael Rodrigues',0,7],['LeonardoGentil',0,6],['Lucas Brandi',0,6],['Viitorjoao',2,0],['dreyleph',0,2],['AndreyConrado',0,1]];
+      const screens=[
+        ['Acesso','Login','paulofontes-cyber; Eduardo; IancaCarregosa','EricMariano','Login completo; redesign responsivo; correção de contrato',true],
+        ['Estúdio','Home do estúdio','IancaCarregosa; Eduardo; EricMariano','Rafael Rodrigues; EricMariano','Cards iniciais, integração e evolução de dashboard',true],
+        ['Estúdio','Meus jogos','Eduardo; EricMariano','Eduardo; EricMariano','Integração da biblioteca e cadastro/ativos',true],
+        ['Estúdio','Detalhes do jogo','paulofontes-cyber; EricMariano','EricMariano','Tela de detalhes e integração posterior',true],
+        ['Estúdio','Novo jogo','EricMariano','EricMariano','Wizard completo, mídia e permissões',true],
+        ['Estúdio','Novo teste — Tipo','IancaCarregosa; Eduardo','EricMariano','Etapa 01 e integração com modelos',true],
+        ['Estúdio','Novo teste — Avaliação','IancaCarregosa; EricMariano','EricMariano','Etapa 02 e persistência de formulário',true],
+        ['Estúdio','Novo teste — Build','EricMariano','EricMariano; Eduardo','Upload, validação e ajustes de fila',true],
+        ['Estúdio','Novo teste — Orçamento e publicação','EricMariano','EricMariano','Etapa 04, audiência e publicação',true],
+        ['Estúdio','Relatório do teste','EricMariano','Lucas Brandi; EricMariano','Tela 11, relatórios e exportação assíncrona',true],
+        ['Estúdio','Detalhe de sessão','EricMariano','EricMariano; LeonardoGentil','Sessão, telemetria e avaliação',true],
+        ['Jogador','Home do jogador','Gui-Guimaraes06; Eduardo; EricMariano','EricMariano','Feed inicial, integração e contrato atual',true],
+        ['Jogador','Biblioteca e catálogo','Viitorjoao; EricMariano','dreyleph; EricMariano','Biblioteca, catálogo e cache por jogador',true],
+        ['Jogador','Detalhes do jogo','paulofontes-cyber','EricMariano','Detalhes, testes e comunidade por jogo',true],
+        ['Jogador','Tutorial e preparação','paulofontes-cyber','LeonardoGentil','Tutorial, consentimento e ciclo de participação',true],
+        ['Jogador','Resumo e avaliação','paulofontes-cyber; Eduardo','LeonardoGentil','Resumo, avaliação e alinhamento ao contrato',true],
+        ['Jogador','Comunidade','paulofontes-cyber','EricMariano','Chat, posts, avaliações e moderação',true],
+        ['Estúdio','Membros, acessos e rotas complementares','Sem atribuição no GitHub ainda','Rafael Rodrigues; Lucas Brandi; Eduardo','Mudanças locais ainda não commitadas no frontend',false],
+        ['Jogador','Gameplay com gravação e rotas complementares','Sem atribuição no GitHub ainda','Eduardo; EricMariano','Mudanças locais ainda não commitadas no frontend',false]
+      ];
+      const max=61, bars=document.querySelector('#bars'), rows=document.querySelector('#rows');
+      contributors.forEach(([name,web,api])=>bars.insertAdjacentHTML('beforeend',`<div class="bar-row"><span>${name}</span><div><div class="track"><div class="bar" style="width:${web/max*100}%"></div></div><div class="track" style="margin-top:4px"><div class="bar api" style="width:${api/max*100}%"></div></div></div><b>${web} / ${api}</b></div>`));
+      function render(area='Todos'){rows.innerHTML=screens.filter(s=>area==='Todos'||s[0]===area).map(s=>`<tr><td><span class="area ${s[0]==='Jogador'?'jogador':s[0]==='Acesso'?'acesso':''}">${s[0]}</span></td><td><b>${s[1]}</b></td><td>${s[2]}</td><td>${s[3]}</td><td class="${s[5]?'':'pending'}">${s[4]}</td></tr>`).join('')}
+      document.querySelectorAll('[data-area]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-area]').forEach(x=>x.classList.remove('active'));button.classList.add('active');render(button.dataset.area)});render();
+    </script>
+  </body>
+</html>

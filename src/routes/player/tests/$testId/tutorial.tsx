@@ -220,7 +220,14 @@ function PreparationContent({
                 </span>
                 <h2 className="text-xl font-semibold text-foreground">Sessão iniciada</h2>
                 <p className="text-sm text-muted">A API confirmou o início da sessão.</p>
-                <p className="text-xs text-muted">ID da sessão: {sessionMutation.data.sessionId}</p>
+                <Button asChild size="lg" className="mt-2">
+                  <Link
+                    to="/player/sessions/$sessionId/gameplay"
+                    params={{ sessionId: sessionMutation.data.sessionId }}
+                  >
+                    Abrir gameplay
+                  </Link>
+                </Button>
               </>
             ) : (
               <>

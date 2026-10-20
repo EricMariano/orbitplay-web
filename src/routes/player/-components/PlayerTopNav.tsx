@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import orbitPlayLogo from '@/assets/login/orbitplay-logo.png'
+import { NotificationsMenu } from '@/components/common/NotificationsMenu'
 import { Icon, type IconName } from '@/components/icon'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -15,16 +16,15 @@ import { useAuthStore } from '@/lib/auth'
 type NavEntry = {
   label: string
   icon: IconName
-  /** Omitted when the destination screen doesn't exist yet — rendered inert. */
-  to?: string
+  to: string
 }
 
 const navEntries: NavEntry[] = [
   { label: 'Home', icon: 'home', to: '/player' },
   { label: 'Jogos', icon: 'games', to: '/player/games' },
-  { label: 'Meus testes e ganhos', icon: 'tests' },
-  { label: 'Tutorial e formação', icon: 'graduation-cap' },
-  { label: 'Comunidade', icon: 'users' },
+  { label: 'Meus testes e ganhos', icon: 'tests', to: '/player/tests' },
+  { label: 'Tutorial e formação', icon: 'graduation-cap', to: '/player/training' },
+  { label: 'Comunidade', icon: 'users', to: '/player/community' },
 ]
 
 /** Top navbar for the player area — replaces the sidebar shell used by /studio. */
@@ -48,26 +48,16 @@ export function PlayerTopNav() {
           aria-label="Navegação principal"
           className="flex h-12 shrink-0 items-center gap-1 whitespace-nowrap"
         >
-          {navEntries.map((entry) =>
-            entry.to ? (
-              <Link
-                key={entry.label}
-                to={entry.to}
-                className="flex h-12 items-center gap-2 border-b-2 border-transparent px-3 text-sm text-white/75 transition-colors hover:text-white [&.active]:border-[#f8643b] [&.active]:text-[#f8643b]"
-              >
-                <Icon name={entry.icon} />
-                {entry.label}
-              </Link>
-            ) : (
-              <span
-                key={entry.label}
-                className="flex h-12 items-center gap-2 border-b-2 border-transparent px-3 text-sm text-white/75 [&_svg]:text-[#168cf3]"
-              >
-                <Icon name={entry.icon} />
-                {entry.label}
-              </span>
-            ),
-          )}
+          {navEntries.map((entry) => (
+            <Link
+              key={entry.label}
+              to={entry.to}
+              className="flex h-12 items-center gap-2 border-b-2 border-transparent px-3 text-sm text-white/75 transition-colors hover:text-white [&.active]:border-[#f8643b] [&.active]:text-[#f8643b]"
+            >
+              <Icon name={entry.icon} />
+              {entry.label}
+            </Link>
+          ))}
         </nav>
       </div>
 
@@ -80,14 +70,7 @@ export function PlayerTopNav() {
           <Icon name="globe" />
           PT
         </Button>
-        <Button
-          variant="secondary"
-          size="icon-sm"
-          className="bg-white/15 text-white"
-          aria-label="Notificações"
-        >
-          <Icon name="bell" />
-        </Button>
+        <NotificationsMenu className="rounded-md bg-white/15 p-2 text-white hover:text-white" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

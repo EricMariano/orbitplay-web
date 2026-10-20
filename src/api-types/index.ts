@@ -15,6 +15,9 @@ export type Role = AuthUser['role']
 export type LoginRequest = Schemas['LoginDto']
 export type LoginResponse = Schemas['LoginResponseDto_Output']
 export type ForgotPasswordRequest = Schemas['ForgotPasswordDto']
+export type ResetPasswordRequest = Schemas['ResetPasswordDto']
+export type SignupStudioRequest = Schemas['SignupStudioDto']
+export type SignupPlayerRequest = Schemas['SignupPlayerDto']
 export type MessageResponse = Schemas['MessageResponseDto_Output']
 export type GameList = Schemas['GameListDto_Output']
 export type Game = GameList['data'][number]
@@ -29,8 +32,17 @@ export type DevelopmentStage = NonNullable<Game['developmentStage']>
 export type AgeRating = NonNullable<Game['ageRating']>
 export type OrgMemberList = Schemas['MemberListDto_Output']
 export type OrgMember = OrgMemberList['data'][number]
+export type InviteMemberRequest = Schemas['InviteMemberDto']
+export type ChangeMemberRoleRequest = Schemas['ChangeRoleDto']
+export type ChangeMemberStatusRequest = Schemas['ChangeStatusDto']
+export type AuditLogList = Schemas['AuditLogListDto_Output']
+export type AuditLogEntry = AuditLogList['data'][number]
+export type NotificationList = Schemas['NotificationListDto_Output']
+export type Notification = NotificationList['data'][number]
 export type OrgGroupList = Schemas['GroupListDto_Output']
 export type OrgGroup = OrgGroupList['data'][number]
+export type CreateOrgGroupRequest = Schemas['CreateGroupDto']
+export type UpdateOrgGroupRequest = Schemas['UpdateGroupDto']
 export type GameAccessList = Schemas['GameAccessListDto_Output']
 export type GameAccessEntry = GameAccessList['data'][number]
 export type AccessPermissions = GameAccessEntry['permissions']
@@ -69,6 +81,7 @@ export type DashboardKpis = StudioDashboard['kpis']
 export type DashboardBlock = StudioDashboard['stats']
 export type BlockStatus = DashboardBlock['status']
 export type PlayerProgress = Schemas['PlayerProgressDto_Output']
+export type PlayerHome = Schemas['PlayerHomeDto_Output']
 export type FeedList = Schemas['FeedListDto_Output']
 export type PlayerGame = Schemas['PlayerGameDto_Output']
 export type PlayerTest = Schemas['PlayerTestDto_Output']
@@ -94,6 +107,13 @@ export type PlayerMissionList = Schemas['PlayerMissionListDto_Output']
 export type PlayerMission = PlayerMissionList['data'][number]
 export type RankingList = Schemas['RankingListDto_Output']
 export type SessionSummary = Schemas['SessionSummaryDto_Output']
+export type SessionGameplay = Schemas['SessionGameplayDto_Output']
+export type DeviceEventRequest = Schemas['DeviceEventRequestDto']
+export type HeartbeatRequest = Schemas['HeartbeatRequestDto']
+export type FinishSessionRequest = Schemas['FinishSessionRequestDto']
+export type RecordingUploadRequest = Schemas['RecordingUploadUrlRequestDto']
+export type RecordingUploadUrl = Schemas['RecordingUploadUrlResponseDto_Output']
+export type RecordingCompleteRequest = Schemas['RecordingCompleteRequestDto']
 export type FormQuestion = SessionSummary['form']['questions'][number]
 export type FormResponseRequest = Schemas['FormResponseRequestDto']
 export type FormResponse = Schemas['FormResponseDto_Output']
@@ -124,16 +144,8 @@ export type TestInsights = Omit<Schemas['TestInsightsDto_Output'], 'model'> & {
 }
 export type Insight = TestInsights['data'][number]
 export type InsightCategory = Insight['category']
-
-// ---------------------------------------------------------------------------
-// ⚠️ PROVISÓRIO — nenhum destes existe na API real ainda. O backend só
-// implementou a fatia vertical de `games` + auth até agora (ver README do
-// orbitplay-api). Estes tipos foram recuperados do contrato provisório
-// antigo (commit 262c190) para não quebrar as telas de Jogador que já
-// dependem deles. Substituir por Schemas['...'] assim que o backend
-// implementar cada endpoint (/wallet, /tests/mine, /tests/continue,
-// /earnings/summary, /opportunities).
-// ---------------------------------------------------------------------------
+export type ReportExportRequest = Schemas['CreateReportExportDto']
+export type ReportExport = Schemas['ReportExportDto_Output']
 
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
@@ -163,39 +175,4 @@ export type Opportunity = {
 
 export type Wallet = {
   balance: number
-}
-
-export type TestTrackProgress = {
-  label: string
-  progress: number
-  reward: number
-}
-
-export type ContinueTest = {
-  gameId: string
-  gameTitle: string
-  coverUrl: string | null
-  playersCount: number
-  endsAt: string
-  tracks: TestTrackProgress[]
-}
-
-export type EarningsPoint = {
-  label: string
-  value: number
-}
-
-export type EarningsSummary = {
-  last7Days: number
-  totalAccumulated: number
-  nextPayoutInDays: number
-  series: EarningsPoint[]
-}
-
-export type MyTestProgress = {
-  id: string
-  title: string
-  progress: number
-  reward: number
-  action: 'start' | 'continue' | 'complete'
 }

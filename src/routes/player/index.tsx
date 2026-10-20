@@ -1,7 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardPlaceholder } from '@/components/common/DashboardPlaceholder'
+import { QueryBoundary } from '@/components/common/QueryBoundary'
+import { usePlayerHome } from '@/features/player/api/use-player-home'
+import { ContinueTestSection } from './-components/ContinueTestSection'
+import { EarningsSummaryCard } from './-components/EarningsSummaryCard'
 import { HighlightedGamesSection } from './-components/HighlightedGamesSection'
 import { MissionsRankingCard } from './-components/MissionsRankingCard'
+import { MyTestsCard } from './-components/MyTestsCard'
 import { SectionHeader } from './-components/SectionHeader'
 import { WelcomeHeader } from './-components/WelcomeHeader'
 
@@ -9,28 +13,28 @@ export const Route = createFileRoute('/player/')({
   component: PlayerHome,
 })
 
-// "Continue seu teste", ganhos e meus testes dependem de /tests/continue,
-// /earnings/summary e /tests/mine, que a API ainda não expõe. Ficam como placeholder (sem mock); os componentes e
-// hooks já existem em ./-components e features/.
 function PlayerHome() {
+  const home = usePlayerHome()
+
   return (
-    <div className="flex flex-col gap-8">
-      <WelcomeHeader />
-      <section>
-        <SectionHeader title="Continue seu teste" />
-        <DashboardPlaceholder title="Teste em andamento" />
-      </section>
-      <HighlightedGamesSection />
-      <section>
-        <SectionHeader title="Estatísticas" />
-        <div className="flex flex-col gap-4">
-          <DashboardPlaceholder title="Resumo de ganhos" />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <MissionsRankingCard />
-            <DashboardPlaceholder title="Meus testes" />
-          </div>
+    <QueryBoundary query={home}>
+      {(data) => (
+        <div className="flex flex-col gap-8">
+          <WelcomeHeader />
+          <ContinueTestSection test={data.continuing} />
+          <HighlightedGamesSection />
+          <section>
+            <SectionHeader title="Estatísticas" />
+            <div className="flex flex-col gap-4">
+              <EarningsSummaryCard earnings={data.earnings} />
+              <div className="grid gap-4 lg:grid-cols-2">
+                <MissionsRankingCard />
+                <MyTestsCard tests={data.tests} />
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
+      )}
+    </QueryBoundary>
   )
 }

@@ -7,6 +7,7 @@ import { Stepper } from '@/components/common/Stepper'
 import { WizardFooter } from '@/components/common/WizardFooter'
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useGame } from '@/features/games/api/use-game'
 import { TestFormBuilder } from '@/features/tests/components/TestFormBuilder'
@@ -19,6 +20,7 @@ import { useSetBuildSettings } from '@/features/tests/api/use-set-build-settings
 import { useSetTestModel } from '@/features/tests/api/use-set-test-model'
 import { useTest } from '@/features/tests/api/use-test'
 import { useTestModels } from '@/features/tests/api/use-test-models'
+import { useTestFormPreview } from '@/features/tests/api/use-test-form-preview'
 import {
   computeBudget,
   createAudienceDraft,
@@ -61,7 +63,9 @@ function NewTestWizard() {
   // Rascunho criado no passo 1; voltar e trocar o modelo atualiza o mesmo teste.
   const [draft, setDraft] = useState<{ id: string; modelKey: TestModelKey } | null>(null)
   const [questions, setQuestions] = useState<QuestionDraft[]>(() => [createQuestionDraft()])
+  const [previewOpen, setPreviewOpen] = useState(false)
   const saveTestForm = useSaveTestForm(draft?.id ?? null)
+  const preview = useTestFormPreview(draft?.id ?? null, previewOpen)
   const test = useTest(step === 2 ? (draft?.id ?? null) : null)
   const setBuildSettings = useSetBuildSettings(draft?.id ?? null)
   const [gamepadSupported, setGamepadSupported] = useState<boolean | null>(null)
@@ -109,6 +113,14 @@ function NewTestWizard() {
     saveTestForm.mutate(toPutFormRequest(questions), {
       onSuccess: () => setStep(2),
       onError: (error) => toast.error(error.message || 'Não foi possível salvar a avaliação.'),
+    })
+  }
+
+  function handlePreview() {
+    saveTestForm.mutate(toPutFormRequest(questions), {
+      onSuccess: () => setPreviewOpen(true),
+      onError: (error) =>
+        toast.error(error.message || 'Não foi possível salvar a avaliação para pré-visualizar.'),
     })
   }
 
@@ -255,17 +267,68 @@ function NewTestWizard() {
                 canAdvance={isTestFormValid(questions)}
                 isSaving={saveTestForm.isPending}
               >
-                {/* Pré-visualização está no design, mas ainda não tem tela. */}
                 <button
                   type="button"
-                  disabled
-                  title="Pré-visualizar (em breve)"
+                  disabled={!isTestFormValid(questions) || saveTestForm.isPending}
+                  onClick={handlePreview}
                   className="flex items-center gap-1 text-base font-bold text-primary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Pré-visualizar
                   <Icon name="eye" className="size-6" />
                 </button>
               </WizardFooter>
+              <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+                <DialogContent className="max-w-xl">
+                  <DialogHeader>
+                    <DialogTitle>Pré-visualização da avaliação</DialogTitle>
+                  </DialogHeader>
+                  {preview.isPending ? <Skeleton className="h-40 w-full" /> : null}
+                  {preview.isError ? (
+                    <p className="text-sm text-destructive">
+                      Não foi possível carregar a pré-visualização.
+                    </p>
+                  ) : null}
+                  {preview.data ? (
+                    <ol className="space-y-5">
+                      {preview.data.questions.map((question, index) => (
+                        <li key={question.id} className="rounded-lg border border-border p-4">
+                          <p className="font-medium">
+                            {index + 1}. {question.prompt}
+                            {question.required ? (
+                              <span className="text-destructive"> *</span>
+                            ) : null}
+                          </p>
+                          {question.helpText ? (
+                            <p className="mt-1 text-sm text-muted">{question.helpText}</p>
+                          ) : null}
+                          {question.options.length ? (
+                            <div className="mt-3 space-y-2">
+                              {question.options.map((option) => (
+                                <label key={option.id} className="flex items-center gap-2 text-sm">
+                                  <input
+                                    type={
+                                      question.type === 'multiple_choice' ? 'checkbox' : 'radio'
+                                    }
+                                    disabled
+                                  />
+                                  {option.label}
+                                </label>
+                              ))}
+                            </div>
+                          ) : question.type === 'open_text' ? (
+                            <div className="mt-3 h-16 rounded border border-border bg-surface-raised" />
+                          ) : question.scaleMin != null && question.scaleMax != null ? (
+                            <div className="mt-3 flex justify-between text-xs text-muted">
+                              <span>{question.scaleMinLabel ?? question.scaleMin}</span>
+                              <span>{question.scaleMaxLabel ?? question.scaleMax}</span>
+                            </div>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ol>
+                  ) : null}
+                </DialogContent>
+              </Dialog>
             </>
           ) : null}
 

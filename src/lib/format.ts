@@ -8,6 +8,11 @@ export function formatCurrency(value: number): string {
   return currencyFormatter.format(value)
 }
 
+/** Format integer cents from the API, preserving the currency returned by the contract. */
+export function formatCents(value: number, currency = 'BRL'): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value / 100)
+}
+
 const compactNumberFormatter = new Intl.NumberFormat('pt-BR', { notation: 'compact' })
 
 /** Format a count compactly, e.g. `222157` → `"222 mil"`. */

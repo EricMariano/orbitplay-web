@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -391,13 +391,10 @@ function LoginScreen() {
             style={stagger(7)}
           >
             <span>Não tem uma conta OrbitPlay?</span>
-            <span
-              aria-disabled="true"
-              className="flex items-center gap-1 font-semibold text-login-accent/80"
-            >
+            <Link to="/signup" className="flex items-center gap-1 font-semibold text-login-accent">
               Criar uma conta grátis
               <Icon name="arrow-right" className="size-5" />
-            </span>
+            </Link>
           </p>
         </section>
       </article>

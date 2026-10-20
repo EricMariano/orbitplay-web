@@ -69,7 +69,7 @@ export function MissionsRankingCard() {
         </QueryBoundary>
       </CardContent>
       <CardFooter className="justify-end">
-        <GoToLink label="Ir para Missões e Ranking" />
+        <GoToLink label="Ir para Missões e Ranking" to="/player/missions" />
       </CardFooter>
     </Card>
   )

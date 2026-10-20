@@ -2776,6 +2776,41 @@
         ]
       }
     },
+    "/sessions/{id}/gameplay": {
+      "get": {
+        "operationId": "SessionsController_gameplay",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionGameplayDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "participations"
+        ]
+      }
+    },
     "/sessions/{id}/summary": {
       "get": {
         "operationId": "SessionsController_summary",
@@ -2853,6 +2888,32 @@
         ],
         "tags": [
           "participations"
+        ]
+      }
+    },
+    "/player/home": {
+      "get": {
+        "operationId": "PlayerCatalogController_home",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerHomeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "player"
         ]
       }
     },
@@ -8721,6 +8782,370 @@
         ],
         "additionalProperties": false
       },
+      "SessionGameplayDto_Output": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "participationId": {
+                "type": "string"
+              },
+              "testId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "finishing",
+                  "in_review",
+                  "valid",
+                  "invalid",
+                  "abandoned"
+                ]
+              },
+              "startedAt": {
+                "type": "string"
+              },
+              "endedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "invalidReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "participationId",
+              "testId",
+              "status",
+              "startedAt",
+              "endedAt",
+              "durationMs",
+              "invalidReason"
+            ],
+            "additionalProperties": false
+          },
+          "test": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "gameId": {
+                "type": "string"
+              },
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "testModelKey": {
+                "type": "string",
+                "enum": [
+                  "free_exploration_telemetry",
+                  "free_exploration",
+                  "ab_test",
+                  "ab_test_images"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "published",
+                  "paused",
+                  "finished",
+                  "expired"
+                ]
+              },
+              "rewardCents": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "expiresAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "gameId",
+              "title",
+              "testModelKey",
+              "status",
+              "rewardCents",
+              "expiresAt"
+            ],
+            "additionalProperties": false
+          },
+          "game": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "organizationId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genre": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "platform": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tagline": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subgenres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "supportedPlatforms": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux",
+                    "android",
+                    "ios",
+                    "web"
+                  ]
+                }
+              },
+              "gameModes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "singleplayer",
+                    "local_multiplayer",
+                    "online_multiplayer",
+                    "coop",
+                    "competitive"
+                  ]
+                }
+              },
+              "engine": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "developmentStage": {
+                "type": "string",
+                "enum": [
+                  "concept",
+                  "prototype",
+                  "alpha",
+                  "beta",
+                  "released",
+                  null
+                ],
+                "nullable": true
+              },
+              "ageRating": {
+                "type": "string",
+                "enum": [
+                  "10",
+                  "12",
+                  "14",
+                  "16",
+                  "18",
+                  "L",
+                  null
+                ],
+                "nullable": true
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "trailerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "archived"
+                ]
+              },
+              "coverUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "logoUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "iconUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "metrics": {
+                "type": "object",
+                "properties": {
+                  "testsTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "testsActive": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "sessionsValid": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "playersTotal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "averageRating": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "testsTotal",
+                  "testsActive",
+                  "sessionsValid",
+                  "playersTotal",
+                  "averageRating"
+                ],
+                "additionalProperties": false
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "organizationId",
+              "title",
+              "slug",
+              "description",
+              "genre",
+              "platform",
+              "tagline",
+              "genres",
+              "subgenres",
+              "supportedPlatforms",
+              "gameModes",
+              "engine",
+              "developmentStage",
+              "ageRating",
+              "languages",
+              "trailerUrl",
+              "status",
+              "coverUrl",
+              "bannerUrl",
+              "logoUrl",
+              "iconUrl",
+              "metrics",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "heartbeatIntervalMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "recordingRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session",
+          "test",
+          "game",
+          "heartbeatIntervalMs",
+          "recordingRequired"
+        ],
+        "additionalProperties": false
+      },
       "SessionSummaryDto_Output": {
         "type": "object",
         "properties": {
@@ -9302,6 +9727,201 @@
           "id",
           "sessionId",
           "submittedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PlayerHomeDto_Output": {
+        "type": "object",
+        "properties": {
+          "continuing": {
+            "type": "object",
+            "properties": {
+              "participationId": {
+                "type": "string"
+              },
+              "testId": {
+                "type": "string"
+              },
+              "gameId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "coverUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reserved",
+                  "tutorial",
+                  "downloading",
+                  "ready",
+                  "playing",
+                  "form_pending",
+                  "in_review",
+                  "completed",
+                  "rejected",
+                  "abandoned"
+                ]
+              },
+              "progress": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "rewardCents": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "endsAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "participationId",
+              "testId",
+              "gameId",
+              "title",
+              "coverUrl",
+              "status",
+              "progress",
+              "rewardCents",
+              "endsAt"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "participationId": {
+                  "type": "string"
+                },
+                "testId": {
+                  "type": "string"
+                },
+                "gameId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "coverUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "reserved",
+                    "tutorial",
+                    "downloading",
+                    "ready",
+                    "playing",
+                    "form_pending",
+                    "in_review",
+                    "completed",
+                    "rejected",
+                    "abandoned"
+                  ]
+                },
+                "progress": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "rewardCents": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "endsAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "participationId",
+                "testId",
+                "gameId",
+                "title",
+                "coverUrl",
+                "status",
+                "progress",
+                "rewardCents",
+                "endsAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "earnings": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string"
+              },
+              "last7DaysCents": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalValidatedCents": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "series": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string"
+                    },
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "amountCents"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "currency",
+              "last7DaysCents",
+              "totalValidatedCents",
+              "series"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "continuing",
+          "tests",
+          "earnings"
         ],
         "additionalProperties": false
       },

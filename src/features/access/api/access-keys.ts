@@ -2,6 +2,7 @@
 export const accessKeys = {
   all: ['access'] as const,
   members: () => [...accessKeys.all, 'members'] as const,
+  auditLogs: () => [...accessKeys.all, 'audit-logs'] as const,
   groups: () => [...accessKeys.all, 'groups'] as const,
   game: (gameId: string) => [...accessKeys.all, 'game', gameId] as const,
 }

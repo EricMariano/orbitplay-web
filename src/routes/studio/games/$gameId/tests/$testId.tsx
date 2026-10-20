@@ -9,6 +9,7 @@ import { findBlock, TEST_STATUS } from '@/features/reports/report-labels'
 import { useGame } from '@/features/games/api/use-game'
 import { useTest } from '@/features/tests/api/use-test'
 import { useTestModels } from '@/features/tests/api/use-test-models'
+import { ReportExportMenu } from '@/features/reports/components/ReportExportMenu'
 import { AllEvaluationsCard, EvaluationsCard } from './-components/EvaluationsCard'
 import { EvolutionCard } from './-components/EvolutionCard'
 import { InsightsCard } from './-components/InsightsCard'
@@ -171,6 +172,7 @@ function TestHeading({ testId }: { testId: string }) {
         {model ? <Tag tone="yellow">{model.name.toUpperCase()}</Tag> : null}
         <Tag tone={status.tone}>{status.label}</Tag>
         <div className="flex-1" />
+        <ReportExportMenu testId={testId} />
         {/* Filtros do relatório ainda não têm definição de produto. */}
         <button
           type="button"

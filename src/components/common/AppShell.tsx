@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate } from '@tanstack/react-router'
 import { Icon, type IconName } from '@/components/icon'
 import { Logo } from '@/components/common/Logo'
+import { NotificationsMenu } from '@/components/common/NotificationsMenu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -92,13 +93,7 @@ export function AppShell({ area, navItems }: AppShellProps) {
             PT
           </button>
 
-          <button
-            type="button"
-            aria-label="Notificações"
-            className="text-primary hover:text-highlight"
-          >
-            <Icon name="notifications" />
-          </button>
+          <NotificationsMenu />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

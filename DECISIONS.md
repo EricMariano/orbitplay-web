@@ -161,6 +161,15 @@ retorna, na janela de 30 dias; um bloco sem sessões tem estado vazio próprio.
 - O indicador de presença do plug-in, inclusive nos testes recentes, vem da
   validação `plugin_manifest` da build, não do modelo escolhido.
 
+### Home do jogador (Tela 13)
+
+- Os três blocos antes provisórios usam `GET /player/home`: continuidade do
+  teste, até quatro participações recentes e recompensas validadas em sete
+  dias. A tela não apresenta saldo, saque ou prazo de pagamento, pois a
+  carteira ainda não existe no backend.
+- Uma participação encerrada abre o resultado; as demais retomam o tutorial
+  do teste, que recupera a participação existente antes de permitir uma nova.
+
 ### Detalhes do jogo do estúdio (Tela 05)
 
 `/studio/games/$gameId` é uma rota index, para não transformar chat e relatórios
