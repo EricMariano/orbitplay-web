@@ -10,6 +10,7 @@ import type {
   ReviewList,
 } from '../player-game-types'
 import { gamesKeys } from './games-keys'
+import { playerKeys } from '@/features/player/api/player-keys'
 import { isGameId } from '../game-details-utils'
 
 type CursorPage<T> = { data: T[]; nextCursor: string | null; averageRating?: number | null }
@@ -126,6 +127,7 @@ export function useJoinTest(gameId: string) {
         queryClient.invalidateQueries({ queryKey: gamesKeys.playerTests(gameId) }),
         queryClient.invalidateQueries({ queryKey: gamesKeys.playerDetail(gameId) }),
         queryClient.invalidateQueries({ queryKey: ['player', 'test'] }),
+        queryClient.invalidateQueries({ queryKey: playerKeys.library() }),
       ])
     },
   })
