@@ -112,7 +112,15 @@ function GamesList() {
                 <TableBody>
                   {data.map((game) => (
                     <TableRow key={game.id}>
-                      <TableCell className="font-medium">{game.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link
+                          to="/studio/games/$gameId"
+                          params={{ gameId: game.id }}
+                          className="hover:text-primary hover:underline"
+                        >
+                          {game.title}
+                        </Link>
+                      </TableCell>
                       <TableCell className="text-muted">{game.genre ?? '—'}</TableCell>
                       <TableCell className="text-muted">{game.platform ?? '—'}</TableCell>
                       <TableCell>

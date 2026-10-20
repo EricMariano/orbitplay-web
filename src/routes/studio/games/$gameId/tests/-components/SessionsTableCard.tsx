@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { Link } from '@tanstack/react-router'
 import { useState, type ReactNode } from 'react'
 import type { ReportSession } from '@/api-types'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
@@ -33,6 +34,7 @@ function sortSessions(sessions: ReportSession[], sort: Sort | null): ReportSessi
 }
 
 type SessionsTableCardProps = {
+  gameId: string
   testId: string
   defaultPageSize?: number
   onSeeAll?: () => void
@@ -44,6 +46,7 @@ type SessionsTableCardProps = {
  * A ordenação reordena só a página atual.
  */
 export function SessionsTableCard({
+  gameId,
   testId,
   defaultPageSize = 5,
   onSeeAll,
@@ -107,7 +110,12 @@ export function SessionsTableCard({
         {(page) => (
           <SessionsTable sort={sort} onSort={toggleSort}>
             {sortSessions(page.data, sort).map((session) => (
-              <SessionRow key={session.sessionId} session={session} />
+              <SessionRow
+                key={session.sessionId}
+                gameId={gameId}
+                testId={testId}
+                session={session}
+              />
             ))}
           </SessionsTable>
         )}
@@ -252,7 +260,15 @@ function SortableHeader({
   )
 }
 
-function SessionRow({ session }: { session: ReportSession }) {
+function SessionRow({
+  gameId,
+  testId,
+  session,
+}: {
+  gameId: string
+  testId: string
+  session: ReportSession
+}) {
   const archetype = session.archetype ? archetypeView(session.archetype) : null
   const tier = session.playerTier ? playerTierView(session.playerTier) : null
   return (
@@ -276,13 +292,16 @@ function SessionRow({ session }: { session: ReportSession }) {
       </td>
       <td className="pe-6">
         <div className="flex h-9 items-center gap-2.5">
-          {/* Detalhe da sessão é a Tela 12 — ainda sem rota no front. */}
           <Button
-            disabled
-            title="Detalhe da sessão em breve"
+            asChild
             className="h-9 flex-1 rounded-lg bg-linear-to-br from-report-action-start to-report-action-end text-[16px] font-bold text-foreground-strong shadow-[inset_-2px_-2px_1px_0_rgb(255_255_255/25%)]"
           >
-            Mostrar teste
+            <Link
+              to="/studio/games/$gameId/tests/$testId/sessions/$sessionId"
+              params={{ gameId, testId, sessionId: session.sessionId }}
+            >
+              Mostrar teste
+            </Link>
           </Button>
           <Button
             disabled

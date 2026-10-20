@@ -3,6 +3,7 @@ import type { CreateTestRequest, Test } from '@/api-types'
 import { api } from '@/lib/api-client'
 import { gamesKeys } from '@/features/games/api/games-keys'
 import { testsKeys } from './tests-keys'
+import { dashboardKeys } from '@/features/dashboard/api/dashboard-keys'
 
 /** Cria o rascunho de um teste no jogo (`POST /games/{gameId}/tests`, wizard passo 1). */
 export function useCreateTest(gameId: string) {
@@ -15,6 +16,9 @@ export function useCreateTest(gameId: string) {
       void queryClient.invalidateQueries({ queryKey: testsKeys.byGame(gameId) })
       // testsTotal/testsActive do card vêm de GET /games.
       void queryClient.invalidateQueries({ queryKey: gamesKeys.list() })
+      void queryClient.invalidateQueries({ queryKey: gamesKeys.detail(gameId) })
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.studio() })
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.benchmark() })
     },
   })
 }

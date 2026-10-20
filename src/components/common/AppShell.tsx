@@ -44,8 +44,8 @@ export function AppShell({ area, navItems }: AppShellProps) {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="flex h-16 items-center justify-between gap-6 border-b border-border/60 bg-surface/40 px-6 backdrop-blur-sm">
-        <div className="flex min-w-0 items-center gap-8">
+      <header className="flex h-16 items-center justify-between gap-2 border-b border-border/60 bg-surface/40 px-4 backdrop-blur-sm sm:gap-6 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-8">
           <Logo />
 
           <nav className="flex items-center gap-1 overflow-x-auto" aria-label={area}>
@@ -74,13 +74,14 @@ export function AppShell({ area, navItems }: AppShellProps) {
           </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <button
             type="button"
+            aria-label="Ajuda"
             className="flex items-center gap-1 text-sm text-primary hover:text-highlight"
           >
             <Icon name="help" />
-            Ajuda
+            <span className="hidden sm:inline">Ajuda</span>
           </button>
 
           <button
@@ -101,11 +102,15 @@ export function AppShell({ area, navItems }: AppShellProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label={user?.displayName ?? 'Conta'}
+                className="flex items-center gap-2"
+              >
                 <Avatar className="size-8">
                   <AvatarFallback>{user ? initials(user.displayName) : '?'}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-foreground-strong">
+                <span className="hidden text-sm text-foreground-strong sm:inline">
                   {user ? user.displayName : 'Sessão'}
                 </span>
                 <Icon name="chevron-down" className="size-4 text-muted" />

@@ -140,6 +140,46 @@ os demais. Sem dado fixo:
 
 ## Pendências — só verificáveis quando a API subir
 
+### Home do estúdio (Tela 02)
+
+A Home usa os KPIs de `GET /studio/dashboard`, sem recalcular totais a partir
+dos cinco jogos em destaque. O gráfico apresenta somente os dias que o backend
+retorna, na janela de 30 dias; um bloco sem sessões tem estado vazio próprio.
+
+- O resumo de telemetria é de um **teste recente selecionado**, via relatório
+  já existente (`GET /tests/{id}/report`, bloco `telemetry`). Não é um agregado
+  do estúdio. Sem build integrada, o cartão explica a ausência de telemetria;
+  descobertas de IA nulas aparecem como indisponíveis, sem inventar contagens.
+- O comparativo usa somente os jogos da própria organização, conforme escolha
+  do produto. `GET /studio/benchmark` retorna o histórico completo por jogo,
+  paginado por cursor e com os jogos mais recentes primeiro. A conclusão segue
+  a definição da API (sessões concluídas / participações); sem participações
+  aparece como indisponível, diferente de zero. Jogadores únicos e nota média
+  acompanham cada jogo. O bloco permite carregar mais jogos e abrir seus detalhes.
+- Criar jogo, criar teste e publicar teste invalidam também o cache da Home.
+  O botão de atualização consulta os blocos visíveis novamente.
+- O indicador de presença do plug-in, inclusive nos testes recentes, vem da
+  validação `plugin_manifest` da build, não do modelo escolhido.
+
+### Detalhes do jogo do estúdio (Tela 05)
+
+`/studio/games/$gameId` é uma rota index, para não transformar chat e relatórios
+em conteúdo aninhado da página. O cabeçalho usa `GET /games/{id}/summary`;
+as abas de testes usam `GET /games/{id}/tests?tab=active|all` com paginação
+por cursor. A criação/publicação invalida também o resumo do jogo.
+
+- Indicadores mostram jogadores, testes ativos, sessões válidas e nota média:
+  são os agregados disponíveis no contrato real; não há prêmio máximo no resumo.
+- Avaliações, publicações e especificações reutilizam os mesmos componentes
+  e endpoints da área do jogador, após o resumo confirmar o acesso ao jogo.
+- Conquistas por jogo não existem no contrato (as conquistas atuais são globais
+  e pertencem à conta do jogador). A aba explica a indisponibilidade, sem chamar
+  endpoints de jogador com credenciais de estúdio.
+- Configurar Orbit Plug-in permanece desabilitado: não há contrato de configuração.
+- A tabela apresenta o término **previsto** (`expiresAt`); a API não informa a
+  data de encerramento efetivo. A presença do plug-in vem da validação
+  `plugin_manifest` da build, nunca apenas do modelo do teste.
+
 Não contornar; entram quando houver API.
 
 7. **Login real** leva estúdio → `/studio` e jogador → `/player`.

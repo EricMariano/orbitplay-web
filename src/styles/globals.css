@@ -138,7 +138,7 @@
   --popover: var(--n-800);
   --popover-foreground: var(--n-50);
   --stat-card-background: #ffffff33;
-  --stat-card-foreground: var(white);
+  --stat-card-foreground: var(--white);
   --stat-card-muted: var(--n-300);
   /* Campo de formulário do wizard (Figma "Tipos e Elementos/Claro" #E5E5ED a 20%). */
   --field: rgb(229 229 237 / 20%);

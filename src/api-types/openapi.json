@@ -3709,6 +3709,49 @@
         ]
       }
     },
+    "/tests/{testId}/report/sessions/{sessionId}/detail": {
+      "get": {
+        "operationId": "ReportsController_getSessionDetail",
+        "parameters": [
+          {
+            "name": "testId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
     "/tests/{testId}/report/exports": {
       "post": {
         "operationId": "ReportsController_requestExport",
@@ -3929,14 +3972,35 @@
     "/studio/benchmark": {
       "get": {
         "operationId": "DashboardController_getBenchmark",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DashboardBlockDto_Output"
+                  "$ref": "#/components/schemas/StudioBenchmarkDto_Output"
                 }
               }
             }
@@ -10808,6 +10872,468 @@
         ],
         "additionalProperties": false
       },
+      "SessionDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "object",
+            "properties": {
+              "sessionId": {
+                "type": "string"
+              },
+              "participationId": {
+                "type": "string"
+              },
+              "testerId": {
+                "type": "string"
+              },
+              "testerName": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "startedAt": {
+                "type": "string"
+              },
+              "endedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "valid": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "averageRating": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "archetype": {
+                "type": "string",
+                "enum": [
+                  "achiever",
+                  "explorer",
+                  "socializer",
+                  "killer",
+                  null
+                ],
+                "nullable": true
+              },
+              "playerTier": {
+                "type": "string",
+                "enum": [
+                  "casual",
+                  "experienced",
+                  "trained",
+                  "qa",
+                  null
+                ],
+                "nullable": true
+              },
+              "aiQualityScore": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "telemetryConnected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sessionId",
+              "participationId",
+              "testerId",
+              "testerName",
+              "status",
+              "startedAt",
+              "endedAt",
+              "durationMs",
+              "valid",
+              "averageRating",
+              "archetype",
+              "playerTier",
+              "aiQualityScore",
+              "telemetryConnected"
+            ],
+            "additionalProperties": false
+          },
+          "evaluation": {
+            "type": "object",
+            "properties": {
+              "submittedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "answers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "questionId": {
+                      "type": "string"
+                    },
+                    "prompt": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "valueText": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "valueNumber": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "valueBoolean": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "optionLabels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "questionId",
+                    "prompt",
+                    "type",
+                    "valueText",
+                    "valueNumber",
+                    "valueBoolean",
+                    "optionLabels"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "submittedAt",
+              "answers"
+            ],
+            "additionalProperties": false
+          },
+          "studioRating": {
+            "type": "object",
+            "properties": {
+              "sessionId": {
+                "type": "string"
+              },
+              "rating": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "comment": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "markedInvalid": {
+                "type": "boolean"
+              },
+              "ratedByUserId": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "sessionId",
+              "rating",
+              "comment",
+              "markedInvalid",
+              "ratedByUserId",
+              "updatedAt"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "recordings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "screen",
+                    "webcam",
+                    "microphone"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "processing",
+                    "ready",
+                    "failed",
+                    "unavailable"
+                  ]
+                },
+                "contentType": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "durationMs": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "status",
+                "contentType",
+                "durationMs"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "transcript": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "processing",
+                  "ready",
+                  "failed",
+                  "unavailable"
+                ]
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "tMs": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tMs",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "telemetry": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "processing",
+                  "ready",
+                  "failed",
+                  "unavailable"
+                ]
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "triggerKey": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "counter",
+                        "timer",
+                        "ui_event",
+                        "vector",
+                        "input"
+                      ]
+                    },
+                    "valueNum": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "valueJson": {
+                      "nullable": true
+                    },
+                    "tMs": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "receivedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "triggerKey",
+                    "type",
+                    "valueNum",
+                    "valueJson",
+                    "tMs",
+                    "receivedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "insights": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "processing",
+                  "ready",
+                  "failed",
+                  "unavailable"
+                ]
+              },
+              "model": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string",
+                      "enum": [
+                        "ux_ui",
+                        "bugs_accessibility",
+                        "fun",
+                        "narrative_social"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "body": {
+                      "type": "string"
+                    },
+                    "sessionId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "tMs": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "sourceType": {
+                      "type": "string"
+                    },
+                    "generatedByAi": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "category",
+                    "title",
+                    "body",
+                    "sessionId",
+                    "tMs",
+                    "sourceType",
+                    "generatedByAi",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "model",
+              "data"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "session",
+          "evaluation",
+          "studioRating",
+          "recordings",
+          "transcript",
+          "telemetry",
+          "insights"
+        ],
+        "additionalProperties": false
+      },
       "CreateReportExportDto": {
         "type": "object",
         "properties": {
@@ -11561,11 +12087,14 @@
         ],
         "additionalProperties": false
       },
-      "DashboardBlockDto_Output": {
+      "StudioBenchmarkDto_Output": {
         "type": "object",
         "properties": {
           "key": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "benchmark"
+            ]
           },
           "status": {
             "type": "string",
@@ -11578,10 +12107,90 @@
           },
           "payload": {
             "type": "object",
-            "propertyNames": {
-              "type": "string"
+            "properties": {
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "organization"
+                ]
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "all_time"
+                ]
+              },
+              "metric": {
+                "type": "string",
+                "enum": [
+                  "completed_sessions_per_participation"
+                ]
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "gameId": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "participationsTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sessionsCompleted": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "playersTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "averageRating": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "nullable": true
+                    },
+                    "completionRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "gameId",
+                    "title",
+                    "participationsTotal",
+                    "sessionsCompleted",
+                    "playersTotal",
+                    "averageRating",
+                    "completionRate"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
             },
-            "additionalProperties": {},
+            "required": [
+              "scope",
+              "period",
+              "metric",
+              "data",
+              "nextCursor"
+            ],
+            "additionalProperties": false,
             "nullable": true
           },
           "computedAt": {

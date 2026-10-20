@@ -3,6 +3,7 @@ export const testsKeys = {
   all: ['tests'] as const,
   models: () => [...testsKeys.all, 'models'] as const,
   byGame: (gameId: string) => [...testsKeys.all, 'game', gameId] as const,
+  gameList: (gameId: string, tab: 'active' | 'all') => [...testsKeys.byGame(gameId), tab] as const,
   detail: (testId: string) => [...testsKeys.all, 'detail', testId] as const,
   continue: () => [...testsKeys.all, 'continue'] as const,
   mine: () => [...testsKeys.all, 'mine'] as const,

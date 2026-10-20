@@ -11,6 +11,7 @@ import { dashboardKeys } from './dashboard-keys'
 export function useStudioDashboard() {
   return useQuery({
     queryKey: dashboardKeys.studio(),
-    queryFn: () => api.get<StudioDashboard>('/studio/dashboard'),
+    queryFn: ({ signal }) => api.get<StudioDashboard>('/studio/dashboard', { signal }),
+    refetchInterval: (query) => (query.state.data?.stats.status === 'processing' ? 5000 : false),
   })
 }

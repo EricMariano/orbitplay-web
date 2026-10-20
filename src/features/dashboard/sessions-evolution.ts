@@ -5,7 +5,15 @@ export type SessionsPoint = { date: string; sessions: number }
 function isSessionsPoint(value: unknown): value is SessionsPoint {
   if (typeof value !== 'object' || value === null) return false
   const point = value as Record<string, unknown>
-  return typeof point.date === 'string' && typeof point.sessions === 'number'
+  if (typeof point.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(point.date)) return false
+  const timestamp = Date.parse(`${point.date}T00:00:00Z`)
+  return (
+    Number.isFinite(timestamp) &&
+    new Date(timestamp).toISOString().slice(0, 10) === point.date &&
+    typeof point.sessions === 'number' &&
+    Number.isInteger(point.sessions) &&
+    point.sessions >= 0
+  )
 }
 
 /**

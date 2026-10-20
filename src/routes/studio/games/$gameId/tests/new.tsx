@@ -168,8 +168,11 @@ function NewTestWizard() {
         <Link to="/studio/games" className="hover:text-primary">
           Jogos
         </Link>{' '}
-        › <span>{game.data?.title ?? '…'}</span> ›{' '}
-        <span className="text-foreground-strong">Novo teste</span>
+        ›{' '}
+        <Link to="/studio/games/$gameId" params={{ gameId }} className="hover:text-primary">
+          {game.data?.title ?? '…'}
+        </Link>{' '}
+        › <span className="text-foreground-strong">Novo teste</span>
       </nav>
 
       <div className="flex items-center gap-3">

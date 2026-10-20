@@ -28,4 +28,15 @@ describe('sessionsEvolutionPoints', () => {
   it('returns null for a block with another key', () => {
     expect(sessionsEvolutionPoints(block({ key: 'benchmark' }))).toBeNull()
   })
+
+  it('rejects invalid dates and invalid counts before rendering a chart', () => {
+    for (const point of [
+      { date: 'not-a-date', sessions: 2 },
+      { date: '2026-02-30', sessions: 2 },
+      { date: '2026-10-01', sessions: -1 },
+      { date: '2026-10-01', sessions: Infinity },
+      { date: '2026-10-01', sessions: 1.5 },
+    ])
+      expect(sessionsEvolutionPoints(block({ payload: { points: [point] } }))).toBeNull()
+  })
 })

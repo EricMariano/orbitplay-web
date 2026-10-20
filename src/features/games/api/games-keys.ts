@@ -3,6 +3,7 @@ export const gamesKeys = {
   all: ['games'] as const,
   list: () => [...gamesKeys.all, 'list'] as const,
   detail: (id: string) => [...gamesKeys.all, 'detail', id] as const,
+  summary: (id: string) => [...gamesKeys.detail(id), 'summary'] as const,
   playerDetail: (id: string) => [...gamesKeys.all, 'player-detail', id] as const,
   playerTests: (id: string) => [...gamesKeys.all, 'player-tests', id] as const,
   community: (id: string) => [...gamesKeys.all, 'community', id] as const,

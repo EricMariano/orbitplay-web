@@ -1,4 +1,12 @@
-import type { TestStatus } from '@/api-types'
+import type { TestStatus, Test } from '@/api-types'
+
+/** O modelo escolhido não confirma a presença do plug-in: a validação da build confirma. */
+export function pluginStatusView(build: Test['build']) {
+  const status = build?.validationSteps.find((step) => step.key === 'plugin_manifest')?.status
+  if (status === 'ready') return { label: 'Sim', className: 'text-success' }
+  if (status === 'unavailable') return { label: 'Não', className: 'text-muted' }
+  return { label: 'Não confirmado', className: 'text-muted' }
+}
 
 export const testStatusConfig: Record<TestStatus, { label: string; className: string }> = {
   draft: {

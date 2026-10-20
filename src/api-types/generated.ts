@@ -1253,6 +1253,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tests/{testId}/report/sessions/{sessionId}/detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReportsController_getSessionDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tests/{testId}/report/exports": {
         parameters: {
             query?: never;
@@ -2708,6 +2724,95 @@ export interface components {
                 optionLabels: string[];
             }[];
         };
+        SessionDetailDto_Output: {
+            session: {
+                sessionId: string;
+                participationId: string;
+                testerId: string;
+                testerName: string;
+                status: string;
+                startedAt: string;
+                endedAt: string | null;
+                durationMs: number | null;
+                valid: boolean | null;
+                averageRating: number | null;
+                /** @enum {string|null} */
+                archetype: "achiever" | "explorer" | "socializer" | "killer" | null;
+                /** @enum {string|null} */
+                playerTier: "casual" | "experienced" | "trained" | "qa" | null;
+                aiQualityScore: number | null;
+                telemetryConnected: boolean;
+            };
+            evaluation: {
+                submittedAt: string | null;
+                answers: {
+                    questionId: string;
+                    prompt: string;
+                    type: string;
+                    valueText: string | null;
+                    valueNumber: number | null;
+                    valueBoolean: boolean | null;
+                    optionLabels: string[];
+                }[];
+            };
+            studioRating: {
+                sessionId: string;
+                rating: number;
+                comment: string | null;
+                markedInvalid: boolean;
+                ratedByUserId: string;
+                updatedAt: string;
+            } | null;
+            recordings: {
+                id: string;
+                /** @enum {string} */
+                kind: "screen" | "webcam" | "microphone";
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                contentType: string | null;
+                durationMs: number | null;
+            }[];
+            transcript: {
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                data: {
+                    tMs: number;
+                    text: string;
+                }[];
+            };
+            telemetry: {
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                data: {
+                    id: string;
+                    triggerKey: string;
+                    /** @enum {string} */
+                    type: "counter" | "timer" | "ui_event" | "vector" | "input";
+                    valueNum: number | null;
+                    valueJson: unknown;
+                    tMs: number | null;
+                    receivedAt: string;
+                }[];
+            };
+            insights: {
+                /** @enum {string} */
+                status: "processing" | "ready" | "failed" | "unavailable";
+                model: string | null;
+                data: {
+                    id: string;
+                    /** @enum {string} */
+                    category: "ux_ui" | "bugs_accessibility" | "fun" | "narrative_social";
+                    title: string;
+                    body: string;
+                    sessionId: string | null;
+                    tMs: number | null;
+                    sourceType: string;
+                    /** @enum {boolean} */
+                    generatedByAi: true;
+                    createdAt: string;
+                }[];
+            };
+        };
         CreateReportExportDto: {
             /** @enum {string} */
             format: "csv" | "pdf";
@@ -2854,12 +2959,28 @@ export interface components {
                 computedAt: string | null;
             };
         };
-        DashboardBlockDto_Output: {
-            key: string;
+        StudioBenchmarkDto_Output: {
+            /** @enum {string} */
+            key: "benchmark";
             /** @enum {string} */
             status: "processing" | "ready" | "failed" | "unavailable";
             payload: {
-                [key: string]: unknown;
+                /** @enum {string} */
+                scope: "organization";
+                /** @enum {string} */
+                period: "all_time";
+                /** @enum {string} */
+                metric: "completed_sessions_per_participation";
+                data: {
+                    gameId: string;
+                    title: string;
+                    participationsTotal: number;
+                    sessionsCompleted: number;
+                    playersTotal: number;
+                    averageRating: number | null;
+                    completionRate: number | null;
+                }[];
+                nextCursor: string | null;
             } | null;
             computedAt: string | null;
         };
@@ -4891,6 +5012,28 @@ export interface operations {
             };
         };
     };
+    ReportsController_getSessionDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                testId: string;
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDetailDto_Output"];
+                };
+            };
+        };
+    };
     ReportsController_requestExport: {
         parameters: {
             query?: never;
@@ -5008,7 +5151,10 @@ export interface operations {
     };
     DashboardController_getBenchmark: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -5020,7 +5166,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DashboardBlockDto_Output"];
+                    "application/json": components["schemas"]["StudioBenchmarkDto_Output"];
                 };
             };
         };

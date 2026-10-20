@@ -6,6 +6,10 @@ export const reportsKeys = {
   byTest: (testId: string) => [...reportsKeys.all, 'test', testId] as const,
   sessions: (testId: string, limit: number, cursor: string | null) =>
     [...reportsKeys.byTest(testId), 'sessions', { limit, cursor }] as const,
+  sessionDetail: (testId: string, sessionId: string) =>
+    [...reportsKeys.byTest(testId), 'session', sessionId] as const,
+  recordingPlayback: (sessionId: string, recordingId: string) =>
+    [...reportsKeys.all, 'recording', sessionId, recordingId] as const,
   insights: (testId: string, q: string, category: InsightCategory | null) =>
     [...reportsKeys.byTest(testId), 'insights', { q, category }] as const,
 }

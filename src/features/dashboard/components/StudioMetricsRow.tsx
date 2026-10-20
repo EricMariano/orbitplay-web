@@ -1,40 +1,38 @@
 import type { DashboardKpis } from '@/api-types'
 import { Icon, type IconName } from '@/components/icon'
+import { formatDecimal, formatPercent } from '@/lib/format'
 
-type KpiConfig = {
-  key: string
-  label: string
-  icon: IconName
-  format: (value: number) => string
-}
-
-const formatRating = (value: number) => value.toFixed(1).replace('.', ',')
-const formatRatio = (value: number) => `${Math.round(value * 100)}%`
-
-/** Ordem e rótulos dos KPIs que a API calcula (RN-02). */
-const kpis: KpiConfig[] = [
-  { key: 'gamesTotal', label: 'Jogos', icon: 'gamepad', format: String },
-  { key: 'testsTotal', label: 'Testes no total', icon: 'tests', format: String },
-  { key: 'testsActive', label: 'Testes ativos', icon: 'checklist', format: String },
-  { key: 'sessionsValid', label: 'Sessões válidas', icon: 'clock', format: String },
-  { key: 'playersTotal', label: 'Jogadores', icon: 'users', format: String },
-  { key: 'averageRating', label: 'Nota média', icon: 'score', format: formatRating },
-  { key: 'completionRate', label: 'Taxa de conclusão', icon: 'target', format: formatRatio },
+const countFormatter = new Intl.NumberFormat('pt-BR')
+const kpis: { key: string; label: string; icon: IconName; format: (value: number) => string }[] = [
+  { key: 'gamesTotal', label: 'Jogos cadastrados', icon: 'gamepad', format: countFormatter.format },
+  { key: 'testsTotal', label: 'Testes no total', icon: 'tests', format: countFormatter.format },
+  { key: 'testsActive', label: 'Testes ativos', icon: 'checklist', format: countFormatter.format },
+  { key: 'sessionsValid', label: 'Sessões válidas', icon: 'clock', format: countFormatter.format },
+  { key: 'playersTotal', label: 'Jogadores', icon: 'users', format: countFormatter.format },
+  { key: 'averageRating', label: 'Nota média', icon: 'star', format: formatDecimal },
+  { key: 'completionRate', label: 'Taxa de conclusão', icon: 'target', format: formatPercent },
 ]
 
-/** Tira de KPIs gerais do estúdio (Tela 02). Valor ausente (`null`) aparece como "—". */
+/** KPIs consolidados pelo backend: zero é um valor, null permanece indisponível. */
 export function StudioMetricsRow({ values }: { values: DashboardKpis }) {
   return (
-    <dl className="flex flex-wrap gap-x-8 gap-y-3">
+    <dl
+      aria-label="Indicadores do estúdio"
+      className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4 xl:grid-cols-7"
+    >
       {kpis.map((kpi) => {
-        const value = values[kpi.key]?.value ?? null
+        const value = values[kpi.key]?.value
         return (
-          <div key={kpi.key} className="flex items-center gap-2">
-            <Icon name={kpi.icon} className="size-4 text-muted" />
-            <div>
-              <dt className="text-xs text-foreground-strong">{kpi.label}</dt>
-              <dd className="text-base font-semibold text-foreground-strong">
-                {value === null ? '—' : kpi.format(value)}
+          <div key={kpi.key} className="flex min-w-0 items-start gap-2.5">
+            <Icon name={kpi.icon} className="mt-1 size-4 text-primary" />
+            <div className="flex min-w-0 flex-col gap-1">
+              <dt className="text-xs leading-5 text-muted">{kpi.label}</dt>
+              <dd className="order-first font-label text-2xl font-semibold tabular-nums text-foreground-strong">
+                {value == null ? (
+                  <span title="Ainda não há dados suficientes">—</span>
+                ) : (
+                  kpi.format(value)
+                )}
               </dd>
             </div>
           </div>

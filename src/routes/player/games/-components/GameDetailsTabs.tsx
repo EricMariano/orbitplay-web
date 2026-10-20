@@ -3,13 +3,9 @@ import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Icon } from '@/components/icon'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  useGameCommunity,
-  useGameReviews,
-  useGameSpecs,
   useJoinTest,
   useMyGameTests,
   usePlayerAchievements,
@@ -20,6 +16,11 @@ import { gameDetailsErrorMessage } from '@/features/games/game-details-utils'
 import { GameTestTable } from './GameTestTable'
 import { GameTestDetails } from './GameTestDetails'
 import { GameChat } from './GameChat'
+import {
+  GamePostsContent,
+  GameReviewsContent,
+  GameSpecsContent as SpecsContent,
+} from '@/features/games/components/GameContent'
 
 export type GameDetailsTab = 'available' | 'mine' | 'achievements' | 'community' | 'specs'
 
@@ -184,78 +185,10 @@ function AchievementsContent() {
 }
 
 function CommunityFeedContent({ gameId }: { gameId: string }) {
-  const posts = useGameCommunity(gameId)
-  const reviews = useGameReviews(gameId)
-
-  if (posts.isPending || reviews.isPending) return tabSkeleton
-  if (posts.isError || reviews.isError) {
-    const failed = posts.isError ? posts : reviews
-    return (
-      <ErrorState
-        message={queryMessage(failed.error)}
-        onRetry={() => {
-          void posts.refetch()
-          void reviews.refetch()
-        }}
-      />
-    )
-  }
-  if (posts.data.data.length === 0 && reviews.data.data.length === 0) {
-    return (
-      <EmptyState
-        icon="users"
-        title="A comunidade ainda está em silêncio"
-        description="Publicações e avaliações deste jogo aparecerão aqui."
-      />
-    )
-  }
-
   return (
     <div className="grid gap-10 xl:grid-cols-2">
-      <section aria-labelledby="community-posts-title">
-        <h2 id="community-posts-title" className="mb-4 text-lg font-semibold">
-          Publicações
-        </h2>
-        <div className="space-y-3">
-          {posts.data.data.map((post) => (
-            <article key={post.id} className="rounded-lg border border-white/20 bg-white/10 p-4">
-              <div className="mb-2">
-                <strong className="text-sm">{post.authorDisplayName}</strong>
-              </div>
-              <p className="text-sm leading-6 text-white/75">{post.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section aria-labelledby="community-reviews-title">
-        <div className="mb-4 flex items-center gap-3">
-          <h2 id="community-reviews-title" className="text-lg font-semibold">
-            Avaliações
-          </h2>
-          {reviews.data.averageRating != null ? (
-            <span className="flex items-center gap-1 text-sm text-[#ffd52e]">
-              <Icon name="star" className="fill-current" />
-              {reviews.data.averageRating.toFixed(1)}
-            </span>
-          ) : null}
-        </div>
-        <div className="space-y-3">
-          {reviews.data.data.map((review) => (
-            <article key={review.id} className="rounded-lg border border-white/20 bg-white/10 p-4">
-              <div className="mb-2 flex items-center justify-between gap-4">
-                <strong className="text-sm">{review.authorDisplayName}</strong>
-                <span className="flex items-center gap-1 text-sm text-[#ffd52e]">
-                  <Icon name="star" className="fill-current" />
-                  {review.rating}
-                </span>
-              </div>
-              {review.body ? (
-                <p className="text-sm leading-6 text-white/75">{review.body}</p>
-              ) : null}
-            </article>
-          ))}
-        </div>
-      </section>
+      <GamePostsContent gameId={gameId} />
+      <GameReviewsContent gameId={gameId} />
     </div>
   )
 }
@@ -274,89 +207,6 @@ function CommunityContent({ gameId }: { gameId: string }) {
         <CommunityFeedContent gameId={gameId} />
       </TabsContent>
     </Tabs>
-  )
-}
-
-const platformLabels: Record<string, string> = {
-  windows: 'Windows',
-  macos: 'macOS',
-  linux: 'Linux',
-  android: 'Android',
-  ios: 'iOS',
-  web: 'Web',
-}
-
-function RequirementList({ title, values }: { title: string; values?: Record<string, string> }) {
-  return (
-    <section>
-      <h2 className="mb-4 text-lg font-semibold">{title}</h2>
-      {values && Object.keys(values).length > 0 ? (
-        <dl className="divide-y divide-white/10 rounded-lg border border-white/20 bg-white/10 px-5">
-          {Object.entries(values).map(([label, value]) => (
-            <div key={label} className="grid grid-cols-[minmax(140px,0.45fr)_1fr] gap-6 py-4">
-              <dt className="text-sm text-white/55">{label}</dt>
-              <dd className="text-sm text-white/90">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : (
-        <p className="text-sm text-white/55">Não informado.</p>
-      )}
-    </section>
-  )
-}
-
-function SpecsContent({ gameId }: { gameId: string }) {
-  const specs = useGameSpecs(gameId)
-  if (specs.isPending) return tabSkeleton
-  if (specs.isError) {
-    return <ErrorState message={queryMessage(specs.error)} onRetry={() => void specs.refetch()} />
-  }
-
-  const hasContent =
-    Object.keys(specs.data.minimumRequirements ?? {}).length > 0 ||
-    Object.keys(specs.data.recommendedRequirements ?? {}).length > 0 ||
-    (specs.data.supportedPlatforms?.length ?? 0) > 0 ||
-    (specs.data.languages?.length ?? 0) > 0
-
-  if (!hasContent) {
-    return (
-      <EmptyState
-        icon="monitor"
-        title="Especificações não informadas"
-        description="Os requisitos técnicos deste jogo aparecerão aqui."
-      />
-    )
-  }
-
-  return (
-    <div className="space-y-8">
-      <div className="grid gap-10 xl:grid-cols-2">
-        <RequirementList title="Requisitos mínimos" values={specs.data.minimumRequirements} />
-        <RequirementList
-          title="Requisitos recomendados"
-          values={specs.data.recommendedRequirements}
-        />
-      </div>
-      <div className="flex flex-wrap gap-8 border-t border-white/20 pt-6">
-        <div>
-          <h2 className="mb-3 text-sm font-semibold">Plataformas</h2>
-          <div className="flex flex-wrap gap-2">
-            {specs.data.supportedPlatforms?.map((platform) => (
-              <Badge key={platform} variant="secondary">
-                {platformLabels[platform] ?? platform}
-              </Badge>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h2 className="mb-3 text-sm font-semibold">Idiomas</h2>
-          <p className="text-sm text-white/70">
-            {specs.data.languages?.join(', ') || 'Não informado'}
-          </p>
-        </div>
-      </div>
-    </div>
   )
 }
 

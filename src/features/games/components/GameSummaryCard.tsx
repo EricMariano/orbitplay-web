@@ -46,7 +46,7 @@ export function GameSummaryCard({ game }: { game: Game }) {
       </div>
 
       <Link
-        to="/studio/games/$gameId/tests/new"
+        to="/studio/games/$gameId"
         params={{ gameId: game.id }}
         className="block w-full bg-gradient-to-l from-cta-configure-from to-cta-configure-to py-3 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
       >

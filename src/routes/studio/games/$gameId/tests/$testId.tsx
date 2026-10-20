@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { Tag } from '@/components/common/Tag'
 import { Icon } from '@/components/icon'
@@ -40,6 +40,16 @@ export const Route = createFileRoute('/studio/games/$gameId/tests/$testId')({
 /** Relatório do teste (Tela 11): blocos independentes, cada um com o próprio status. */
 function TestReportPage() {
   const { gameId, testId } = Route.useParams()
+  const isSessionDetail = useRouterState({
+    select: (state) => state.location.pathname.includes(`/tests/${testId}/sessions/`),
+  })
+
+  if (isSessionDetail) return <Outlet />
+
+  return <TestReportContent gameId={gameId} testId={testId} />
+}
+
+function TestReportContent({ gameId, testId }: { gameId: string; testId: string }) {
   const { tab = 'geral' } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const game = useGame(gameId)
@@ -59,7 +69,11 @@ function TestReportPage() {
         <Link to="/studio/games" className="hover:text-primary">
           Jogos
         </Link>{' '}
-        &gt; <span>{game.data?.title ?? '…'}</span> &gt; <span>{test.data?.title ?? '…'}</span>
+        &gt;{' '}
+        <Link to="/studio/games/$gameId" params={{ gameId }} className="hover:text-primary">
+          {game.data?.title ?? '…'}
+        </Link>{' '}
+        &gt; <span>{test.data?.title ?? '…'}</span>
       </nav>
 
       <div className="flex items-center gap-6">
@@ -108,12 +122,16 @@ function TestReportPage() {
                   />
                   <TestersCard block={findBlock(data, 'tester_profile')} />
                 </div>
-                <SessionsTableCard testId={testId} onSeeAll={() => goToTab('testes')} />
+                <SessionsTableCard
+                  gameId={gameId}
+                  testId={testId}
+                  onSeeAll={() => goToTab('testes')}
+                />
                 <InsightsCard testId={testId} onSeeAll={() => goToTab('insights')} />
               </TabsContent>
 
               <TabsContent value="testes">
-                <SessionsTableCard testId={testId} defaultPageSize={10} />
+                <SessionsTableCard gameId={gameId} testId={testId} defaultPageSize={10} />
               </TabsContent>
 
               <TabsContent value="avaliacoes">

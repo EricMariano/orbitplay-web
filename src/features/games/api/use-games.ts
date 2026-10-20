@@ -4,9 +4,10 @@ import { api } from '@/lib/api-client'
 import { gamesKeys } from './games-keys'
 
 /** Jogos da organização (`GET /games`), percorrendo todas as páginas do cursor. */
-export function useGames() {
+export function useGames(enabled = true) {
   return useQuery({
     queryKey: gamesKeys.list(),
+    enabled,
     queryFn: async ({ signal }) => {
       const games: Game[] = []
       const visited = new Set<string>()
