@@ -70,6 +70,7 @@ import {
   QrCode,
   Rocket,
   RefreshCw,
+  Save,
   Skull,
   Tag,
   UserCheck,
@@ -165,6 +166,7 @@ const registry = {
   'file-sheet': FileSpreadsheet,
   sliders: SlidersHorizontal,
   sparkles: Sparkles,
+  save: Save,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof registry

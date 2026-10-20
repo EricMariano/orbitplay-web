@@ -397,16 +397,18 @@ test('creating a game invalidates the inactive Home cache', async ({ page }) => 
     created = true
     return route.fulfill({ status: 201, json: newGame })
   })
+  await page.route('**/api/games/*/access', (route) => route.fulfill({ json: { data: [] } }))
   await page.goto('/studio')
   await expect(page.getByRole('link', { name: 'Configurar!', exact: true })).toHaveCount(1)
   const initialDashboardReads = dashboardReads
   const initialBenchmarkReads = benchmarkReads
   await page.getByRole('link', { name: 'Ir para meus jogos' }).click()
-  await page.getByRole('button', { name: 'Novo jogo', exact: true }).click()
-  await page.getByLabel('Título', { exact: true }).fill('Jogo recém-criado')
-  await page.getByRole('button', { name: 'Criar jogo', exact: true }).click()
-  await expect(page.getByRole('dialog')).toHaveCount(0)
-  await page.getByRole('link', { name: 'Home', exact: true }).click()
+  await page.getByRole('link', { name: 'Novo jogo', exact: true }).click()
+  await page.getByLabel('Nome do jogo').fill('Jogo recém-criado')
+  await page.getByRole('button', { name: 'Adicionar Action', exact: true }).click()
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/studio/games/${otherId}`))
+  await page.getByLabel('Estúdio').getByRole('link', { name: 'Home', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Jogo recém-criado', exact: true })).toBeVisible()
   expect(dashboardReads).toBeGreaterThan(initialDashboardReads)
   const comparison = page.getByRole('region', { name: 'Comparativo dos seus jogos' })

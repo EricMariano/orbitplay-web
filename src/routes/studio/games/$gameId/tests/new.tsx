@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import type { TestModelKey } from '@/api-types'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { Stepper } from '@/components/common/Stepper'
+import { WizardFooter } from '@/components/common/WizardFooter'
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -329,42 +330,6 @@ function NewTestWizard() {
           />
         ) : null}
       </div>
-    </div>
-  )
-}
-
-function WizardFooter({
-  onBack,
-  onNext,
-  canAdvance,
-  isSaving,
-  children,
-}: {
-  onBack: () => void
-  onNext: () => void
-  canAdvance: boolean
-  isSaving: boolean
-  children?: ReactNode
-}) {
-  return (
-    <div className="mt-6 flex flex-wrap items-center justify-end gap-6">
-      <button
-        type="button"
-        onClick={onBack}
-        className="mr-auto flex items-center gap-1 text-base font-bold text-primary hover:opacity-80"
-      >
-        <Icon name="arrow-left" className="size-6" />
-        Voltar
-      </button>
-      {children}
-      <Button
-        size="lg"
-        disabled={!canAdvance || isSaving}
-        onClick={onNext}
-        className="h-12 bg-gradient-to-br from-cta-configure-from to-cta-configure-to px-8 text-base font-bold"
-      >
-        {isSaving ? 'Salvando...' : 'Próximo'}
-      </Button>
     </div>
   )
 }

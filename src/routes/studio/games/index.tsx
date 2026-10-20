@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { EmptyState } from '@/components/common/EmptyState'
+import { Icon } from '@/components/icon'
 import { PageHeader } from '@/components/common/PageHeader'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { RoleGate } from '@/components/common/RoleGate'
@@ -18,7 +19,6 @@ import { GameSummaryCard } from '@/features/games/components/GameSummaryCard'
 import { useGames } from '@/features/games/api/use-games'
 import { gameStatusLabels } from '@/features/games/game-status'
 import { STUDIO_ROLES } from '@/lib/auth'
-import { NewGameDialog } from './-components/NewGameDialog'
 
 export const Route = createFileRoute('/studio/games/')({
   component: GamesList,
@@ -35,7 +35,12 @@ function GamesList() {
         breadcrumbs={[{ label: 'Estúdio', href: '/studio' }, { label: 'Jogos' }]}
         actions={
           <RoleGate allow={STUDIO_ROLES}>
-            <NewGameDialog />
+            <Button asChild size="sm">
+              <Link to="/studio/games/new">
+                <Icon name="plus" />
+                Novo jogo
+              </Link>
+            </Button>
           </RoleGate>
         }
       />

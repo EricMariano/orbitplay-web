@@ -1108,6 +1108,215 @@
         ]
       }
     },
+    "/orgs/groups": {
+      "get": {
+        "operationId": "OrgGroupsController_list",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "access"
+        ]
+      },
+      "post": {
+        "operationId": "OrgGroupsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "access"
+        ]
+      }
+    },
+    "/orgs/groups/{id}": {
+      "patch": {
+        "operationId": "OrgGroupsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "access"
+        ]
+      },
+      "delete": {
+        "operationId": "OrgGroupsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "access"
+        ]
+      }
+    },
+    "/games/{gameId}/access": {
+      "get": {
+        "operationId": "GameAccessController_get",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameAccessListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "access"
+        ]
+      },
+      "put": {
+        "operationId": "GameAccessController_set",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetGameAccessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameAccessListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "access"
+        ]
+      }
+    },
     "/sessions/{id}/recordings/upload-url": {
       "post": {
         "operationId": "MediaController_createUploadUrl",
@@ -4687,6 +4896,94 @@
                     "null"
                   ]
                 },
+                "tagline": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genres": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "subgenres": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "supportedPlatforms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "windows",
+                      "macos",
+                      "linux",
+                      "android",
+                      "ios",
+                      "web"
+                    ]
+                  }
+                },
+                "gameModes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "singleplayer",
+                      "local_multiplayer",
+                      "online_multiplayer",
+                      "coop",
+                      "competitive"
+                    ]
+                  }
+                },
+                "engine": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "developmentStage": {
+                  "type": "string",
+                  "enum": [
+                    "concept",
+                    "prototype",
+                    "alpha",
+                    "beta",
+                    "released",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "ageRating": {
+                  "type": "string",
+                  "enum": [
+                    "10",
+                    "12",
+                    "14",
+                    "16",
+                    "18",
+                    "L",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "languages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "trailerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "status": {
                   "type": "string",
                   "enum": [
@@ -4702,6 +4999,18 @@
                   ]
                 },
                 "bannerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "logoUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "iconUrl": {
                   "type": [
                     "string",
                     "null"
@@ -4761,9 +5070,21 @@
                 "description",
                 "genre",
                 "platform",
+                "tagline",
+                "genres",
+                "subgenres",
+                "supportedPlatforms",
+                "gameModes",
+                "engine",
+                "developmentStage",
+                "ageRating",
+                "languages",
+                "trailerUrl",
                 "status",
                 "coverUrl",
                 "bannerUrl",
+                "logoUrl",
+                "iconUrl",
                 "metrics",
                 "createdAt",
                 "updatedAt"
@@ -4809,6 +5130,88 @@
             "type": "string",
             "nullable": true
           },
+          "tagline": {
+            "type": "string",
+            "nullable": true
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subgenres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "supportedPlatforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          "gameModes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "singleplayer",
+                "local_multiplayer",
+                "online_multiplayer",
+                "coop",
+                "competitive"
+              ]
+            }
+          },
+          "engine": {
+            "type": "string",
+            "nullable": true
+          },
+          "developmentStage": {
+            "type": "string",
+            "enum": [
+              "concept",
+              "prototype",
+              "alpha",
+              "beta",
+              "released",
+              null
+            ],
+            "nullable": true
+          },
+          "ageRating": {
+            "type": "string",
+            "enum": [
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "L",
+              null
+            ],
+            "nullable": true
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trailerUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -4822,6 +5225,14 @@
             "nullable": true
           },
           "bannerUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "iconUrl": {
             "type": "string",
             "nullable": true
           },
@@ -4879,9 +5290,21 @@
           "description",
           "genre",
           "platform",
+          "tagline",
+          "genres",
+          "subgenres",
+          "supportedPlatforms",
+          "gameModes",
+          "engine",
+          "developmentStage",
+          "ageRating",
+          "languages",
+          "trailerUrl",
           "status",
           "coverUrl",
           "bannerUrl",
+          "logoUrl",
+          "iconUrl",
           "metrics",
           "createdAt",
           "updatedAt"
@@ -4924,6 +5347,94 @@
                   "null"
                 ]
               },
+              "tagline": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subgenres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "supportedPlatforms": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux",
+                    "android",
+                    "ios",
+                    "web"
+                  ]
+                }
+              },
+              "gameModes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "singleplayer",
+                    "local_multiplayer",
+                    "online_multiplayer",
+                    "coop",
+                    "competitive"
+                  ]
+                }
+              },
+              "engine": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "developmentStage": {
+                "type": "string",
+                "enum": [
+                  "concept",
+                  "prototype",
+                  "alpha",
+                  "beta",
+                  "released",
+                  null
+                ],
+                "nullable": true
+              },
+              "ageRating": {
+                "type": "string",
+                "enum": [
+                  "10",
+                  "12",
+                  "14",
+                  "16",
+                  "18",
+                  "L",
+                  null
+                ],
+                "nullable": true
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "trailerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -4939,6 +5450,18 @@
                 ]
               },
               "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "logoUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "iconUrl": {
                 "type": [
                   "string",
                   "null"
@@ -4998,9 +5521,21 @@
               "description",
               "genre",
               "platform",
+              "tagline",
+              "genres",
+              "subgenres",
+              "supportedPlatforms",
+              "gameModes",
+              "engine",
+              "developmentStage",
+              "ageRating",
+              "languages",
+              "trailerUrl",
               "status",
               "coverUrl",
               "bannerUrl",
+              "logoUrl",
+              "iconUrl",
               "metrics",
               "createdAt",
               "updatedAt"
@@ -5129,6 +5664,95 @@
             "type": "string",
             "maxLength": 100
           },
+          "tagline": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "genres": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          },
+          "subgenres": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          },
+          "supportedPlatforms": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          "gameModes": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "singleplayer",
+                "local_multiplayer",
+                "online_multiplayer",
+                "coop",
+                "competitive"
+              ]
+            }
+          },
+          "engine": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "developmentStage": {
+            "type": "string",
+            "enum": [
+              "concept",
+              "prototype",
+              "alpha",
+              "beta",
+              "released"
+            ]
+          },
+          "ageRating": {
+            "type": "string",
+            "enum": [
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "L"
+            ]
+          },
+          "languages": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"
+            }
+          },
+          "trailerUrl": {
+            "type": "string",
+            "maxLength": 500,
+            "format": "uri"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -5168,6 +5792,95 @@
             "type": "string",
             "maxLength": 100
           },
+          "tagline": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "genres": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          },
+          "subgenres": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          },
+          "supportedPlatforms": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux",
+                "android",
+                "ios",
+                "web"
+              ]
+            }
+          },
+          "gameModes": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "singleplayer",
+                "local_multiplayer",
+                "online_multiplayer",
+                "coop",
+                "competitive"
+              ]
+            }
+          },
+          "engine": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "developmentStage": {
+            "type": "string",
+            "enum": [
+              "concept",
+              "prototype",
+              "alpha",
+              "beta",
+              "released"
+            ]
+          },
+          "ageRating": {
+            "type": "string",
+            "enum": [
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "L"
+            ]
+          },
+          "languages": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"
+            }
+          },
+          "trailerUrl": {
+            "type": "string",
+            "maxLength": 500,
+            "format": "uri"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -5186,7 +5899,9 @@
             "enum": [
               "cover",
               "banner",
-              "screenshot"
+              "screenshot",
+              "logo",
+              "icon"
             ]
           },
           "contentType": {
@@ -5249,7 +5964,9 @@
             "enum": [
               "cover",
               "banner",
-              "screenshot"
+              "screenshot",
+              "logo",
+              "icon"
             ]
           },
           "storageKey": {
@@ -5274,7 +5991,9 @@
             "enum": [
               "cover",
               "banner",
-              "screenshot"
+              "screenshot",
+              "logo",
+              "icon"
             ]
           },
           "url": {
@@ -5303,6 +6022,258 @@
           "createdAt"
         ],
         "additionalProperties": false
+      },
+      "GroupListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "memberCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "memberUserIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "memberCount",
+                "memberUserIds",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "CreateGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "memberUserIds": {
+            "default": [],
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "GroupDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "memberCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "memberUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "memberCount",
+          "memberUserIds",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "memberUserIds": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        }
+      },
+      "GameAccessListDto_Output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "subjectType": {
+                  "type": "string",
+                  "enum": [
+                    "group",
+                    "member"
+                  ]
+                },
+                "subjectId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "memberCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "permissions": {
+                  "type": "object",
+                  "properties": {
+                    "manageAccess": {
+                      "type": "boolean"
+                    },
+                    "editInfo": {
+                      "type": "boolean"
+                    },
+                    "manageTests": {
+                      "type": "boolean"
+                    },
+                    "viewReports": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "manageAccess",
+                    "editInfo",
+                    "manageTests",
+                    "viewReports"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "subjectType",
+                "subjectId",
+                "name",
+                "email",
+                "memberCount",
+                "permissions"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "SetGameAccessDto": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "subjectType": {
+                  "type": "string",
+                  "enum": [
+                    "group",
+                    "member"
+                  ]
+                },
+                "subjectId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "permissions": {
+                  "type": "object",
+                  "properties": {
+                    "manageAccess": {
+                      "type": "boolean"
+                    },
+                    "editInfo": {
+                      "type": "boolean"
+                    },
+                    "manageTests": {
+                      "type": "boolean"
+                    },
+                    "viewReports": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "manageAccess",
+                    "editInfo",
+                    "manageTests",
+                    "viewReports"
+                  ]
+                }
+              },
+              "required": [
+                "subjectType",
+                "subjectId",
+                "permissions"
+              ]
+            }
+          }
+        },
+        "required": [
+          "entries"
+        ]
       },
       "RecordingUploadUrlRequestDto": {
         "type": "object",
@@ -7901,6 +8872,94 @@
                   "null"
                 ]
               },
+              "tagline": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subgenres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "supportedPlatforms": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux",
+                    "android",
+                    "ios",
+                    "web"
+                  ]
+                }
+              },
+              "gameModes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "singleplayer",
+                    "local_multiplayer",
+                    "online_multiplayer",
+                    "coop",
+                    "competitive"
+                  ]
+                }
+              },
+              "engine": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "developmentStage": {
+                "type": "string",
+                "enum": [
+                  "concept",
+                  "prototype",
+                  "alpha",
+                  "beta",
+                  "released",
+                  null
+                ],
+                "nullable": true
+              },
+              "ageRating": {
+                "type": "string",
+                "enum": [
+                  "10",
+                  "12",
+                  "14",
+                  "16",
+                  "18",
+                  "L",
+                  null
+                ],
+                "nullable": true
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "trailerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -7916,6 +8975,18 @@
                 ]
               },
               "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "logoUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "iconUrl": {
                 "type": [
                   "string",
                   "null"
@@ -7975,9 +9046,21 @@
               "description",
               "genre",
               "platform",
+              "tagline",
+              "genres",
+              "subgenres",
+              "supportedPlatforms",
+              "gameModes",
+              "engine",
+              "developmentStage",
+              "ageRating",
+              "languages",
+              "trailerUrl",
               "status",
               "coverUrl",
               "bannerUrl",
+              "logoUrl",
+              "iconUrl",
               "metrics",
               "createdAt",
               "updatedAt"
@@ -8258,6 +9341,94 @@
                   "null"
                 ]
               },
+              "tagline": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "genres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subgenres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "supportedPlatforms": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux",
+                    "android",
+                    "ios",
+                    "web"
+                  ]
+                }
+              },
+              "gameModes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "singleplayer",
+                    "local_multiplayer",
+                    "online_multiplayer",
+                    "coop",
+                    "competitive"
+                  ]
+                }
+              },
+              "engine": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "developmentStage": {
+                "type": "string",
+                "enum": [
+                  "concept",
+                  "prototype",
+                  "alpha",
+                  "beta",
+                  "released",
+                  null
+                ],
+                "nullable": true
+              },
+              "ageRating": {
+                "type": "string",
+                "enum": [
+                  "10",
+                  "12",
+                  "14",
+                  "16",
+                  "18",
+                  "L",
+                  null
+                ],
+                "nullable": true
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "trailerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -8273,6 +9444,18 @@
                 ]
               },
               "bannerUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "logoUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "iconUrl": {
                 "type": [
                   "string",
                   "null"
@@ -8332,9 +9515,21 @@
               "description",
               "genre",
               "platform",
+              "tagline",
+              "genres",
+              "subgenres",
+              "supportedPlatforms",
+              "gameModes",
+              "engine",
+              "developmentStage",
+              "ageRating",
+              "languages",
+              "trailerUrl",
               "status",
               "coverUrl",
               "bannerUrl",
+              "logoUrl",
+              "iconUrl",
               "metrics",
               "createdAt",
               "updatedAt"
@@ -9852,6 +11047,94 @@
                     "null"
                   ]
                 },
+                "tagline": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genres": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "subgenres": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "supportedPlatforms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "windows",
+                      "macos",
+                      "linux",
+                      "android",
+                      "ios",
+                      "web"
+                    ]
+                  }
+                },
+                "gameModes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "singleplayer",
+                      "local_multiplayer",
+                      "online_multiplayer",
+                      "coop",
+                      "competitive"
+                    ]
+                  }
+                },
+                "engine": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "developmentStage": {
+                  "type": "string",
+                  "enum": [
+                    "concept",
+                    "prototype",
+                    "alpha",
+                    "beta",
+                    "released",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "ageRating": {
+                  "type": "string",
+                  "enum": [
+                    "10",
+                    "12",
+                    "14",
+                    "16",
+                    "18",
+                    "L",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "languages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "trailerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "status": {
                   "type": "string",
                   "enum": [
@@ -9867,6 +11150,18 @@
                   ]
                 },
                 "bannerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "logoUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "iconUrl": {
                   "type": [
                     "string",
                     "null"
@@ -9926,9 +11221,21 @@
                 "description",
                 "genre",
                 "platform",
+                "tagline",
+                "genres",
+                "subgenres",
+                "supportedPlatforms",
+                "gameModes",
+                "engine",
+                "developmentStage",
+                "ageRating",
+                "languages",
+                "trailerUrl",
                 "status",
                 "coverUrl",
                 "bannerUrl",
+                "logoUrl",
+                "iconUrl",
                 "metrics",
                 "createdAt",
                 "updatedAt"
@@ -11624,6 +12931,94 @@
                     "null"
                   ]
                 },
+                "tagline": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genres": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "subgenres": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "supportedPlatforms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "windows",
+                      "macos",
+                      "linux",
+                      "android",
+                      "ios",
+                      "web"
+                    ]
+                  }
+                },
+                "gameModes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "singleplayer",
+                      "local_multiplayer",
+                      "online_multiplayer",
+                      "coop",
+                      "competitive"
+                    ]
+                  }
+                },
+                "engine": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "developmentStage": {
+                  "type": "string",
+                  "enum": [
+                    "concept",
+                    "prototype",
+                    "alpha",
+                    "beta",
+                    "released",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "ageRating": {
+                  "type": "string",
+                  "enum": [
+                    "10",
+                    "12",
+                    "14",
+                    "16",
+                    "18",
+                    "L",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "languages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "trailerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "status": {
                   "type": "string",
                   "enum": [
@@ -11639,6 +13034,18 @@
                   ]
                 },
                 "bannerUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "logoUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "iconUrl": {
                   "type": [
                     "string",
                     "null"
@@ -11698,9 +13105,21 @@
                 "description",
                 "genre",
                 "platform",
+                "tagline",
+                "genres",
+                "subgenres",
+                "supportedPlatforms",
+                "gameModes",
+                "engine",
+                "developmentStage",
+                "ageRating",
+                "languages",
+                "trailerUrl",
                 "status",
                 "coverUrl",
                 "bannerUrl",
+                "logoUrl",
+                "iconUrl",
                 "metrics",
                 "createdAt",
                 "updatedAt"

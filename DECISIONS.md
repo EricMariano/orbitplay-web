@@ -188,3 +188,31 @@ Não contornar; entram quando houver API.
    `/login`). Lógica pronta em `src/lib/api-client.ts`; falta a API para exercê-la.
 
 O E2E deste passo cobre apenas os itens 1–3 (lógica de cliente).
+
+## Cadastro completo de novo jogo (Tela 04)
+
+- **O modal "Novo jogo" virou a página `/studio/games/new`** (wizard de 3 etapas
+  do Figma — Informações → Mídias → Permissões — mais a tela "Jogo criado com
+  sucesso!"). `NewGameDialog` foi removido; o botão da lista agora é um link.
+- **O jogo só é criado no fim.** As etapas guardam o rascunho em memória e
+  `Finalizar` faz, em ordem: `POST /games` → envio de capa/logo/ícone (URL
+  assinada + PUT + confirmação) → `PUT /games/{id}/access`. O jogo é criado uma
+  única vez: se um envio posterior falhar, o botão vira "Tentar de novo" e só
+  refaz o que faltou; os campos de informação ficam travados (não há `PATCH`
+  no wizard — ajustes vão pela página do jogo). `Salvar` roda o mesmo fluxo e
+  leva à página do jogo, sem a tela de confirmação.
+- **Quem cria o jogo entra na matriz com todas as permissões.** Grupos e
+  membros vêm de `GET /orgs/groups` e `GET /orgs/members` (só papéis de estúdio,
+  não desativados). A matriz é só gravada: nenhuma tela do front consulta essas
+  permissões ainda (a API também não as aplica — ver `DECISIONS.md` da API).
+- **Catálogos no front.** Sugestões de gênero/sub-gênero, engines, idiomas e os
+  rótulos de plataforma, modo, estágio e classificação ficam em
+  `features/games/new-game.ts`; a API só valida os enums fechados. Os campos de
+  texto da API aceitam valores fora das sugestões (Enter adiciona a tag digitada).
+- **Divergência de copy do Figma:** o título da matriz de permissões no design
+  repete "Gatilhos e eventos de telemetria" (resto de outro frame); foi
+  omitido. O header da etapa é "Responsáveis e permissões".
+- **Extraídos para `components/common`** por serem reutilizáveis: `WizardField`,
+  `TagPicker`, `MultiSelect` e `WizardFooter` (este saiu do wizard de teste, que
+  agora o importa). O PUT para o storage virou `lib/storage-upload.ts`,
+  compartilhado entre o envio de build e o de imagens do jogo.

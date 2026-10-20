@@ -98,9 +98,10 @@ test('owner can switch library views and retains game creation and chat', async 
   await page.getByRole('button', { name: 'Tabela', exact: true }).click()
   await expect(page.getByRole('table')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Novo teste' })).toHaveCount(2)
-  await page.getByRole('button', { name: 'Novo jogo', exact: true }).click()
-  await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.getByLabel('Título', { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Novo jogo', exact: true }).click()
+  await expect(page).toHaveURL(/\/studio\/games\/new$/)
+  await expect(page.getByRole('heading', { name: 'Informações gerais' })).toBeVisible()
+  await expect(page.getByLabel('Nome do jogo')).toBeVisible()
 })
 
 test('library routes require a session', async ({ page }) => {

@@ -421,6 +421,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/orgs/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrgGroupsController_list"];
+        put?: never;
+        post: operations["OrgGroupsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orgs/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["OrgGroupsController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["OrgGroupsController_update"];
+        trace?: never;
+    };
+    "/games/{gameId}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GameAccessController_get"];
+        put: operations["GameAccessController_set"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sessions/{id}/recordings/upload-url": {
         parameters: {
             query?: never;
@@ -1520,10 +1568,24 @@ export interface components {
                 description: string | null;
                 genre: string | null;
                 platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
                 /** @enum {string} */
                 status: "draft" | "active" | "archived";
                 coverUrl: string | null;
                 bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
                 metrics: {
                     testsTotal: number;
                     testsActive: number;
@@ -1544,10 +1606,24 @@ export interface components {
             description: string | null;
             genre: string | null;
             platform: string | null;
+            tagline: string | null;
+            genres: string[];
+            subgenres: string[];
+            supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+            gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+            engine: string | null;
+            /** @enum {string|null} */
+            developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+            /** @enum {string|null} */
+            ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+            languages: string[];
+            trailerUrl: string | null;
             /** @enum {string} */
             status: "draft" | "active" | "archived";
             coverUrl: string | null;
             bannerUrl: string | null;
+            logoUrl: string | null;
+            iconUrl: string | null;
             metrics: {
                 testsTotal: number;
                 testsActive: number;
@@ -1567,10 +1643,24 @@ export interface components {
                 description: string | null;
                 genre: string | null;
                 platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
                 /** @enum {string} */
                 status: "draft" | "active" | "archived";
                 coverUrl: string | null;
                 bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
                 metrics: {
                     testsTotal: number;
                     testsActive: number;
@@ -1608,6 +1698,19 @@ export interface components {
             description?: string;
             genre?: string;
             platform?: string;
+            tagline?: string;
+            genres?: string[];
+            subgenres?: string[];
+            supportedPlatforms?: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+            gameModes?: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+            engine?: string;
+            /** @enum {string} */
+            developmentStage?: "concept" | "prototype" | "alpha" | "beta" | "released";
+            /** @enum {string} */
+            ageRating?: "10" | "12" | "14" | "16" | "18" | "L";
+            languages?: string[];
+            /** Format: uri */
+            trailerUrl?: string;
             /** @enum {string} */
             status?: "draft" | "active" | "archived";
         };
@@ -1617,12 +1720,25 @@ export interface components {
             description?: string;
             genre?: string;
             platform?: string;
+            tagline?: string;
+            genres?: string[];
+            subgenres?: string[];
+            supportedPlatforms?: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+            gameModes?: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+            engine?: string;
+            /** @enum {string} */
+            developmentStage?: "concept" | "prototype" | "alpha" | "beta" | "released";
+            /** @enum {string} */
+            ageRating?: "10" | "12" | "14" | "16" | "18" | "L";
+            languages?: string[];
+            /** Format: uri */
+            trailerUrl?: string;
             /** @enum {string} */
             status?: "draft" | "active" | "archived";
         };
         AssetUploadUrlRequestDto: {
             /** @enum {string} */
-            kind: "cover" | "banner" | "screenshot";
+            kind: "cover" | "banner" | "screenshot" | "logo" | "icon";
             /** @enum {string} */
             contentType: "image/png" | "image/jpeg" | "image/webp";
             sizeBytes: number;
@@ -1636,17 +1752,72 @@ export interface components {
         };
         ConfirmAssetRequestDto: {
             /** @enum {string} */
-            kind: "cover" | "banner" | "screenshot";
+            kind: "cover" | "banner" | "screenshot" | "logo" | "icon";
             storageKey: string;
         };
         GameAssetDto_Output: {
             id: string;
             /** @enum {string} */
-            kind: "cover" | "banner" | "screenshot";
+            kind: "cover" | "banner" | "screenshot" | "logo" | "icon";
             url: string;
             contentType: string | null;
             sizeBytes: number | null;
             createdAt: string;
+        };
+        GroupListDto_Output: {
+            data: {
+                id: string;
+                name: string;
+                memberCount: number;
+                memberUserIds: string[];
+                createdAt: string;
+            }[];
+        };
+        CreateGroupDto: {
+            name: string;
+            /** @default [] */
+            memberUserIds: string[];
+        };
+        GroupDto_Output: {
+            id: string;
+            name: string;
+            memberCount: number;
+            memberUserIds: string[];
+            createdAt: string;
+        };
+        UpdateGroupDto: {
+            name?: string;
+            memberUserIds?: string[];
+        };
+        GameAccessListDto_Output: {
+            data: {
+                /** @enum {string} */
+                subjectType: "group" | "member";
+                subjectId: string;
+                name: string;
+                email: string | null;
+                memberCount: number | null;
+                permissions: {
+                    manageAccess: boolean;
+                    editInfo: boolean;
+                    manageTests: boolean;
+                    viewReports: boolean;
+                };
+            }[];
+        };
+        SetGameAccessDto: {
+            entries: {
+                /** @enum {string} */
+                subjectType: "group" | "member";
+                /** Format: uuid */
+                subjectId: string;
+                permissions: {
+                    manageAccess: boolean;
+                    editInfo: boolean;
+                    manageTests: boolean;
+                    viewReports: boolean;
+                };
+            }[];
         };
         RecordingUploadUrlRequestDto: {
             /** @enum {string} */
@@ -2157,10 +2328,24 @@ export interface components {
                 description: string | null;
                 genre: string | null;
                 platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
                 /** @enum {string} */
                 status: "draft" | "active" | "archived";
                 coverUrl: string | null;
                 bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
                 metrics: {
                     testsTotal: number;
                     testsActive: number;
@@ -2222,10 +2407,24 @@ export interface components {
                 description: string | null;
                 genre: string | null;
                 platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
                 /** @enum {string} */
                 status: "draft" | "active" | "archived";
                 coverUrl: string | null;
                 bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
                 metrics: {
                     testsTotal: number;
                     testsActive: number;
@@ -2541,10 +2740,24 @@ export interface components {
                 description: string | null;
                 genre: string | null;
                 platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
                 /** @enum {string} */
                 status: "draft" | "active" | "archived";
                 coverUrl: string | null;
                 bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
                 metrics: {
                     testsTotal: number;
                     testsActive: number;
@@ -2877,10 +3090,24 @@ export interface components {
                 description: string | null;
                 genre: string | null;
                 platform: string | null;
+                tagline: string | null;
+                genres: string[];
+                subgenres: string[];
+                supportedPlatforms: ("windows" | "macos" | "linux" | "android" | "ios" | "web")[];
+                gameModes: ("singleplayer" | "local_multiplayer" | "online_multiplayer" | "coop" | "competitive")[];
+                engine: string | null;
+                /** @enum {string|null} */
+                developmentStage: "concept" | "prototype" | "alpha" | "beta" | "released" | null;
+                /** @enum {string|null} */
+                ageRating: "10" | "12" | "14" | "16" | "18" | "L" | null;
+                languages: string[];
+                trailerUrl: string | null;
                 /** @enum {string} */
                 status: "draft" | "active" | "archived";
                 coverUrl: string | null;
                 bannerUrl: string | null;
+                logoUrl: string | null;
+                iconUrl: string | null;
                 metrics: {
                     testsTotal: number;
                     testsActive: number;
@@ -3647,6 +3874,138 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    OrgGroupsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupListDto_Output"];
+                };
+            };
+        };
+    };
+    OrgGroupsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDto_Output"];
+                };
+            };
+        };
+    };
+    OrgGroupsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrgGroupsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGroupDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDto_Output"];
+                };
+            };
+        };
+    };
+    GameAccessController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameAccessListDto_Output"];
+                };
+            };
+        };
+    };
+    GameAccessController_set: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetGameAccessDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameAccessListDto_Output"];
+                };
             };
         };
     };
