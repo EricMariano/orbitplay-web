@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import type { FeedList, Game, ParticipationList, PlayerGame } from '@/api-types'
 import { api, ApiError } from '@/lib/api-client'
+import { useAuthStore } from '@/lib/auth'
 import { playerKeys } from './player-keys'
 
 /** Biblioteca pessoal: somente jogos com participação do jogador autenticado. */
 export function usePlayerLibrary() {
+  const userId = useAuthStore((state) => state.user?.id)
   return useQuery({
-    queryKey: playerKeys.library(),
+    queryKey: playerKeys.library(userId),
+    enabled: Boolean(userId),
     queryFn: async ({ signal }) => {
       const gameIds = new Set<string>()
       const visited = new Set<string>()
@@ -43,8 +46,10 @@ export function usePlayerLibrary() {
 
 /** Percorre o catálogo preservando o snapshot de ranking entre as páginas. */
 export function usePlayerCatalog() {
+  const userId = useAuthStore((state) => state.user?.id)
   return useQuery({
-    queryKey: playerKeys.catalog(),
+    queryKey: playerKeys.catalog(userId),
+    enabled: Boolean(userId),
     queryFn: async ({ signal }) => {
       const games = new Map<string, Game>()
       const visited = new Set<string>()

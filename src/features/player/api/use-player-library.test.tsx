@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
+import { useAuthStore } from '@/lib/auth'
 import { api, ApiError } from '@/lib/api-client'
 import { usePlayerCatalog, usePlayerLibrary } from './use-player-library'
 
@@ -10,9 +11,43 @@ function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
-afterEach(() => vi.restoreAllMocks())
+function login(id: string) {
+  useAuthStore.getState().setSession({
+    accessToken: 'test',
+    user: { id, email: `${id}@example.com`, displayName: id, organizationId: id, role: 'player' },
+  })
+}
+
+beforeEach(() => login('a'))
+afterEach(() => {
+  vi.restoreAllMocks()
+  useAuthStore.getState().clearSession()
+})
 
 describe('player library API contracts', () => {
+  it.each(['library', 'catalog'] as const)(
+    'isolates the %s cache when switching accounts',
+    async (kind) => {
+      const client = new QueryClient({
+        defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
+      })
+      const get = vi
+        .spyOn(api, 'get')
+        .mockResolvedValue({ data: [], nextCursor: null, seed: 'snapshot' })
+      const hook = kind === 'library' ? usePlayerLibrary : usePlayerCatalog
+      const { result } = renderHook(hook, {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        ),
+      })
+      await waitFor(() => expect(result.current.isSuccess).toBe(true))
+      act(() => login('b'))
+      await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(result.current.isSuccess).toBe(true))
+      client.clear()
+    },
+  )
+
   it('pages participations, deduplicates games and omits only removed games', async () => {
     const get = vi.spyOn(api, 'get').mockImplementation(async (path) => {
       if (path === '/player/participations?limit=100')
@@ -58,10 +93,8 @@ describe('player library API contracts', () => {
       const get = vi
         .spyOn(api, 'get')
         .mockResolvedValue({ data: [], nextCursor: 'same', seed: 'snapshot' })
-      const { result } = renderHook(
-        () => (kind === 'library' ? usePlayerLibrary() : usePlayerCatalog()),
-        { wrapper },
-      )
+      const hook = kind === 'library' ? usePlayerLibrary : usePlayerCatalog
+      const { result } = renderHook(hook, { wrapper })
       await waitFor(() => expect(result.current.isError).toBe(true))
       expect(result.current.error?.message).toBe('Repeated pagination cursor')
       expect(get).toHaveBeenCalledTimes(2)
