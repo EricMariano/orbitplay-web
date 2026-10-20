@@ -21,7 +21,7 @@ type NavEntry = {
 
 const navEntries: NavEntry[] = [
   { label: 'Home', icon: 'home', to: '/player' },
-  { label: 'Jogos', icon: 'games' },
+  { label: 'Jogos', icon: 'games', to: '/player/games' },
   { label: 'Meus testes e ganhos', icon: 'tests' },
   { label: 'Tutorial e formação', icon: 'graduation-cap' },
   { label: 'Comunidade', icon: 'users' },
