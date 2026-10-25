@@ -56,10 +56,12 @@ async function parseError(response: Response): Promise<ApiError> {
 }
 
 /** Single-flight refresh so parallel 401s don't each fire a refresh. */
-let refreshPromise: Promise<boolean> | null = null
+let refreshFlight: { revision: number; promise: Promise<boolean> } | null = null
 
 async function tryRefresh(): Promise<boolean> {
-  refreshPromise ??= (async () => {
+  const revision = useAuthStore.getState().revision
+  if (refreshFlight?.revision === revision) return refreshFlight.promise
+  const promise = (async () => {
     try {
       const res = await fetch(`${BASE_URL}/auth/refresh`, {
         method: 'POST',
@@ -68,17 +70,18 @@ async function tryRefresh(): Promise<boolean> {
       if (!res.ok) return false
       const data = (await res.json()) as LoginResponse
       if (!data.accessToken || !data.user) return false
-      useAuthStore.getState().setSession({ user: data.user, accessToken: data.accessToken })
-      return true
+      return useAuthStore.getState().refreshSession(data, revision)
     } catch {
       return false
     }
   })()
+  const flight = { revision, promise }
+  refreshFlight = flight
 
   try {
-    return await refreshPromise
+    return await promise
   } finally {
-    refreshPromise = null
+    if (refreshFlight === flight) refreshFlight = null
   }
 }
 
@@ -87,8 +90,9 @@ let initializePromise: Promise<void> | null = null
 export function initializeSession(): Promise<void> {
   initializePromise ??= (async () => {
     if (getAccessToken()) return
+    const revision = useAuthStore.getState().revision
     const restored = await tryRefresh()
-    if (!restored) clearSession()
+    if (!restored && useAuthStore.getState().revision === revision) clearSession()
   })()
   return initializePromise
 }
@@ -96,13 +100,24 @@ export function initializeSession(): Promise<void> {
 function redirectToLogin() {
   clearSession()
   if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-    window.location.assign('/login')
+    // A reload would bootstrap the still-present refresh cookie and reopen the failed session.
+    void import('@/app/router').then(({ router }) =>
+      router.navigate({ to: '/login', replace: true }),
+    )
   }
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  // Keep the same mutation key when authentication requires a retry.
+  if (options.idempotent) {
+    const headers = new Headers(options.headers)
+    if (!headers.has('Idempotency-Key')) headers.set('Idempotency-Key', crypto.randomUUID())
+    options = { ...options, headers }
+  }
   const { json, idempotent, auth, _isRetry, ...init } = options
   void idempotent // consumed in buildHeaders
+  const revision = useAuthStore.getState().revision
+  const token = getAccessToken()
 
   const response = await fetch(`${BASE_URL}${path}`, {
     ...init,
@@ -111,10 +126,15 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     body: json !== undefined ? JSON.stringify(json) : undefined,
   })
 
-  if (response.status === 401 && auth !== false && !_isRetry) {
-    const refreshed = await tryRefresh()
-    if (refreshed) {
-      return request<T>(path, { ...options, _isRetry: true })
+  if (auth !== false && useAuthStore.getState().revision !== revision) {
+    throw new ApiError(401, null, 'A sessão foi alterada')
+  }
+
+  if (response.status === 401 && auth !== false) {
+    if (!_isRetry) {
+      const refreshed = getAccessToken() !== token || (await tryRefresh())
+      if (useAuthStore.getState().revision !== revision) throw await parseError(response)
+      if (refreshed) return request<T>(path, { ...options, _isRetry: true })
     }
     redirectToLogin()
     throw await parseError(response)
