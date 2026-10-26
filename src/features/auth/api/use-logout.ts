@@ -8,6 +8,6 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: () => api.post<MessageResponse>('/auth/logout', undefined, { auth: false }),
-    onSettled: clearSession,
+    onMutate: clearSession,
   })
 }

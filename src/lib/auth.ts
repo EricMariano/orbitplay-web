@@ -10,10 +10,12 @@ type SessionState = {
   /** Access token stays in memory; persistence is handled by the API's httpOnly cookie. */
   accessToken: string | null
   status: SessionStatus
+  revision: number
 }
 
 type SessionActions = {
   setSession: (payload: { user: AuthUser; accessToken: string }) => void
+  refreshSession: (payload: { user: AuthUser; accessToken: string }, revision: number) => boolean
   clearSession: () => void
 }
 
@@ -22,20 +24,32 @@ const initialState: SessionState = {
   role: null,
   accessToken: null,
   status: 'unauthenticated',
+  revision: 0,
 }
 
 export const useAuthStore = create<SessionState & SessionActions>((set) => ({
   ...initialState,
 
   setSession: ({ user, accessToken }) =>
-    set({
+    set((state) => ({
       user,
       role: user.role,
       accessToken,
       status: 'authenticated',
-    }),
+      revision: state.revision + 1,
+    })),
 
-  clearSession: () => set({ ...initialState }),
+  refreshSession: ({ user, accessToken }, revision) => {
+    let applied = false
+    set((state) => {
+      if (state.revision !== revision) return state
+      applied = true
+      return { user, role: user.role, accessToken, status: 'authenticated' }
+    })
+    return applied
+  },
+
+  clearSession: () => set((state) => ({ ...initialState, revision: state.revision + 1 })),
 }))
 
 // --- Non-reactive accessors, for use outside React (e.g. the api-client) ---
