@@ -32,3 +32,7 @@ test-results
 
 # TanStack Router temp files
 .tanstack/
+
+# Electron
+dist-electron
+release

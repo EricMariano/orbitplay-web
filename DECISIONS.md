@@ -225,3 +225,23 @@ O E2E deste passo cobre apenas os itens 1–3 (lógica de cliente).
   `TagPicker`, `MultiSelect` e `WizardFooter` (este saiu do wizard de teste, que
   agora o importa). O PUT para o storage virou `lib/storage-upload.ts`,
   compartilhado entre o envio de build e o de imagens do jogo.
+
+## App desktop (Electron)
+
+- **Casca fina em `electron/` dentro deste repo** (divergência da estrutura
+  padrão, aprovada): `main.cts`, `preload.cts` e `tsconfig.json` próprio
+  (compila para `dist-electron/`, ignorado pelo git). O código de `src/` não
+  muda e não conhece o Electron.
+- **Carrega o site, não o build local.** Em dev abre `http://localhost:5173`;
+  empacotado abre `PROD_URL` (hoje vazio — `TODO(prod-url)`). Mesma origem do
+  site ⇒ cookie `httpOnly` de sessão, `/api` relativo e CORS continuam como
+  estão. Empacotar o `dist/` exigiria protocolo próprio + proxy de `/api` e
+  ajuste de cookie/CORS na API; fica para se precisarmos de modo offline.
+- **Segurança:** `contextIsolation`, `sandbox`, sem `nodeIntegration`; links
+  externos abrem no navegador; preload expõe só `window.desktop`.
+- **Novas dependências (dev):** `electron` e `electron-builder`, só para
+  empacotar. `pnpm.onlyBuiltDependencies` libera o postinstall do Electron.
+- **Download do app dentro do front.** `DownloadDesktopItem` (no menu do usuário
+  do `AppShell`) oferece o instalador do sistema do visitante. Links via
+  `VITE_DESKTOP_DOWNLOAD_*` (sem link ou já no app desktop ⇒ não aparece). Sem
+  endpoint novo e sem mudança no banco; a detecção fica em `lib/desktop.ts`.

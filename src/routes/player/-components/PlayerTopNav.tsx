@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import orbitPlayLogo from '@/assets/login/orbitplay-logo.png'
+import { DownloadDesktopItem } from '@/components/common/DownloadDesktopItem'
 import { NotificationsMenu } from '@/components/common/NotificationsMenu'
 import { Icon, type IconName } from '@/components/icon'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -86,6 +87,7 @@ export function PlayerTopNav() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DownloadDesktopItem />
             <DropdownMenuItem onSelect={handleLogout} disabled={logout.isPending}>
               <Icon name="logout" />
               {logout.isPending ? 'Saindo...' : 'Sair'}

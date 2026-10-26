@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from '@tanstack/react-router'
 import { Icon, type IconName } from '@/components/icon'
+import { DownloadDesktopItem } from '@/components/common/DownloadDesktopItem'
 import { Logo } from '@/components/common/Logo'
 import { NotificationsMenu } from '@/components/common/NotificationsMenu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -112,6 +113,7 @@ export function AppShell({ area, navItems }: AppShellProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DownloadDesktopItem />
               <DropdownMenuItem onSelect={handleLogout} disabled={logout.isPending}>
                 <Icon name="logout" />
                 {logout.isPending ? 'Saindo...' : 'Sair'}

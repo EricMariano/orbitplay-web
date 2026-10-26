@@ -10,6 +10,8 @@ export default tseslint.config(
     // Generated / vendored files must never be linted (or hand-fixed).
     ignores: [
       'dist',
+      'dist-electron',
+      'release',
       'coverage',
       'playwright-report',
       'test-results',
