@@ -1,15 +1,14 @@
 import { app, BrowserWindow, dialog, shell } from 'electron'
 import path from 'node:path'
+import { startLocalServer } from './local-server.cjs'
 
-// Em dev o app abre o Vite (`pnpm dev`, porta 5173). Empacotado, abre o site
-// hospedado — mesma origem do site, então cookie httpOnly e `/api` funcionam
-// sem mudar nada no front nem na API.
-// TODO(prod-url): preencher com a URL de produção quando existir.
-const PROD_URL = ''
-const DEV_URL = 'http://localhost:5173'
-
-const isDev = !app.isPackaged
-const appUrl = isDev ? DEV_URL : PROD_URL
+// Em dev o app abre o Vite (`pnpm dev`). Empacotado, serve o `dist/` num
+// servidor local na mesma porta/origem do dev e repassa `/api` para a API, que
+// fica fora do app (ORBITPLAY_API_URL, padrão `http://localhost:3000`) —
+// cookie httpOnly e `/api` relativo funcionam sem mudar front nem API.
+const PORT = 5173
+const API_URL = process.env.ORBITPLAY_API_URL ?? 'http://localhost:3000'
+const appUrl = `http://localhost:${PORT}`
 
 let mainWindow: BrowserWindow | null = null
 
@@ -22,15 +21,6 @@ function isInternal(url: string): boolean {
 }
 
 async function loadApp(win: BrowserWindow): Promise<void> {
-  if (!appUrl) {
-    await dialog.showMessageBox(win, {
-      type: 'error',
-      message: 'URL do OrbitPlay não configurada.',
-      detail: 'Defina PROD_URL em electron/main.cts e gere o app de novo.',
-    })
-    app.quit()
-    return
-  }
   try {
     await win.loadURL(appUrl)
   } catch {
@@ -87,7 +77,23 @@ if (!app.requestSingleInstanceLock()) {
     mainWindow.focus()
   })
 
-  void app.whenReady().then(() => {
+  void app.whenReady().then(async () => {
+    if (app.isPackaged) {
+      try {
+        await startLocalServer({
+          root: path.join(app.getAppPath(), 'dist'),
+          apiUrl: API_URL,
+          port: PORT,
+        })
+      } catch {
+        dialog.showErrorBox(
+          'OrbitPlay',
+          `Não foi possível abrir a porta ${PORT}. Feche o que estiver usando e tente de novo.`,
+        )
+        app.quit()
+        return
+      }
+    }
     createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()

@@ -21,7 +21,7 @@
     "gen:api-design": "openapi-typescript src/api-types/orbitplay-design-openapi.json -o src/api-types/orbitplay-design.generated.ts",
     "desktop:build": "tsc -p electron/tsconfig.json",
     "desktop:dev": "pnpm desktop:build && electron .",
-    "desktop:dist": "pnpm desktop:build && electron-builder",
+    "desktop:dist": "pnpm build && pnpm desktop:build && electron-builder",
     "prepare": "husky"
   },
   "dependencies": {
@@ -88,6 +88,7 @@
     },
     "files": [
       "dist-electron/**",
+      "dist/**",
       "package.json"
     ],
     "win": {
