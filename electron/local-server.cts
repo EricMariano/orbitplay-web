@@ -7,6 +7,9 @@ import path from 'node:path'
 // prefixo — o mesmo que o proxy do Vite faz em dev. Front e `/api` ficam na
 // mesma origem, então cookie httpOnly e CORS não mudam. A API fica FORA do app.
 
+/** Só loopback IPv4: a janela do app abre neste mesmo endereço. */
+export const LOCAL_SERVER_HOST = '127.0.0.1'
+
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -99,6 +102,6 @@ export function startLocalServer(opts: {
   })
   return new Promise((resolve, reject) => {
     server.once('error', reject)
-    server.listen(opts.port, '127.0.0.1', () => resolve(server))
+    server.listen(opts.port, LOCAL_SERVER_HOST, () => resolve(server))
   })
 }

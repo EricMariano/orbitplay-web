@@ -1,14 +1,18 @@
 import { app, BrowserWindow, dialog, shell } from 'electron'
 import path from 'node:path'
-import { startLocalServer } from './local-server.cjs'
+import { LOCAL_SERVER_HOST, startLocalServer } from './local-server.cjs'
 
 // Em dev o app abre o Vite (`pnpm dev`). Empacotado, serve o `dist/` num
-// servidor local na mesma porta/origem do dev e repassa `/api` para a API, que
-// fica fora do app (ORBITPLAY_API_URL, padrão `http://localhost:3000`) —
-// cookie httpOnly e `/api` relativo funcionam sem mudar front nem API.
+// servidor local na mesma porta do dev e repassa `/api` para a API, que fica
+// fora do app (ORBITPLAY_API_URL, padrão `http://localhost:3000`) — cookie
+// httpOnly e `/api` relativo funcionam sem mudar front nem API.
 const PORT = 5173
 const API_URL = process.env.ORBITPLAY_API_URL ?? 'http://localhost:3000'
-const appUrl = `http://localhost:${PORT}`
+// Empacotado, a janela abre no mesmo endereço em que o servidor local escuta.
+// Com `localhost` o Chromium tenta `::1` primeiro, e outro processo escutando em
+// `[::1]:5173` receberia a janela e o cookie de sessão. Em dev fica `localhost`,
+// onde o Vite escuta (no macOS, só em `::1`).
+const appUrl = `http://${app.isPackaged ? LOCAL_SERVER_HOST : 'localhost'}:${PORT}`
 
 let mainWindow: BrowserWindow | null = null
 
