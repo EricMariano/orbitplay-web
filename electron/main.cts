@@ -88,6 +88,21 @@ function createWindow(): void {
       if (/^https?:\/\//.test(url)) void shell.openExternal(url)
     }
   })
+  // O resumo da sessão usa `beforeunload` para proteger a avaliação não enviada.
+  // No Electron isso só cancela o fechamento, sem diálogo (a janela não fecha):
+  // a pergunta fica por conta do app, e `preventDefault` libera a saída.
+  win.webContents.on('will-prevent-unload', (event) => {
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'question',
+      title: 'OrbitPlay',
+      message: 'Sair e perder as respostas?',
+      detail: 'Há respostas que ainda não foram enviadas. Se sair agora, elas serão perdidas.',
+      buttons: ['Sair', 'Cancelar'],
+      defaultId: 1,
+      cancelId: 1,
+    })
+    if (choice === 0) event.preventDefault()
+  })
 
   void loadApp(win)
 }
