@@ -7,7 +7,7 @@ export function useDeleteBuild(testId: string | null) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: () => api.delete<void>(`/tests/${testId}/build`),
+    mutationFn: () => api.delete<void>(`/tests/${encodeURIComponent(testId!)}/build`),
     onSettled: () => {
       if (testId) void queryClient.invalidateQueries({ queryKey: testsKeys.detail(testId) })
     },

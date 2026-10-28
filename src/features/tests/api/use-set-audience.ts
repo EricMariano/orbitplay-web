@@ -9,7 +9,7 @@ export function useSetAudience(testId: string | null) {
 
   return useMutation({
     mutationFn: (payload: AudienceRequest) =>
-      api.patch<TestDetail>(`/tests/${testId}/audience`, payload),
+      api.patch<TestDetail>(`/tests/${encodeURIComponent(testId!)}/audience`, payload),
     onSuccess: (test) => {
       queryClient.setQueryData(testsKeys.detail(test.id), test)
     },

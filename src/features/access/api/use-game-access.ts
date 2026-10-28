@@ -9,7 +9,9 @@ export function useGameAccess(gameId: string | null) {
     queryKey: accessKeys.game(gameId ?? ''),
     enabled: gameId !== null,
     queryFn: async ({ signal }) => {
-      const list: GameAccessList = await api.get(`/games/${gameId}/access`, { signal })
+      const list: GameAccessList = await api.get(`/games/${encodeURIComponent(gameId!)}/access`, {
+        signal,
+      })
       return list.data
     },
   })

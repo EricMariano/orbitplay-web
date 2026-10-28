@@ -23,13 +23,16 @@ export function useUploadGameAsset() {
   return useMutation({
     mutationFn: async ({ gameId, kind, file, onProgress, signal }: UploadGameAssetVariables) => {
       const { uploadUrl, storageKey, maxSizeBytes } = await api.post<AssetUploadUrlResponse>(
-        `/games/${gameId}/assets/upload-url`,
+        `/games/${encodeURIComponent(gameId)}/assets/upload-url`,
         { kind, contentType: file.type, sizeBytes: file.size, fileName: file.name },
       )
       if (file.size > maxSizeBytes) throw new Error('Imagem maior que o limite permitido.')
 
       await putToStorage(uploadUrl, file, file.type, onProgress, signal)
-      return api.post<GameAsset>(`/games/${gameId}/assets`, { kind, storageKey })
+      return api.post<GameAsset>(`/games/${encodeURIComponent(gameId)}/assets`, {
+        kind,
+        storageKey,
+      })
     },
     onSettled: (_data, _error, { gameId }) => {
       void queryClient.invalidateQueries({ queryKey: gamesKeys.list() })

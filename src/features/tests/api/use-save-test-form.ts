@@ -11,7 +11,7 @@ export function useSaveTestForm(testId: string | null) {
   return useMutation({
     mutationFn: (payload: PutTestFormRequest) => {
       if (!testId) throw new Error('Crie o rascunho do teste antes de salvar o formulário.')
-      return api.put<TestForm>(`/tests/${testId}/form`, payload)
+      return api.put<TestForm>(`/tests/${encodeURIComponent(testId)}/form`, payload)
     },
   })
 }

@@ -12,7 +12,9 @@ export function useSignup() {
     }:
       | { accountType: 'player'; payload: SignupPlayerRequest }
       | { accountType: 'studio'; payload: SignupStudioRequest }) =>
-      api.post<LoginResponse>(`/auth/signup/${accountType}`, payload, { auth: false }),
+      api.post<LoginResponse>(`/auth/signup/${encodeURIComponent(accountType)}`, payload, {
+        auth: false,
+      }),
     onSuccess: ({ user, accessToken }) => setSession({ user, accessToken }),
   })
 }

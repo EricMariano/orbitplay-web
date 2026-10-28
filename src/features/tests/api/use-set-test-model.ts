@@ -9,7 +9,7 @@ export function useSetTestModel(gameId: string) {
 
   return useMutation({
     mutationFn: ({ testId, ...payload }: SetTestModelRequest & { testId: string }) =>
-      api.patch<Test>(`/tests/${testId}/model`, payload),
+      api.patch<Test>(`/tests/${encodeURIComponent(testId)}/model`, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: testsKeys.byGame(gameId) })
     },

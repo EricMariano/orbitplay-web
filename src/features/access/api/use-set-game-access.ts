@@ -9,7 +9,7 @@ export function useSetGameAccess() {
 
   return useMutation({
     mutationFn: ({ gameId, ...payload }: SetGameAccessRequest & { gameId: string }) =>
-      api.put<GameAccessList>(`/games/${gameId}/access`, payload),
+      api.put<GameAccessList>(`/games/${encodeURIComponent(gameId)}/access`, payload),
     onSuccess: (_data, { gameId }) => {
       void queryClient.invalidateQueries({ queryKey: accessKeys.game(gameId) })
     },

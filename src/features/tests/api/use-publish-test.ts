@@ -15,7 +15,7 @@ export function usePublishTest(gameId: string, testId: string | null, idempotenc
 
   return useMutation({
     mutationFn: () =>
-      api.post<TestDetail>(`/tests/${testId}/publish`, undefined, {
+      api.post<TestDetail>(`/tests/${encodeURIComponent(testId!)}/publish`, undefined, {
         headers: { 'Idempotency-Key': idempotencyKey },
       }),
     onSuccess: () => {
