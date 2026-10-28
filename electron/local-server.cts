@@ -27,11 +27,31 @@ function stripApiPrefix(url: string): string {
   return url.replace(/^\/api/, '') || '/'
 }
 
+/** Defesa contra DNS rebinding: um site cujo domínio passe a resolver para
+ *  127.0.0.1 chega aqui com o próprio `Host`, e não com o do app. */
+function isAllowedHost(host: string | undefined, port: number): boolean {
+  const value = host?.toLowerCase()
+  return value === `${LOCAL_SERVER_HOST}:${port}` || value === `localhost:${port}`
+}
+
+/** `startsWith(root)` aceitaria irmãos como `dist-electron/`. */
+function isInsideRoot(root: string, file: string): boolean {
+  const relative = path.relative(root, file)
+  return relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+}
+
 function serveStatic(root: string, req: http.IncomingMessage, res: http.ServerResponse): void {
-  const pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname)
+  let pathname: string
+  try {
+    pathname = decodeURIComponent(new URL(req.url ?? '/', `http://${LOCAL_SERVER_HOST}`).pathname)
+  } catch {
+    // `GET /%` ou `GET //`: sem o catch, o erro sobe até o processo principal.
+    res.writeHead(400).end()
+    return
+  }
   let file = path.join(root, pathname)
-  // Impede sair de `dist/` com `..`.
-  if (!file.startsWith(root)) {
+  // Impede sair de `dist/` com `..` (o `..%2F` só vira `../` depois do decode).
+  if (!isInsideRoot(root, file)) {
     res.writeHead(403).end()
     return
   }
@@ -42,7 +62,9 @@ function serveStatic(root: string, req: http.IncomingMessage, res: http.ServerRe
   res.writeHead(200, {
     'Content-Type': MIME[path.extname(file)] ?? 'application/octet-stream',
   })
-  fs.createReadStream(file).pipe(res)
+  fs.createReadStream(file)
+    .on('error', () => res.destroy())
+    .pipe(res)
 }
 
 function proxyHttp(api: URL, req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -56,10 +78,17 @@ function proxyHttp(api: URL, req: http.IncomingMessage, res: http.ServerResponse
     },
     (upRes) => {
       res.writeHead(upRes.statusCode ?? 502, upRes.headers)
+      // A API caiu no meio da resposta: os headers já foram, então só resta cortar.
+      upRes.on('error', () => res.destroy())
       upRes.pipe(res)
     },
   )
   upstream.on('error', () => {
+    // Um segundo writeHead lançaria ERR_HTTP_HEADERS_SENT no processo principal.
+    if (res.headersSent) {
+      res.destroy()
+      return
+    }
     res.writeHead(502, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ code: 'api_unreachable', message: 'API indisponível.' }))
   })
@@ -93,11 +122,13 @@ export function startLocalServer(opts: {
 }): Promise<http.Server> {
   const api = new URL(opts.apiUrl)
   const server = http.createServer((req, res) => {
-    if (req.url?.startsWith('/api')) proxyHttp(api, req, res)
+    if (!isAllowedHost(req.headers.host, opts.port)) res.writeHead(403).end()
+    else if (req.url?.startsWith('/api')) proxyHttp(api, req, res)
     else serveStatic(opts.root, req, res)
   })
   server.on('upgrade', (req, socket, head) => {
-    if (req.url?.startsWith('/api')) proxyUpgrade(api, req, socket as net.Socket, head)
+    const allowed = isAllowedHost(req.headers.host, opts.port) && req.url?.startsWith('/api')
+    if (allowed) proxyUpgrade(api, req, socket as net.Socket, head)
     else socket.destroy()
   })
   return new Promise((resolve, reject) => {
