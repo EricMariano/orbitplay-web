@@ -32,7 +32,8 @@ test('login switches both account visuals on the same form', async ({ page }) =>
   await expect(testerVisual).toHaveCSS('opacity', '0')
   await expect(page.getByLabel('E-mail')).toBeVisible()
   await expect(page.getByLabel('Senha')).toBeVisible()
-  await expect(page.getByRole('checkbox', { name: 'Lembrar login' })).toBeChecked()
+  // "Lembrar login" saiu: a API sempre grava o cookie de refresh (TODO(remember-me)).
+  await expect(page.getByRole('checkbox')).toHaveCount(0)
 })
 
 test('login validates required fields before submitting', async ({ page }) => {
@@ -50,7 +51,6 @@ test('login submits the backend contract without deriving a role from the tab', 
   await page.getByRole('tab', { name: 'Sou um estúdio' }).click()
   await page.getByLabel('E-mail').fill('studio@example.com')
   await page.getByLabel('Senha').fill('senha-segura')
-  await page.getByRole('checkbox', { name: 'Lembrar login' }).uncheck()
 
   const submit = page.getByRole('button', { name: 'Entrar!' })
   await page.evaluate(() => {
