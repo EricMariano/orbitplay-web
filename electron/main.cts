@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, shell } from 'electron'
+import { app, BrowserWindow, dialog, session, shell } from 'electron'
 import path from 'node:path'
 import { LOCAL_SERVER_HOST, startLocalServer } from './local-server.cjs'
 
@@ -22,6 +22,27 @@ function isInternal(url: string): boolean {
   } catch {
     return false
   }
+}
+
+// Sem handler, o Electron aprova qualquer permissão pedida por qualquer página.
+// O app só precisa destas: gravação da sessão (`media` e `display-capture`),
+// tela cheia dos vídeos e cópia para a área de transferência.
+const ALLOWED_PERMISSIONS = new Set<string>([
+  'media',
+  'display-capture',
+  'fullscreen',
+  'clipboard-sanitized-write',
+])
+
+function restrictPermissions(): void {
+  const ses = session.defaultSession
+  ses.setPermissionRequestHandler((_webContents, permission, callback, details) => {
+    callback(ALLOWED_PERMISSIONS.has(permission) && isInternal(details.requestingUrl))
+  })
+  ses.setPermissionCheckHandler(
+    (_webContents, permission, requestingOrigin) =>
+      ALLOWED_PERMISSIONS.has(permission) && isInternal(requestingOrigin),
+  )
 }
 
 async function loadApp(win: BrowserWindow): Promise<void> {
@@ -82,6 +103,7 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(async () => {
+    restrictPermissions()
     if (app.isPackaged) {
       try {
         await startLocalServer({
