@@ -16,7 +16,10 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: `pnpm dev -- --port ${port}`,
+    // Sem `--`: o pnpm o repassaria literal ao Vite, que ignoraria o `--port`.
+    // `--strictPort` falha na hora se a porta estiver ocupada, em vez de o Vite
+    // subir em outra porta e o Playwright esperar até o timeout.
+    command: `pnpm dev --port ${port} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
