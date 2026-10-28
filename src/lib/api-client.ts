@@ -58,22 +58,25 @@ async function parseError(response: Response): Promise<ApiError> {
 /** Single-flight refresh so parallel 401s don't each fire a refresh. */
 let refreshFlight: { revision: number; promise: Promise<boolean> } | null = null
 
+/**
+ * Renova o access token pelo cookie httpOnly: `true` se renovou, `false` se a API
+ * recusou o cookie (a sessão acabou de fato). Falha de rede ou 5xx (API
+ * reiniciando, 502 do proxy do Electron) rejeita com o erro: o cookie pode
+ * continuar válido, então quem chamou não deve limpar a sessão.
+ */
 async function tryRefresh(): Promise<boolean> {
   const revision = useAuthStore.getState().revision
   if (refreshFlight?.revision === revision) return refreshFlight.promise
   const promise = (async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      })
-      if (!res.ok) return false
-      const data = (await res.json()) as LoginResponse
-      if (!data.accessToken || !data.user) return false
-      return useAuthStore.getState().refreshSession(data, revision)
-    } catch {
-      return false
-    }
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    if (res.status >= 500) throw await parseError(res)
+    if (!res.ok) return false
+    const data = (await res.json().catch(() => null)) as LoginResponse | null
+    if (!data?.accessToken || !data.user) return false
+    return useAuthStore.getState().refreshSession(data, revision)
   })()
   const flight = { revision, promise }
   refreshFlight = flight
@@ -91,8 +94,14 @@ export function initializeSession(): Promise<void> {
   initializePromise ??= (async () => {
     if (getAccessToken()) return
     const revision = useAuthStore.getState().revision
-    const restored = await tryRefresh()
-    if (!restored && useAuthStore.getState().revision === revision) clearSession()
+    try {
+      const restored = await tryRefresh()
+      if (!restored && useAuthStore.getState().revision === revision) clearSession()
+    } catch {
+      // API indisponível no boot: segue sem sessão (as guardas levam ao login), sem
+      // dar o cookie por inválido, e a próxima navegação tenta restaurar de novo.
+      initializePromise = null
+    }
   })()
   return initializePromise
 }
@@ -132,6 +141,8 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
   if (response.status === 401 && auth !== false) {
     if (!_isRetry) {
+      // Se o refresh falhar por rede ou 5xx, o erro sobe daqui sem limpar a sessão:
+      // a próxima requisição tenta renovar de novo (ex.: a API reiniciou no gameplay).
       const refreshed = getAccessToken() !== token || (await tryRefresh())
       if (useAuthStore.getState().revision !== revision) throw await parseError(response)
       if (refreshed) return request<T>(path, { ...options, _isRetry: true })
