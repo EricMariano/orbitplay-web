@@ -108,6 +108,10 @@ test('owner manages invitations, roles, status and audit records from the member
     'bia@blackstar.dev',
   )
   await expect(page.getByText('Convite pendente', { exact: true })).toBeVisible()
+  // Só o convidado aceita o convite: não dá para ativá-lo nem desativá-lo daqui.
+  await expect(
+    page.getByRole('row', { name: /Bia Souza/ }).getByRole('button', { name: 'Desativar' }),
+  ).toBeDisabled()
 
   const anaRow = page.getByRole('row', { name: /Ana Lima/ })
   await anaRow.getByRole('combobox', { name: 'Papel de Ana Lima' }).click()

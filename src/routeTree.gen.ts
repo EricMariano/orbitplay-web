@@ -18,7 +18,6 @@ import { Route as StudioRouteImport } from './routes/studio'
 import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as PlayerCommunityRouteImport } from './routes/player/community'
 import { Route as PlayerMissionsRouteImport } from './routes/player/missions'
-import { Route as PlayerTestsRouteImport } from './routes/player/tests'
 import { Route as PlayerTrainingRouteImport } from './routes/player/training'
 import { Route as StudioIndexRouteImport } from './routes/studio/index'
 import { Route as StudioAccessRouteImport } from './routes/studio/access'
@@ -29,6 +28,7 @@ import { Route as StudioTelemetryRouteImport } from './routes/studio/telemetry'
 import { Route as StudioTrainingRouteImport } from './routes/studio/training'
 import { Route as PlayerGamesIndexRouteImport } from './routes/player/games/index'
 import { Route as PlayerGamesGameIdRouteImport } from './routes/player/games/$gameId'
+import { Route as PlayerTestsIndexRouteImport } from './routes/player/tests/index'
 import { Route as StudioGamesIndexRouteImport } from './routes/studio/games/index'
 import { Route as StudioGamesNewRouteImport } from './routes/studio/games/new'
 import { Route as PlayerParticipationsParticipationIdResultRouteImport } from './routes/player/participations/$participationId/result'
@@ -87,11 +87,6 @@ const PlayerMissionsRoute = PlayerMissionsRouteImport.update({
   path: '/missions',
   getParentRoute: () => PlayerRoute,
 } as any)
-const PlayerTestsRoute = PlayerTestsRouteImport.update({
-  id: '/tests',
-  path: '/tests',
-  getParentRoute: () => PlayerRoute,
-} as any)
 const PlayerTrainingRoute = PlayerTrainingRouteImport.update({
   id: '/training',
   path: '/training',
@@ -142,6 +137,11 @@ const PlayerGamesGameIdRoute = PlayerGamesGameIdRouteImport.update({
   path: '/games/$gameId',
   getParentRoute: () => PlayerRoute,
 } as any)
+const PlayerTestsIndexRoute = PlayerTestsIndexRouteImport.update({
+  id: '/tests/',
+  path: '/tests/',
+  getParentRoute: () => PlayerRoute,
+} as any)
 const StudioGamesIndexRoute = StudioGamesIndexRouteImport.update({
   id: '/games/',
   path: '/games/',
@@ -172,9 +172,9 @@ const PlayerSessionsSessionIdSummaryRoute =
   } as any)
 const PlayerTestsTestIdTutorialRoute =
   PlayerTestsTestIdTutorialRouteImport.update({
-    id: '/$testId/tutorial',
-    path: '/$testId/tutorial',
-    getParentRoute: () => PlayerTestsRoute,
+    id: '/tests/$testId/tutorial',
+    path: '/tests/$testId/tutorial',
+    getParentRoute: () => PlayerRoute,
   } as any)
 const StudioGamesGameIdIndexRoute = StudioGamesGameIdIndexRouteImport.update({
   id: '/games/$gameId/',
@@ -220,7 +220,6 @@ export interface FileRoutesByFullPath {
   '/studio': typeof StudioRouteWithChildren
   '/player/community': typeof PlayerCommunityRoute
   '/player/missions': typeof PlayerMissionsRoute
-  '/player/tests': typeof PlayerTestsRouteWithChildren
   '/player/training': typeof PlayerTrainingRoute
   '/studio/access': typeof StudioAccessRoute
   '/studio/benchmark': typeof StudioBenchmarkRoute
@@ -233,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/new': typeof StudioGamesNewRoute
   '/player/games/': typeof PlayerGamesIndexRoute
+  '/player/tests/': typeof PlayerTestsIndexRoute
   '/studio/games/': typeof StudioGamesIndexRoute
   '/player/participations/$participationId/result': typeof PlayerParticipationsParticipationIdResultRoute
   '/player/sessions/$sessionId/gameplay': typeof PlayerSessionsSessionIdGameplayRoute
@@ -252,7 +252,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/player/community': typeof PlayerCommunityRoute
   '/player/missions': typeof PlayerMissionsRoute
-  '/player/tests': typeof PlayerTestsRouteWithChildren
   '/player/training': typeof PlayerTrainingRoute
   '/studio/access': typeof StudioAccessRoute
   '/studio/benchmark': typeof StudioBenchmarkRoute
@@ -265,6 +264,7 @@ export interface FileRoutesByTo {
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/new': typeof StudioGamesNewRoute
   '/player/games': typeof PlayerGamesIndexRoute
+  '/player/tests': typeof PlayerTestsIndexRoute
   '/studio/games': typeof StudioGamesIndexRoute
   '/player/participations/$participationId/result': typeof PlayerParticipationsParticipationIdResultRoute
   '/player/sessions/$sessionId/gameplay': typeof PlayerSessionsSessionIdGameplayRoute
@@ -287,7 +287,6 @@ export interface FileRoutesById {
   '/studio': typeof StudioRouteWithChildren
   '/player/community': typeof PlayerCommunityRoute
   '/player/missions': typeof PlayerMissionsRoute
-  '/player/tests': typeof PlayerTestsRouteWithChildren
   '/player/training': typeof PlayerTrainingRoute
   '/studio/access': typeof StudioAccessRoute
   '/studio/benchmark': typeof StudioBenchmarkRoute
@@ -300,6 +299,7 @@ export interface FileRoutesById {
   '/player/games/$gameId': typeof PlayerGamesGameIdRoute
   '/studio/games/new': typeof StudioGamesNewRoute
   '/player/games/': typeof PlayerGamesIndexRoute
+  '/player/tests/': typeof PlayerTestsIndexRoute
   '/studio/games/': typeof StudioGamesIndexRoute
   '/player/participations/$participationId/result': typeof PlayerParticipationsParticipationIdResultRoute
   '/player/sessions/$sessionId/gameplay': typeof PlayerSessionsSessionIdGameplayRoute
@@ -323,7 +323,6 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/community'
     | '/player/missions'
-    | '/player/tests'
     | '/player/training'
     | '/studio/access'
     | '/studio/benchmark'
@@ -336,6 +335,7 @@ export interface FileRouteTypes {
     | '/player/games/$gameId'
     | '/studio/games/new'
     | '/player/games/'
+    | '/player/tests/'
     | '/studio/games/'
     | '/player/participations/$participationId/result'
     | '/player/sessions/$sessionId/gameplay'
@@ -355,7 +355,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/player/community'
     | '/player/missions'
-    | '/player/tests'
     | '/player/training'
     | '/studio/access'
     | '/studio/benchmark'
@@ -368,6 +367,7 @@ export interface FileRouteTypes {
     | '/player/games/$gameId'
     | '/studio/games/new'
     | '/player/games'
+    | '/player/tests'
     | '/studio/games'
     | '/player/participations/$participationId/result'
     | '/player/sessions/$sessionId/gameplay'
@@ -389,7 +389,6 @@ export interface FileRouteTypes {
     | '/studio'
     | '/player/community'
     | '/player/missions'
-    | '/player/tests'
     | '/player/training'
     | '/studio/access'
     | '/studio/benchmark'
@@ -402,6 +401,7 @@ export interface FileRouteTypes {
     | '/player/games/$gameId'
     | '/studio/games/new'
     | '/player/games/'
+    | '/player/tests/'
     | '/studio/games/'
     | '/player/participations/$participationId/result'
     | '/player/sessions/$sessionId/gameplay'
@@ -489,13 +489,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayerMissionsRouteImport
       parentRoute: typeof PlayerRoute
     }
-    '/player/tests': {
-      id: '/player/tests'
-      path: '/tests'
-      fullPath: '/player/tests'
-      preLoaderRoute: typeof PlayerTestsRouteImport
-      parentRoute: typeof PlayerRoute
-    }
     '/player/training': {
       id: '/player/training'
       path: '/training'
@@ -566,6 +559,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayerGamesGameIdRouteImport
       parentRoute: typeof PlayerRoute
     }
+    '/player/tests/': {
+      id: '/player/tests/'
+      path: '/tests'
+      fullPath: '/player/tests/'
+      preLoaderRoute: typeof PlayerTestsIndexRouteImport
+      parentRoute: typeof PlayerRoute
+    }
     '/studio/games/': {
       id: '/studio/games/'
       path: '/games'
@@ -603,10 +603,10 @@ declare module '@tanstack/react-router' {
     }
     '/player/tests/$testId/tutorial': {
       id: '/player/tests/$testId/tutorial'
-      path: '/$testId/tutorial'
+      path: '/tests/$testId/tutorial'
       fullPath: '/player/tests/$testId/tutorial'
       preLoaderRoute: typeof PlayerTestsTestIdTutorialRouteImport
-      parentRoute: typeof PlayerTestsRoute
+      parentRoute: typeof PlayerRoute
     }
     '/studio/games/$gameId/': {
       id: '/studio/games/$gameId/'
@@ -653,43 +653,33 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface PlayerTestsRouteChildren {
-  PlayerTestsTestIdTutorialRoute: typeof PlayerTestsTestIdTutorialRoute
-}
-
-const PlayerTestsRouteChildren: PlayerTestsRouteChildren = {
-  PlayerTestsTestIdTutorialRoute: PlayerTestsTestIdTutorialRoute,
-}
-
-const PlayerTestsRouteWithChildren = PlayerTestsRoute._addFileChildren(
-  PlayerTestsRouteChildren,
-)
-
 interface PlayerRouteChildren {
   PlayerCommunityRoute: typeof PlayerCommunityRoute
   PlayerMissionsRoute: typeof PlayerMissionsRoute
-  PlayerTestsRoute: typeof PlayerTestsRouteWithChildren
   PlayerTrainingRoute: typeof PlayerTrainingRoute
   PlayerIndexRoute: typeof PlayerIndexRoute
   PlayerGamesGameIdRoute: typeof PlayerGamesGameIdRoute
   PlayerGamesIndexRoute: typeof PlayerGamesIndexRoute
+  PlayerTestsIndexRoute: typeof PlayerTestsIndexRoute
   PlayerParticipationsParticipationIdResultRoute: typeof PlayerParticipationsParticipationIdResultRoute
   PlayerSessionsSessionIdGameplayRoute: typeof PlayerSessionsSessionIdGameplayRoute
   PlayerSessionsSessionIdSummaryRoute: typeof PlayerSessionsSessionIdSummaryRoute
+  PlayerTestsTestIdTutorialRoute: typeof PlayerTestsTestIdTutorialRoute
 }
 
 const PlayerRouteChildren: PlayerRouteChildren = {
   PlayerCommunityRoute: PlayerCommunityRoute,
   PlayerMissionsRoute: PlayerMissionsRoute,
-  PlayerTestsRoute: PlayerTestsRouteWithChildren,
   PlayerTrainingRoute: PlayerTrainingRoute,
   PlayerIndexRoute: PlayerIndexRoute,
   PlayerGamesGameIdRoute: PlayerGamesGameIdRoute,
   PlayerGamesIndexRoute: PlayerGamesIndexRoute,
+  PlayerTestsIndexRoute: PlayerTestsIndexRoute,
   PlayerParticipationsParticipationIdResultRoute:
     PlayerParticipationsParticipationIdResultRoute,
   PlayerSessionsSessionIdGameplayRoute: PlayerSessionsSessionIdGameplayRoute,
   PlayerSessionsSessionIdSummaryRoute: PlayerSessionsSessionIdSummaryRoute,
+  PlayerTestsTestIdTutorialRoute: PlayerTestsTestIdTutorialRoute,
 }
 
 const PlayerRouteWithChildren =

@@ -11,7 +11,7 @@ export function useRateSession(testId: string, sessionId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: RateSessionInput) =>
-      api.post<SessionRating>(`/sessions/${sessionId}/rate`, input),
+      api.post<SessionRating>(`/sessions/${encodeURIComponent(sessionId)}/rate`, input),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: reportsKeys.sessionDetail(testId, sessionId) }),

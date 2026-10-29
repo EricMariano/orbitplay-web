@@ -24,7 +24,7 @@ export function useUploadBuild(testId: string | null) {
       if (!testId) throw new Error('Crie o rascunho do teste antes de enviar a build.')
       const contentType = file.type || 'application/octet-stream'
       const { uploadUrl, storageKey, maxSizeBytes } = await api.post<BuildUploadUrlResponse>(
-        `/tests/${testId}/build/upload-url`,
+        `/tests/${encodeURIComponent(testId)}/build/upload-url`,
         { fileName: file.name, contentType, sizeBytes: file.size, platform },
       )
       if (file.size > maxSizeBytes) throw new Error('Arquivo maior que o limite permitido.')
@@ -32,7 +32,9 @@ export function useUploadBuild(testId: string | null) {
       await putToStorage(uploadUrl, file, contentType, onProgress, signal)
 
       const confirm: ConfirmBuildRequest = { storageKey, platform }
-      return api.post<TestBuild>(`/tests/${testId}/build`, confirm, { idempotent: true })
+      return api.post<TestBuild>(`/tests/${encodeURIComponent(testId)}/build`, confirm, {
+        idempotent: true,
+      })
     },
     onSettled: () => {
       if (testId) void queryClient.invalidateQueries({ queryKey: testsKeys.detail(testId) })

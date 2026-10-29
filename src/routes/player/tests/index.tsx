@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { usePlayerHome } from '@/features/player/api/use-player-home'
-import { EarningsSummaryCard } from './-components/EarningsSummaryCard'
-import { MyTestsCard } from './-components/MyTestsCard'
+import { EarningsSummaryCard } from '../-components/EarningsSummaryCard'
+import { MyTestsCard } from '../-components/MyTestsCard'
 
-export const Route = createFileRoute('/player/tests')({ component: PlayerTestsPage })
+export const Route = createFileRoute('/player/tests/')({ component: PlayerTestsPage })
 
 function PlayerTestsPage() {
   const home = usePlayerHome()

@@ -1,14 +1,18 @@
-import { app, BrowserWindow, dialog, shell } from 'electron'
+import { app, BrowserWindow, dialog, session, shell } from 'electron'
 import path from 'node:path'
-import { startLocalServer } from './local-server.cjs'
+import { LOCAL_SERVER_HOST, startLocalServer } from './local-server.cjs'
 
 // Em dev o app abre o Vite (`pnpm dev`). Empacotado, serve o `dist/` num
-// servidor local na mesma porta/origem do dev e repassa `/api` para a API, que
-// fica fora do app (ORBITPLAY_API_URL, padrão `http://localhost:3000`) —
-// cookie httpOnly e `/api` relativo funcionam sem mudar front nem API.
+// servidor local na mesma porta do dev e repassa `/api` para a API, que fica
+// fora do app (ORBITPLAY_API_URL, padrão `http://localhost:3000`) — cookie
+// httpOnly e `/api` relativo funcionam sem mudar front nem API.
 const PORT = 5173
 const API_URL = process.env.ORBITPLAY_API_URL ?? 'http://localhost:3000'
-const appUrl = `http://localhost:${PORT}`
+// Empacotado, a janela abre no mesmo endereço em que o servidor local escuta.
+// Com `localhost` o Chromium tenta `::1` primeiro, e outro processo escutando em
+// `[::1]:5173` receberia a janela e o cookie de sessão. Em dev fica `localhost`,
+// onde o Vite escuta (no macOS, só em `::1`).
+const appUrl = `http://${app.isPackaged ? LOCAL_SERVER_HOST : 'localhost'}:${PORT}`
 
 let mainWindow: BrowserWindow | null = null
 
@@ -18,6 +22,27 @@ function isInternal(url: string): boolean {
   } catch {
     return false
   }
+}
+
+// Sem handler, o Electron aprova qualquer permissão pedida por qualquer página.
+// O app só precisa destas: gravação da sessão (`media` e `display-capture`),
+// tela cheia dos vídeos e cópia para a área de transferência.
+const ALLOWED_PERMISSIONS = new Set<string>([
+  'media',
+  'display-capture',
+  'fullscreen',
+  'clipboard-sanitized-write',
+])
+
+function restrictPermissions(): void {
+  const ses = session.defaultSession
+  ses.setPermissionRequestHandler((_webContents, permission, callback, details) => {
+    callback(ALLOWED_PERMISSIONS.has(permission) && isInternal(details.requestingUrl))
+  })
+  ses.setPermissionCheckHandler(
+    (_webContents, permission, requestingOrigin) =>
+      ALLOWED_PERMISSIONS.has(permission) && isInternal(requestingOrigin),
+  )
 }
 
 async function loadApp(win: BrowserWindow): Promise<void> {
@@ -63,6 +88,21 @@ function createWindow(): void {
       if (/^https?:\/\//.test(url)) void shell.openExternal(url)
     }
   })
+  // O resumo da sessão usa `beforeunload` para proteger a avaliação não enviada.
+  // No Electron isso só cancela o fechamento, sem diálogo (a janela não fecha):
+  // a pergunta fica por conta do app, e `preventDefault` libera a saída.
+  win.webContents.on('will-prevent-unload', (event) => {
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'question',
+      title: 'OrbitPlay',
+      message: 'Sair e perder as respostas?',
+      detail: 'Há respostas que ainda não foram enviadas. Se sair agora, elas serão perdidas.',
+      buttons: ['Sair', 'Cancelar'],
+      defaultId: 1,
+      cancelId: 1,
+    })
+    if (choice === 0) event.preventDefault()
+  })
 
   void loadApp(win)
 }
@@ -78,6 +118,7 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(async () => {
+    restrictPermissions()
     if (app.isPackaged) {
       try {
         await startLocalServer({

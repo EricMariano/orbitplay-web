@@ -15,6 +15,7 @@ const login = (accessToken = 'old-token', principal = user) =>
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status })
 const unauthorized = () => json({ message: 'Sessão inválida' }, 401)
 const refreshed = () => json({ user, accessToken: 'new-token' })
+const unreachable = () => json({ code: 'api_unreachable', message: 'API indisponível.' }, 502)
 function deferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((done) => {
@@ -108,6 +109,47 @@ describe('API session and retry boundaries', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
+  it.each([401, 403])(
+    'clears the session when the API refuses the refresh (%i)',
+    async (status) => {
+      fetchMock
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(json({ message: 'Sessão inválida' }, status))
+      await expect(api.get('/private')).rejects.toMatchObject({ status: 401 })
+      expect(useAuthStore.getState().status).toBe('unauthenticated')
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    },
+  )
+
+  it('keeps the session when the refresh hits a 5xx and renews on the next 401', async () => {
+    fetchMock.mockResolvedValueOnce(unauthorized()).mockResolvedValueOnce(unreachable())
+    await expect(api.get('/private')).rejects.toMatchObject({
+      status: 502,
+      code: 'api_unreachable',
+    })
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      accessToken: 'old-token',
+    })
+
+    fetchMock
+      .mockResolvedValueOnce(unauthorized())
+      .mockResolvedValueOnce(refreshed())
+      .mockResolvedValueOnce(json({ ok: true }))
+    await expect(api.get('/private')).resolves.toEqual({ ok: true })
+    expect(useAuthStore.getState().accessToken).toBe('new-token')
+  })
+
+  it('keeps the session when the refresh cannot reach the API', async () => {
+    const offline = new TypeError('Failed to fetch')
+    fetchMock.mockResolvedValueOnce(unauthorized()).mockRejectedValueOnce(offline)
+    await expect(api.get('/private')).rejects.toBe(offline)
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      accessToken: 'old-token',
+    })
+  })
+
   it('rejects a private response that arrives after an account change', async () => {
     const response = deferred<Response>()
     fetchMock.mockReturnValueOnce(response.promise)
@@ -137,5 +179,20 @@ describe('API session and retry boundaries', () => {
     refresh.resolve(unauthorized())
     await initial
     expect(useAuthStore.getState().accessToken).toBe('login-token')
+  })
+
+  it('retries the boot refresh on the next navigation when the API was unavailable', async () => {
+    // Módulos novos: a inicialização é memoizada por carregamento da página.
+    vi.resetModules()
+    const client = await import('./api-client')
+    const { useAuthStore: store } = await import('./auth')
+    fetchMock.mockResolvedValueOnce(unreachable()).mockResolvedValueOnce(refreshed())
+
+    await expect(client.initializeSession()).resolves.toBeUndefined()
+    expect(store.getState().status).toBe('unauthenticated')
+
+    await client.initializeSession()
+    expect(store.getState()).toMatchObject({ status: 'authenticated', accessToken: 'new-token' })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
