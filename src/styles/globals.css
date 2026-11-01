@@ -97,6 +97,23 @@
   --login-button-start: #8758f5;
   --login-button-end: #1999f5;
 
+  /* Public pages — Figma Home frames. */
+  --public-background: #080321;
+  --public-foreground: var(--white);
+  --public-muted: #bbb6cb;
+  --public-subtle: #96919e;
+  --public-accent: var(--b-blue);
+  --public-button-start: var(--b-violet);
+  --public-button-end: var(--b-blue);
+  --public-warm-start: var(--g-sunrise-start);
+  --public-warm-end: var(--g-sunrise-end);
+  --public-border: #8a80ab;
+  --public-card: #171040;
+  --public-card-border: #6d589d;
+  --public-glow: #2711a0;
+  --public-bottom-glow: #6440a9;
+  --public-inset-highlight: rgb(255 255 255 / 20%);
+
   /* ---- Semantic ---- */
   --background: var(--n-dark);
   --surface: var(--n-850);

@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-test('unauthenticated root redirects to /login', async ({ page }) => {
+test('unauthenticated root opens the public landing page', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveURL(/\/login$/)
-  await expect(page.getByRole('button', { name: 'Entrar!', exact: true })).toBeVisible()
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByRole('heading', { name: 'Teste jogos. Ganhe dinheiro.' })).toBeVisible()
 })
 
 test('protected areas redirect to /login without a session', async ({ page }) => {

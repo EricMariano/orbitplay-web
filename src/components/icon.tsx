@@ -76,6 +76,13 @@ import {
   Skull,
   Tag,
   UserCheck,
+  PersonStanding,
+  Laugh,
+  PiggyBank,
+  TvMinimalPlay,
+  CircleDollarSign,
+  Presentation,
+  PanelsTopLeft,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -171,9 +178,16 @@ const registry = {
   sliders: SlidersHorizontal,
   sparkles: Sparkles,
   save: Save,
+  'person-standing': PersonStanding,
+  laugh: Laugh,
+  'piggy-bank': PiggyBank,
+  'tv-play': TvMinimalPlay,
+  'circle-dollar-sign': CircleDollarSign,
+  presentation: Presentation,
+  'panels-top-left': PanelsTopLeft,
 } satisfies Record<string, LucideIcon>
 
-export type IconName = keyof typeof registry
+export type IconName = keyof typeof registry | 'windows'
 
 type IconProps = {
   name: IconName
@@ -183,6 +197,19 @@ type IconProps = {
 }
 
 export function Icon({ name, className, filled = false, ...rest }: IconProps) {
+  if (name === 'windows') {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        className={cn('size-4 shrink-0', className)}
+        fill="currentColor"
+        aria-hidden={rest['aria-label'] ? undefined : true}
+        {...rest}
+      >
+        <path d="M2 4.7 10.5 3.5v8H2Zm10-1.4L22 2v9.5H12ZM2 13h8.5v8L2 19.8Zm10 0h10v9l-10-1.3Z" />
+      </svg>
+    )
+  }
   const Glyph = registry[name]
   return (
     <Glyph
