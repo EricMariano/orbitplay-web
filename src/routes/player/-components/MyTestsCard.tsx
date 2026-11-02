@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import type { PlayerHome } from '@/api-types'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { formatCents } from '@/lib/format'
 
@@ -25,7 +25,7 @@ const statusLabel: Record<PlayerHome['tests'][number]['status'], string> = {
 
 export function MyTestsCard({ tests }: MyTestsCardProps) {
   return (
-    <Card className="bg-surface">
+    <Card className="rounded-2xl! border border-white bg-white/20">
       <CardHeader>
         <CardTitle className="text-sm">Meus testes</CardTitle>
       </CardHeader>
@@ -75,9 +75,6 @@ export function MyTestsCard({ tests }: MyTestsCardProps) {
           </ul>
         )}
       </CardContent>
-      <CardFooter className="text-xs text-muted">
-        Mostrando suas quatro participações mais recentes.
-      </CardFooter>
     </Card>
   )
 }
