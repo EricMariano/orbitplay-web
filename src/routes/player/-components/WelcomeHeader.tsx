@@ -11,7 +11,7 @@ export function WelcomeHeader() {
   const progress = usePlayerProgress()
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold text-foreground">
@@ -54,9 +54,7 @@ export function WelcomeHeader() {
 function Stat({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="flex size-8 items-center justify-center rounded-full bg-surface-raised text-muted">
-        <Icon name={icon} className="size-4" />
-      </span>
+      <Icon name={icon} className="size-4 text-muted" />
       <div>
         <p className="text-xs text-muted">{label}</p>
         <p className="text-sm font-semibold text-foreground">{value}</p>
