@@ -3,13 +3,19 @@ import type { Game } from '@/api-types'
 import { Badge } from '@/components/ui/badge'
 import { Icon, type IconName } from '@/components/icon'
 import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { RoleGate } from '@/components/common/RoleGate'
+import { STUDIO_ROLES } from '@/lib/auth'
+import { EditGameDialog } from './EditGameDialog'
 import { gameStatusLabels } from '../game-status'
 
 export function GameSummaryCard({ game }: { game: Game }) {
   const isActive = game.status === 'active'
+  const [editOpen, setEditOpen] = useState(false)
 
   return (
-    <div className="overflow-hidden rounded-diagonal border border-border bg-surface">
+    <div className="group overflow-hidden rounded-diagonal border border-border bg-surface">
       <div className="relative aspect-[16/7] w-full">
         {game.coverUrl ? (
           <img src={game.coverUrl} alt="" className="h-full w-full object-cover" />
@@ -29,6 +35,18 @@ export function GameSummaryCard({ game }: { game: Game }) {
         >
           {gameStatusLabels[game.status]}
         </Badge>
+        <RoleGate allow={STUDIO_ROLES}>
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="secondary"
+            aria-label={`Editar ${game.title}`}
+            className="pointer-events-none absolute top-2 right-2 opacity-0 shadow transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+            onClick={() => setEditOpen(true)}
+          >
+            <Icon name="edit" />
+          </Button>
+        </RoleGate>
       </div>
 
       <div className="flex items-center justify-between border-b border-primary px-4 py-3">
@@ -52,6 +70,7 @@ export function GameSummaryCard({ game }: { game: Game }) {
       >
         Configurar!
       </Link>
+      {editOpen && <EditGameDialog game={game} open onOpenChange={setEditOpen} />}
     </div>
   )
 }

@@ -106,6 +106,20 @@ real, edite lá (não duplique o CSS aqui).
 | `--destructive`              | `bg-destructive`                   | ação destrutiva        |
 | `--field` / `--field-border` | `bg-field` / `border-field-border` | campos do wizard       |
 
+## Memória rápida: fundos das telas
+
+- A fonte dos valores é `src/styles/globals.css`, dentro de `:root`.
+- Fundo padrão de toda a aplicação: `--background` (atualmente `var(--n-dark)`);
+  nas telas, use `bg-background`. O `body` recebe o gradiente `--app-gradient`
+  como `background-image` no mesmo arquivo.
+- Cartões e painéis usam `--surface` / `--surface-raised`, expostos como
+  `bg-surface` / `bg-surface-raised`.
+- Login tem tokens próprios `--login-page` e `--login-surface`, expostos como
+  `bg-login-page` / `bg-login-surface`.
+- Para mudar uma cor, altere o token em `globals.css`; não coloque a cor literal
+  em uma rota. Confira o mapeamento `@theme inline` no mesmo arquivo para ver
+  quais utilitários Tailwind estão disponíveis.
+
 ## Ícones
 
 - Setup usa `lucide-react`, sempre através do wrapper `@/components/icon`
