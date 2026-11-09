@@ -4,6 +4,7 @@ import type {
   PlayerProfileTier,
   ReportBlockKey,
   ReportBlockOf,
+  SessionDetail,
   Test,
   TestReport,
 } from '@/api-types'
@@ -55,6 +56,18 @@ export const TEST_STATUS: Record<Test['status'], Labeled> = {
   paused: { label: 'Pausado', tone: 'orange' },
   finished: { label: 'Finalizado', tone: 'green' },
   expired: { label: 'Expirado', tone: 'red' },
+}
+
+type FormAnswer = SessionDetail['evaluation']['answers'][number]
+
+/** Texto de uma resposta do formulário. A nota 0 e o "Não" também são respostas:
+ *  só cai em "Não respondida" quando nenhum campo traz valor. */
+export function formAnswerText(answer: FormAnswer): string {
+  if (answer.valueText?.trim()) return answer.valueText
+  if (answer.valueNumber !== null) return String(answer.valueNumber)
+  if (answer.valueBoolean !== null) return answer.valueBoolean ? 'Sim' : 'Não'
+  if (answer.optionLabels.length) return answer.optionLabels.join(', ')
+  return 'Não respondida'
 }
 
 /** Bloco do relatório pela chave, já com o payload tipado. */

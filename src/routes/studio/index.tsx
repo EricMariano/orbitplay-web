@@ -134,7 +134,6 @@ function HomeGames({ games }: { games: Game[] }) {
           <h2 id="studio-games-heading" className="font-label text-lg font-medium">
             Seus jogos
           </h2>
-          <p className="mt-1 text-xs text-muted">Os jogos mais recentes do seu estúdio.</p>
         </div>
         <Button asChild variant="ghost" size="sm" className="text-primary">
           <Link to="/studio/games">

@@ -7,7 +7,7 @@ import { gamesKeys } from './games-keys'
 export function useGame(id: string) {
   return useQuery({
     queryKey: gamesKeys.detail(id),
-    queryFn: () => api.get<Game>(`/games/${id}`),
+    queryFn: () => api.get<Game>(`/games/${encodeURIComponent(id)}`),
     enabled: Boolean(id),
   })
 }

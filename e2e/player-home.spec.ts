@@ -115,6 +115,41 @@ test('player home renders the active test, validated earnings and recent partici
   )
 })
 
+// Regressão: `/player/tests` era rota-mãe do tutorial sem `<Outlet/>`, então abrir
+// o tutorial a partir de "Meus testes e ganhos" mantinha a lista na tela (Tela 16).
+test('Continuar on the tests page opens the test tutorial', async ({ page }) => {
+  await setupPlayerHome(page)
+  await page.route(`**/api/player/tests/${testId}`, (route) =>
+    route.fulfill({
+      json: {
+        testId,
+        gameId: 'game-1',
+        title: 'Exploração de Neon Runner',
+        genre: 'Corrida',
+        coverUrl: null,
+        rewardCents: 2500,
+        durationMinutes: null,
+        spotsLeft: 3,
+        expiresAt: '2030-10-30T12:00:00.000Z',
+        platforms: ['web'],
+        cta: 'start',
+        disabled: false,
+        disabledReason: null,
+        promoted: false,
+        modelKey: 'free_exploration',
+        participation: null,
+      },
+    }),
+  )
+  await page.goto('/player/tests')
+  await expect(page.getByRole('heading', { name: 'Meus testes e ganhos' })).toBeVisible()
+  await page.getByRole('link', { name: 'Continuar' }).first().click()
+  await expect(page).toHaveURL(new RegExp(`/player/tests/${testId}/tutorial$`))
+  await expect(page.getByRole('heading', { name: 'Exploração de Neon Runner' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Entrar no teste' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Meus testes e ganhos' })).toHaveCount(0)
+})
+
 test('player home clearly renders no active participation', async ({ page }) => {
   await setupPlayerHome(page)
   await page.route('**/api/player/home', (route) =>

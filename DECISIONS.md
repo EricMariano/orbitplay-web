@@ -25,12 +25,15 @@ então `baseUrl` foi omitido para não quebrar o `typecheck`.
 `openapi-typescript@7` declara peer `typescript@^5`. Com TS 6 há apenas um
 **warning** de peer; `pnpm gen:api` gera os tipos normalmente.
 
-### `remember` no contrato provisório
+### Sem "Lembrar login" na Tela 01
 
-No `openapi.json`, `remember` tem `default`, e o `openapi-typescript` gera a
-propriedade como **obrigatória**. Por isso o form de login inclui um checkbox
-"Lembrar login" (também exigido pela Tela 01). A persistência de fato virá do
-cookie `httpOnly` da API — `TODO(remember-me)`.
+O contrato provisório tinha `remember`, e o form de login ganhou o checkbox
+"Lembrar login" pedido pela Tela 01. O contrato real não tem o campo: a API
+sempre grava o cookie `httpOnly` de refresh com a validade de
+`REFRESH_TOKEN_TTL` (30 dias no `.env.example` dela), e o checkbox era ignorado.
+Num computador compartilhado, quem o desmarcava achava que a sessão não ficaria
+salva. Por isso ele foi **removido** até a API aceitar essa escolha —
+`TODO(remember-me)` em `routes/login.tsx`.
 
 ### Rotas `/studio` e `/player`: `studio.tsx` em vez de `_studio.tsx`
 

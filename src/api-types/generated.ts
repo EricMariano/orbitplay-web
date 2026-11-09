@@ -1587,7 +1587,7 @@ export interface components {
         };
         ChangeStatusDto: {
             /** @enum {string} */
-            status: "active" | "invited" | "disabled";
+            status: "active" | "disabled";
             /** @enum {boolean} */
             confirm: true;
         };

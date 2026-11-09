@@ -11,7 +11,7 @@ export function useCreateTest(gameId: string) {
 
   return useMutation({
     mutationFn: (payload: CreateTestRequest) =>
-      api.post<Test>(`/games/${gameId}/tests`, payload, { idempotent: true }),
+      api.post<Test>(`/games/${encodeURIComponent(gameId)}/tests`, payload, { idempotent: true }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: testsKeys.byGame(gameId) })
       // testsTotal/testsActive do card vêm de GET /games.

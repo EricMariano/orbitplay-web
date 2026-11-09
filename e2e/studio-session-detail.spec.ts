@@ -44,6 +44,15 @@ function detail() {
           valueBoolean: true,
           optionLabels: [],
         },
+        {
+          questionId: 'three',
+          prompt: 'Nota para a dificuldade',
+          type: 'scale',
+          valueText: null,
+          valueNumber: 0,
+          valueBoolean: null,
+          optionLabels: [],
+        },
       ],
     },
     studioRating: null,
@@ -116,6 +125,9 @@ test('studio session detail presents recording, evaluation, telemetry and indepe
   await expect(page.locator('video')).toHaveAttribute('src', 'https://media.example/session.webm')
   await expect(page.getByText('A pista final.')).toBeVisible()
   await expect(page.getByText('Sim', { exact: true })).toBeVisible()
+  // Nota 0 é resposta, não "Não respondida".
+  await expect(page.locator('dd', { hasText: /^0$/ })).toBeVisible()
+  await expect(page.getByText('Não respondida')).toHaveCount(0)
   await expect(page.getByText('finish_line', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Indisponível' })).toHaveCount(2)
   await expect(page.getByText('Eventos de telemetria')).toBeVisible()

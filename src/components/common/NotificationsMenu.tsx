@@ -11,6 +11,7 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from '@/features/notifications/api/use-notifications'
+import { notificationHref } from '@/features/notifications/notification-link'
 import { cn } from '@/lib/utils'
 
 type NotificationsMenuProps = {
@@ -60,6 +61,8 @@ export function NotificationsMenu({ className, iconClassName }: NotificationsMen
           <p className="px-2 py-3 text-sm text-muted">Você está em dia.</p>
         ) : null}
         {notifications.data?.data.slice(0, 8).map((notification) => {
+          // O link vem da API como texto livre; esquema inesperado vira item sem link.
+          const href = notificationHref(notification.link)
           const content = (
             <>
               <span className="block text-sm font-medium text-foreground">
@@ -81,17 +84,13 @@ export function NotificationsMenu({ className, iconClassName }: NotificationsMen
           return (
             <DropdownMenuItem
               key={notification.id}
-              asChild={Boolean(notification.link)}
+              asChild={Boolean(href)}
               className={cn('items-start whitespace-normal', !notification.read && 'bg-primary/5')}
               onSelect={() => {
                 if (!notification.read) markRead.mutate(notification.id)
               }}
             >
-              {notification.link ? (
-                <a href={notification.link}>{content}</a>
-              ) : (
-                <button type="button">{content}</button>
-              )}
+              {href ? <a href={href}>{content}</a> : <button type="button">{content}</button>}
             </DropdownMenuItem>
           )
         })}

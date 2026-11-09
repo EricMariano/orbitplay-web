@@ -196,6 +196,54 @@ test('summary permission and missing media keep the read-only page usable', asyn
   await expect(page.getByRole('tab')).toHaveCount(6)
 })
 
+test('a draft game can be activated from the header so it reaches the player feed', async ({
+  page,
+}) => {
+  await gameApi(page)
+  let status = 'draft'
+  let patchBody: unknown = null
+  await page.route(`**/api/games/${gameId}/summary`, (route) =>
+    route.fulfill({
+      json: {
+        game: { ...game, status },
+        availability: 'available',
+        metrics: game.metrics,
+        canEdit: true,
+      },
+    }),
+  )
+  await page.route(`**/api/games/${gameId}`, (route) => {
+    if (route.request().method() !== 'PATCH') return route.fallback()
+    patchBody = route.request().postDataJSON()
+    status = 'active'
+    return route.fulfill({ json: { ...game, status } })
+  })
+  await page.goto(path)
+  const header = page.getByRole('region', { name: game.title })
+  await expect(header.getByText('Rascunho', { exact: true })).toBeVisible()
+  await header.getByRole('button', { name: 'Ativar jogo' }).click()
+  await expect(header.getByText('Ativo', { exact: true })).toBeVisible()
+  await expect(header.getByRole('button', { name: 'Ativar jogo' })).toHaveCount(0)
+  expect(patchBody).toEqual({ status: 'active' })
+})
+
+test('a read-only draft game does not offer activation', async ({ page }) => {
+  await gameApi(page, false)
+  await page.route(`**/api/games/${gameId}/summary`, (route) =>
+    route.fulfill({
+      json: {
+        game: { ...game, status: 'draft' },
+        availability: 'available',
+        metrics: game.metrics,
+        canEdit: false,
+      },
+    }),
+  )
+  await page.goto(path)
+  await expect(page.getByRole('heading', { name: game.title })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Ativar jogo' })).toHaveCount(0)
+})
+
 test('banner, mobile layout and new-test navigation remain usable', async ({ page }) => {
   await gameApi(page)
   const gameWithBanner = {

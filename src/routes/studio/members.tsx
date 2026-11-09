@@ -51,7 +51,8 @@ type MemberRole = OrgMember['role']
 type MemberStatus = OrgMember['status']
 type PendingChange =
   | { type: 'role'; member: OrgMember; value: MemberRole }
-  | { type: 'status'; member: OrgMember; value: MemberStatus }
+  // A API não aceita `invited` como destino: só o convidado aceita o convite.
+  | { type: 'status'; member: OrgMember; value: Exclude<MemberStatus, 'invited'> }
 
 const roles: MemberRole[] = ['owner', 'admin', 'studio', 'player']
 const statuses: Array<{ value: MemberStatus; label: string }> = [
@@ -367,6 +368,9 @@ function MemberRow({
   const remove = useRemoveOrgMember()
   const passwordReset = useTriggerMemberPasswordReset()
   const nextStatus = member.status === 'disabled' ? 'active' : 'disabled'
+  // Convite pendente não muda de status: o convidado o aceita ao definir a senha,
+  // e cancelar é remover o membro (a API responde 409).
+  const isPendingInvite = member.status === 'invited'
   return (
     <TableRow>
       <TableCell>
@@ -427,7 +431,12 @@ function MemberRow({
             <Button
               variant="ghost"
               size="sm"
-              disabled={isCurrentUser}
+              disabled={isCurrentUser || isPendingInvite}
+              title={
+                isPendingInvite
+                  ? 'Convite pendente: o convidado o aceita ao definir a senha. Para cancelar, remova o membro.'
+                  : undefined
+              }
               onClick={() => onChange({ type: 'status', member, value: nextStatus })}
             >
               <Icon name={nextStatus === 'disabled' ? 'lock' : 'user-check'} />

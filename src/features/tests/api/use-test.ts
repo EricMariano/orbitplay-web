@@ -12,7 +12,7 @@ const BUILD_POLL_MS = 3000
 export function useTest(testId: string | null) {
   return useQuery({
     queryKey: testsKeys.detail(testId ?? ''),
-    queryFn: () => api.get<TestDetail>(`/tests/${testId}`),
+    queryFn: () => api.get<TestDetail>(`/tests/${encodeURIComponent(testId!)}`),
     enabled: Boolean(testId),
     refetchInterval: (query) => {
       const status = query.state.data?.build?.status

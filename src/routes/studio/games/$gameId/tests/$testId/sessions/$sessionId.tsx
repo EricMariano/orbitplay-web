@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useRecordingPlayback } from '@/features/reports/api/use-recording-playback'
 import { useRateSession } from '@/features/reports/api/use-rate-session'
 import { useSessionDetail } from '@/features/reports/api/use-session-detail'
-import { archetypeView, playerTierView } from '@/features/reports/report-labels'
+import { archetypeView, formAnswerText, playerTierView } from '@/features/reports/report-labels'
 import { formatDuration } from '@/lib/format'
 
 export const Route = createFileRoute('/studio/games/$gameId/tests/$testId/sessions/$sessionId')({
@@ -366,13 +366,7 @@ function EvaluationCard({
               className="border-b border-field-border/30 pb-3 last:border-0"
             >
               <dt className="text-sm text-muted">{answer.prompt}</dt>
-              <dd className="mt-1 font-medium">
-                {(answer.valueText ??
-                  answer.valueNumber ??
-                  (answer.valueBoolean === null ? null : answer.valueBoolean ? 'Sim' : 'Não') ??
-                  answer.optionLabels.join(', ')) ||
-                  'Não respondida'}
-              </dd>
+              <dd className="mt-1 font-medium">{formAnswerText(answer)}</dd>
             </div>
           ))}
         </dl>

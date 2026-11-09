@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import type { GameSummary } from '@/api-types'
 import { EmptyState } from '@/components/common/EmptyState'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useGameSummary } from '@/features/games/api/use-game-summary'
+import { useUpdateGameStatus } from '@/features/games/api/use-update-game-status'
 import {
   GamePostsContent,
   GameReviewsContent,
@@ -172,7 +174,11 @@ function StudioGameDetailsPage() {
   )
 }
 
-function GameHeader({ summary: { game, availability, metrics } }: { summary: GameSummary }) {
+function GameHeader({
+  summary: { game, availability, metrics, canEdit },
+}: {
+  summary: GameSummary
+}) {
   const banner = game.bannerUrl ?? game.coverUrl
   return (
     <section aria-labelledby="studio-game-title">
@@ -211,6 +217,11 @@ function GameHeader({ summary: { game, availability, metrics } }: { summary: Gam
             >
               {gameStatusLabels[game.status]}
             </Badge>
+            {canEdit && game.status === 'draft' && (
+              <RoleGate allow={STUDIO_ROLES}>
+                <ActivateGameButton gameId={game.id} />
+              </RoleGate>
+            )}
           </div>
           {(game.genre || game.platform) && (
             <p className="mt-2 text-sm text-muted">
@@ -249,6 +260,31 @@ function GameHeader({ summary: { game, availability, metrics } }: { summary: Gam
         </dl>
       </div>
     </section>
+  )
+}
+
+// Rascunho é privado do estúdio: o jogo só entra no feed do jogador depois de ativo.
+function ActivateGameButton({ gameId }: { gameId: string }) {
+  const updateStatus = useUpdateGameStatus(gameId)
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={updateStatus.isPending}
+      title="Rascunhos não aparecem para os jogadores. Ative para publicar o jogo no feed."
+      onClick={() =>
+        updateStatus.mutate('active', {
+          onSuccess: () => toast.success('Jogo ativado. Ele já aparece para os jogadores.'),
+          onError: (error) => toast.error(error.message || 'Não foi possível ativar o jogo.'),
+        })
+      }
+    >
+      <Icon
+        name={updateStatus.isPending ? 'loader' : 'rocket'}
+        className={updateStatus.isPending ? 'animate-spin' : undefined}
+      />
+      Ativar jogo
+    </Button>
   )
 }
 

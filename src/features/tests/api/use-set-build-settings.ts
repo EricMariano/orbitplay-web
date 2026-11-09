@@ -9,7 +9,7 @@ export function useSetBuildSettings(testId: string | null) {
 
   return useMutation({
     mutationFn: (payload: BuildSettingsRequest) =>
-      api.patch<TestDetail>(`/tests/${testId}/build-settings`, payload),
+      api.patch<TestDetail>(`/tests/${encodeURIComponent(testId!)}/build-settings`, payload),
     onSuccess: (test) => {
       queryClient.setQueryData(testsKeys.detail(test.id), test)
     },

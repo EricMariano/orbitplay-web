@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TestReport } from '@/api-types'
-import { archetypeView, findBlock, playerTierView } from './report-labels'
+import { archetypeView, findBlock, formAnswerText, playerTierView } from './report-labels'
 
 describe('findBlock', () => {
   const report: TestReport = {
@@ -30,5 +30,34 @@ describe('profile labels', () => {
   it('reuses the audience vocabulary of the test wizard', () => {
     expect(archetypeView('achiever')).toEqual({ label: 'Conquistador', tone: 'teal' })
     expect(playerTierView('qa').label).toBe('QA Profissionais')
+  })
+})
+
+describe('formAnswerText', () => {
+  const blank = {
+    questionId: 'q1',
+    prompt: 'Pergunta',
+    type: 'scale',
+    valueText: null,
+    valueNumber: null,
+    valueBoolean: null,
+    optionLabels: [],
+  }
+
+  it('shows a zero rating and a "no" answer instead of "Não respondida"', () => {
+    expect(formAnswerText({ ...blank, valueNumber: 0 })).toBe('0')
+    expect(formAnswerText({ ...blank, valueBoolean: false })).toBe('Não')
+  })
+
+  it('shows text, numbers, yes and selected options as given', () => {
+    expect(formAnswerText({ ...blank, valueText: 'A pista final.' })).toBe('A pista final.')
+    expect(formAnswerText({ ...blank, valueNumber: 4 })).toBe('4')
+    expect(formAnswerText({ ...blank, valueBoolean: true })).toBe('Sim')
+    expect(formAnswerText({ ...blank, optionLabels: ['Fácil', 'Curto'] })).toBe('Fácil, Curto')
+  })
+
+  it('falls back to "Não respondida" only when no field has a value', () => {
+    expect(formAnswerText(blank)).toBe('Não respondida')
+    expect(formAnswerText({ ...blank, valueText: '   ' })).toBe('Não respondida')
   })
 })

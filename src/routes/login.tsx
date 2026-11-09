@@ -17,7 +17,6 @@ import testerEsports from '@/assets/login/tester-esports.webp'
 import testerNeonController from '@/assets/login/tester-neon-controller.webp'
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -76,7 +75,6 @@ function stagger(step: number) {
 const loginSchema = z.object({
   email: z.string().trim().min(1, 'Informe seu e-mail').email('Informe um e-mail válido'),
   password: z.string().min(8, 'Use pelo menos 8 caracteres'),
-  remember: z.boolean(),
 })
 
 type LoginValues = z.infer<typeof loginSchema>
@@ -121,7 +119,7 @@ function LoginScreen() {
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', remember: true },
+    defaultValues: { email: '', password: '' },
   })
 
   function onSubmit(values: LoginValues) {
@@ -313,29 +311,12 @@ function LoginScreen() {
                 />
               </div>
 
+              {/* TODO(remember-me): o "Lembrar login" da Tela 01 volta quando a API deixar
+                  escolher a validade do cookie de refresh, que hoje é sempre a mesma. */}
               <div
-                className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 motion-safe:animate-login-rise"
+                className="mt-4 flex justify-end motion-safe:animate-login-rise"
                 style={stagger(5)}
               >
-                <FormField
-                  control={form.control}
-                  name="remember"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={(checked) => field.onChange(checked === true)}
-                          className="size-6 rounded-[8px] border-login-field-border bg-login-field transition-colors duration-200 data-[state=checked]:border-login-accent data-[state=checked]:bg-login-accent"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-[16px] leading-6 font-normal text-login-muted">
-                        Lembrar login
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-
                 <button
                   type="button"
                   onClick={() => void requestPasswordReset()}

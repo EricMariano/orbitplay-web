@@ -18,7 +18,7 @@ const platform: PlayerTest['platforms'][number] = 'web'
 export function usePlayerTest(testId: string) {
   return useQuery({
     queryKey: testsKeys.playerDetail(testId),
-    queryFn: () => api.get<PlayerTest>(`/player/tests/${testId}`),
+    queryFn: () => api.get<PlayerTest>(`/player/tests/${encodeURIComponent(testId)}`),
     retry: false,
   })
 }
@@ -26,16 +26,19 @@ export function usePlayerTest(testId: string) {
 export function useEnterPlayerTest() {
   return useMutation({
     mutationFn: (testId: string) =>
-      api.post<Participation>(`/player/tests/${testId}/participations`, undefined, {
-        idempotent: true,
-      }),
+      api.post<Participation>(
+        `/player/tests/${encodeURIComponent(testId)}/participations`,
+        undefined,
+        { idempotent: true },
+      ),
   })
 }
 
 export function useParticipationTutorial(participationId: string) {
   return useQuery({
     queryKey: testsKeys.tutorial(participationId),
-    queryFn: () => api.get<Tutorial>(`/participations/${participationId}/tutorial`),
+    queryFn: () =>
+      api.get<Tutorial>(`/participations/${encodeURIComponent(participationId)}/tutorial`),
     retry: false,
   })
 }
@@ -44,7 +47,9 @@ export function useBuildCompatibility(buildId: string) {
   return useQuery({
     queryKey: testsKeys.buildCompatibility(buildId),
     queryFn: () =>
-      api.get<CompatibilityReport>(`/builds/${buildId}/compatibility?platform=${platform}`),
+      api.get<CompatibilityReport>(
+        `/builds/${encodeURIComponent(buildId)}/compatibility?platform=${platform}`,
+      ),
     enabled: Boolean(buildId),
     retry: false,
   })
@@ -57,7 +62,8 @@ export function useBuildDownloadUrl(buildId: string, localVersion?: string, enab
 
   return useQuery({
     queryKey: testsKeys.buildDownload(buildId, localVersion),
-    queryFn: () => api.get<DownloadUrlResponse>(`/builds/${buildId}/download-url${suffix}`),
+    queryFn: () =>
+      api.get<DownloadUrlResponse>(`/builds/${encodeURIComponent(buildId)}/download-url${suffix}`),
     enabled,
     retry: false,
   })
@@ -66,15 +72,20 @@ export function useBuildDownloadUrl(buildId: string, localVersion?: string, enab
 export function useRecordParticipationConsents(participationId: string) {
   return useMutation({
     mutationFn: (payload: ConsentRequest) =>
-      api.post<ConsentRecord>(`/participations/${participationId}/consents`, payload),
+      api.post<ConsentRecord>(
+        `/participations/${encodeURIComponent(participationId)}/consents`,
+        payload,
+      ),
   })
 }
 
 export function useStartParticipationSession(participationId: string) {
   return useMutation({
     mutationFn: (payload: StartSessionRequest) =>
-      api.post<SessionStarted>(`/participations/${participationId}/sessions`, payload, {
-        idempotent: true,
-      }),
+      api.post<SessionStarted>(
+        `/participations/${encodeURIComponent(participationId)}/sessions`,
+        payload,
+        { idempotent: true },
+      ),
   })
 }

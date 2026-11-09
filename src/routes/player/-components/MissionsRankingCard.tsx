@@ -13,7 +13,7 @@ export function MissionsRankingCard() {
   const rankings = useRankings()
 
   return (
-    <Card className="bg-surface">
+    <Card className="rounded-2xl! border border-white bg-white/20">
       <CardHeader className="flex-row items-start justify-between gap-4">
         <CardTitle className="text-sm">Missões e Ranking</CardTitle>
         <Icon name="info" className="size-4 shrink-0 text-muted" />
