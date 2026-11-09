@@ -5,12 +5,17 @@ import { Input } from '@/components/ui/input'
 import { useSignup } from '@/features/auth/api/use-signup'
 import { homeRouteForRole } from '@/lib/auth'
 
-export const Route = createFileRoute('/signup')({ component: SignupPage })
+export const Route = createFileRoute('/signup')({
+  validateSearch: (search: Record<string, unknown>): { account?: 'player' | 'studio' } =>
+    search.account === 'studio' || search.account === 'player' ? { account: search.account } : {},
+  component: SignupPage,
+})
 
 function SignupPage() {
   const navigate = useNavigate()
   const signup = useSignup()
-  const [accountType, setAccountType] = useState<'player' | 'studio'>('player')
+  const { account } = Route.useSearch()
+  const [accountType, setAccountType] = useState<'player' | 'studio'>(account ?? 'player')
   const [error, setError] = useState<string | null>(null)
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

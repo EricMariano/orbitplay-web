@@ -15,6 +15,7 @@ import { Route as PlayerRouteImport } from './routes/player'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as TesterRouteImport } from './routes/tester'
 import { Route as PlayerIndexRouteImport } from './routes/player/index'
 import { Route as PlayerCommunityRouteImport } from './routes/player/community'
 import { Route as PlayerMissionsRouteImport } from './routes/player/missions'
@@ -70,6 +71,11 @@ const SignupRoute = SignupRouteImport.update({
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TesterRoute = TesterRouteImport.update({
+  id: '/tester',
+  path: '/tester',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerIndexRoute = PlayerIndexRouteImport.update({
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRouteWithChildren
+  '/tester': typeof TesterRoute
   '/player/community': typeof PlayerCommunityRoute
   '/player/missions': typeof PlayerMissionsRoute
   '/player/training': typeof PlayerTrainingRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/tester': typeof TesterRoute
   '/player/community': typeof PlayerCommunityRoute
   '/player/missions': typeof PlayerMissionsRoute
   '/player/training': typeof PlayerTrainingRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRouteWithChildren
+  '/tester': typeof TesterRoute
   '/player/community': typeof PlayerCommunityRoute
   '/player/missions': typeof PlayerMissionsRoute
   '/player/training': typeof PlayerTrainingRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/studio'
+    | '/tester'
     | '/player/community'
     | '/player/missions'
     | '/player/training'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/tester'
     | '/player/community'
     | '/player/missions'
     | '/player/training'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/studio'
+    | '/tester'
     | '/player/community'
     | '/player/missions'
     | '/player/training'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   StudioRoute: typeof StudioRouteWithChildren
+  TesterRoute: typeof TesterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -466,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/studio'
       preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tester': {
+      id: '/tester'
+      path: '/tester'
+      fullPath: '/tester'
+      preLoaderRoute: typeof TesterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player/': {
@@ -745,6 +765,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   StudioRoute: StudioRouteWithChildren,
+  TesterRoute: TesterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
