@@ -3,12 +3,13 @@ import preview from '@/assets/landing/desktop-preview.png'
 import { Logo } from '@/components/common/Logo'
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
-import { getDesktopDownload, isDesktopApp } from '@/lib/desktop'
+import { getDesktopDownloads, isDesktopApp } from '@/lib/desktop'
 import { PublicHeader } from './PublicHeader'
 import './public-pages.css'
 
 export function TesterIntroduction() {
-  const download = getDesktopDownload()
+  // Só o instalador do sistema de quem está acessando (o menu do usuário lista todos).
+  const download = getDesktopDownloads().find((d) => d.current) ?? null
   const desktop = isDesktopApp()
   return (
     <div className="public-page tester-page">
