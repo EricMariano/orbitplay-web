@@ -1,0 +1,114 @@
+name: Desktop release
+
+# Gera os instaladores do app desktop e os publica na Release fixa
+# `desktop-latest`, de onde o botão "Baixar app" do front baixa (links em
+# src/lib/desktop-release.ts). Assim ninguém precisa gerar o instalador na
+# própria máquina.
+#
+# - Merge/push na `main` que mexe no app (front ou Electron): gera e publica.
+# - À mão (Actions → Desktop release → Run workflow): na `main` também publica;
+#   em outra branch só gera os instaladores como artifacts, para testar.
+#
+# Cada instalador só pode ser construído no próprio sistema (o .dmg no macOS, o
+# .AppImage no Linux), por isso a matriz.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'electron/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config.ts'
+      - 'tsconfig*.json'
+      - '.github/workflows/desktop-release.yml'
+  workflow_dispatch:
+
+# Dois merges seguidos: o mais novo substitui o build do anterior.
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Instalador (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            file: OrbitPlay-Setup.exe
+          - os: macos-latest
+            file: OrbitPlay.dmg
+          - os: ubuntu-latest
+            file: OrbitPlay.AppImage
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build installer
+        run: pnpm desktop:dist --publish never
+        env:
+          # Sem certificado de assinatura por enquanto.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: release/${{ matrix.file }}
+          if-no-files-found: error
+
+  release:
+    name: Publicar na Release desktop-latest
+    # Só publica se os três instaladores saíram (needs falha se algum falhar).
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download installers
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: desktop-latest
+        run: |
+          set -euo pipefail
+          notes="Instaladores do app desktop — Windows (.exe), macOS (.dmg) e Linux (.AppImage) — gerados automaticamente a partir do commit ${GITHUB_SHA::7} da main."
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            # A Release já existe: move a tag para este commit e troca os arquivos.
+            # Os nomes não mudam, então os links do front continuam valendo.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" \
+              -f sha="$GITHUB_SHA" -F force=true
+            gh release upload "$TAG" installers/* --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$TAG" --notes "$notes" --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" installers/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "OrbitPlay desktop (último build da main)" \
+              --notes "$notes"
+          fi

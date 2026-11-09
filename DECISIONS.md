@@ -235,16 +235,33 @@ O E2E deste passo cobre apenas os itens 1–3 (lógica de cliente).
   padrão, aprovada): `main.cts`, `preload.cts` e `tsconfig.json` próprio
   (compila para `dist-electron/`, ignorado pelo git). O código de `src/` não
   muda e não conhece o Electron.
-- **Carrega o site, não o build local.** Em dev abre `http://localhost:5173`;
-  empacotado abre `PROD_URL` (hoje vazio — `TODO(prod-url)`). Mesma origem do
-  site ⇒ cookie `httpOnly` de sessão, `/api` relativo e CORS continuam como
-  estão. Empacotar o `dist/` exigiria protocolo próprio + proxy de `/api` e
-  ajuste de cookie/CORS na API; fica para se precisarmos de modo offline.
+- **Empacotado, serve o `dist/` localmente.** O app sobe um servidor em
+  `127.0.0.1:5173` (`electron/local-server.cts`) que entrega o build e repassa
+  `/api` para a API (`ORBITPLAY_API_URL`, padrão `http://localhost:3000`); a API
+  fica fora do app. Mesma origem do dev ⇒ cookie `httpOnly`, `/api` relativo e
+  CORS (`WEB_ORIGIN` já inclui `:5173`) não mudam.
 - **Segurança:** `contextIsolation`, `sandbox`, sem `nodeIntegration`; links
   externos abrem no navegador; preload expõe só `window.desktop`.
 - **Novas dependências (dev):** `electron` e `electron-builder`, só para
   empacotar. `pnpm.onlyBuiltDependencies` libera o postinstall do Electron.
-- **Download do app dentro do front.** `DownloadDesktopItem` (no menu do usuário
-  do `AppShell`) oferece o instalador do sistema do visitante. Links via
-  `VITE_DESKTOP_DOWNLOAD_*` (sem link ou já no app desktop ⇒ não aparece). Sem
-  endpoint novo e sem mudança no banco; a detecção fica em `lib/desktop.ts`.
+- **Download do app dentro do front.** `DownloadDesktopItem` (menu do usuário do
+  `AppShell` e do `PlayerTopNav`) lista Windows, macOS e Linux, com o sistema do
+  visitante primeiro; no celular ou já no app desktop nada aparece. Os links
+  apontam para a Release `desktop-latest` (`lib/desktop-release.ts`); em dev
+  passam por `/downloads/<arquivo>`, onde o Vite serve o instalador de
+  `release/` se houver, senão redireciona para a Release. `VITE_DESKTOP_DOWNLOAD_*`
+  sobrescrevem (opcional). Sem endpoint novo e sem mudança no banco; a lógica
+  fica em `lib/desktop.ts`.
+- **Build automatizada.** Ninguém precisa gerar o instalador na própria máquina:
+  `.github/workflows/desktop-release.yml` roda a cada push na `main` que mexe no
+  app (front ou Electron — o app empacota o `dist/`), constrói os três em matriz
+  (cada um só sai do próprio sistema: .dmg no macOS, .AppImage no Linux) e
+  substitui os arquivos da Release fixa `desktop-latest`, movendo a tag para o
+  commit. Nomes fixos (`OrbitPlay-Setup.exe`, `OrbitPlay.dmg`,
+  `OrbitPlay.AppImage`) ⇒ links estáveis. Release fixa em vez de uma por versão
+  porque o app ainda não tem versionamento (`0.0.0`); se passar a ter, dá para
+  criar Releases numeradas além da `desktop-latest`. Só funciona com o repo
+  público (Release de repo privado exige login).
+- **Não copiar instalador para `public/`:** iria para o `dist/` e para dentro do
+  próprio app. Sem assinatura de código por enquanto (avisos do SmartScreen no
+  Windows e do Gatekeeper no macOS).

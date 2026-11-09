@@ -5,32 +5,44 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vitest/config'
+import { DESKTOP_INSTALLER_FILES, DESKTOP_RELEASE_URL } from './src/lib/desktop-release.ts'
 
-// Só dev: serve o instalador gerado por `pnpm desktop:dist` (release/) em
-// /downloads/OrbitPlay-Setup.exe, para o botão "Baixar app" funcionar local.
-// Fora do `public/` de propósito: iria para o dist/ e para dentro do próprio .exe.
-function serveDesktopInstaller(): Plugin {
+// Só dev: atende /downloads/<arquivo>, para o menu "Baixar app" funcionar local
+// sem gerar nada. Se houver um instalador em `release/` (ex.: o .exe de
+// `pnpm desktop:dist`), serve ele — útil para testar mudanças no Electron.
+// Senão, redireciona para a Release `desktop-latest`, que o workflow
+// `desktop-release` atualiza a cada merge na `main`.
+// Fora do `public/` de propósito: iria para o dist/ e para dentro do próprio app.
+const DESKTOP_INSTALLERS = [
+  { name: DESKTOP_INSTALLER_FILES.win, match: /Setup.*\.exe$/ },
+  { name: DESKTOP_INSTALLER_FILES.mac, match: /\.dmg$/ },
+  { name: DESKTOP_INSTALLER_FILES.linux, match: /\.AppImage$/ },
+]
+
+function serveDesktopInstallers(): Plugin {
   const releaseDir = path.resolve('release')
   return {
-    name: 'serve-desktop-installer',
+    name: 'serve-desktop-installers',
     configureServer(server) {
-      server.middlewares.use('/downloads/OrbitPlay-Setup.exe', (_req, res) => {
-        const name = fs.existsSync(releaseDir)
-          ? fs.readdirSync(releaseDir).find((f) => /Setup.*\.exe$/.test(f))
-          : undefined
-        if (!name) {
-          res.statusCode = 404
-          res.end('Instalador não gerado. Rode `pnpm desktop:dist`.')
-          return
-        }
-        const file = path.join(releaseDir, name)
-        res.writeHead(200, {
-          'Content-Type': 'application/octet-stream',
-          'Content-Length': fs.statSync(file).size,
-          'Content-Disposition': 'attachment; filename="OrbitPlay-Setup.exe"',
+      for (const installer of DESKTOP_INSTALLERS) {
+        server.middlewares.use(`/downloads/${installer.name}`, (_req, res) => {
+          const found = fs.existsSync(releaseDir)
+            ? fs.readdirSync(releaseDir).find((f) => installer.match.test(f))
+            : undefined
+          if (!found) {
+            res.writeHead(302, { Location: `${DESKTOP_RELEASE_URL}/${installer.name}` })
+            res.end()
+            return
+          }
+          const file = path.join(releaseDir, found)
+          res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': fs.statSync(file).size,
+            'Content-Disposition': `attachment; filename="${installer.name}"`,
+          })
+          fs.createReadStream(file).pipe(res)
         })
-        fs.createReadStream(file).pipe(res)
-      })
+      }
     },
   }
 }
@@ -42,7 +54,7 @@ export default defineConfig({
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react(),
     tailwindcss(),
-    serveDesktopInstaller(),
+    serveDesktopInstallers(),
   ],
   resolve: {
     alias: {

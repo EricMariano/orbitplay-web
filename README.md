@@ -136,3 +136,28 @@ handoff definitivo).
 - **CI (GitHub Actions)** em `.github/workflows/ci.yml`: roda em PR e push para
   `development`/`main` — lint, typecheck, testes e build, mais o smoke E2E do
   Playwright. Mesmo conjunto que `pnpm lint && pnpm typecheck && pnpm test`.
+
+## App desktop (Electron)
+
+O menu do usuário oferece o instalador para Windows, macOS e Linux. **Ninguém
+precisa gerar o instalador na própria máquina:** a cada merge na `main` que mexe
+no app, o workflow _Desktop release_ (GitHub Actions) gera os três e os publica
+na Release fixa
+[`desktop-latest`](https://github.com/EricMariano/orbitplay-web/releases/tag/desktop-latest),
+e o botão baixa de lá — em produção e em dev, sem `.env`.
+
+- **Testar mudanças no Electron localmente:** `pnpm desktop:dist` gera
+  `release/OrbitPlay-Setup.exe` (no Windows; baixa o Electron na primeira vez e
+  os avisos amarelos do electron-builder são normais). Feche o app e o
+  `pnpm desktop:dev` antes. Com um instalador em `release/`, o `pnpm dev` serve
+  ele em vez do da Release. **Não copie o instalador para `public/`:** ele iria
+  para o `dist/` e para dentro do próprio instalador.
+- **Gerar sem esperar um merge:** _Actions → Desktop release → Run workflow_. Na
+  `main` publica na Release; em outra branch só deixa os instaladores como
+  artifacts da execução.
+- **Outro endereço de download:** `VITE_DESKTOP_DOWNLOAD_WIN`, `_MAC` e `_LINUX`
+  sobrescrevem os links da Release (opcional).
+- O app instalado serve o front em `127.0.0.1:5173` (feche o `pnpm dev` antes) e
+  fala com a API em `ORBITPLAY_API_URL` (padrão `http://localhost:3000`).
+
+Mais contexto em `DECISIONS.md`.
