@@ -47,6 +47,32 @@ function serveDesktopInstallers(): Plugin {
   }
 }
 
+// Só no build: o dev/HMR do Vite (e o preâmbulo do React Refresh) usa script
+// inline, que esta política bloquearia. Conservadora de propósito — img, media
+// e connect ficam livres porque as URLs assinadas do MinIO e a origem da API só
+// são conhecidas em runtime.
+const CONTENT_SECURITY_POLICY = [
+  "script-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ')
+
+function contentSecurityPolicy(): Plugin {
+  return {
+    name: 'content-security-policy',
+    apply: 'build',
+    transformIndexHtml: () => [
+      {
+        tag: 'meta',
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: CONTENT_SECURITY_POLICY },
+        // A meta só vale para o que vem depois dela: primeira coisa do <head>.
+        injectTo: 'head-prepend',
+      },
+    ],
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -55,6 +81,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     serveDesktopInstallers(),
+    contentSecurityPolicy(),
   ],
   resolve: {
     alias: {

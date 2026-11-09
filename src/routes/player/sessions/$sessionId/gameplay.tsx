@@ -22,7 +22,8 @@ import {
   useSessionGameplay,
   useSessionHeartbeat,
 } from '@/features/sessions/api/use-session-gameplay'
-import { useUploadSessionRecording } from '@/features/sessions/api/use-session-recording'
+import { EmptyRecordingError, recordingContentType } from '@/features/sessions/api/recording-upload'
+import { useSessionRecordingUpload } from '@/features/sessions/api/use-session-recording'
 
 export const Route = createFileRoute('/player/sessions/$sessionId/gameplay')({
   component: SessionGameplayPage,
@@ -87,7 +88,7 @@ function GameplayContent({
   const { mutate: sendHeartbeat } = useSessionHeartbeat(sessionId)
   const deviceEvent = useRecordSessionDevice(sessionId)
   const finish = useFinishSession(sessionId)
-  const uploadRecording = useUploadSessionRecording()
+  const createRecordingUpload = useSessionRecordingUpload(sessionId)
   const [elapsedMs, setElapsedMs] = useState(() => elapsedSince(gameplay.session.startedAt))
   const [devices, setDevices] = useState<Record<DeviceEventRequest['kind'], boolean>>({
     microphone: false,
@@ -101,9 +102,10 @@ function GameplayContent({
     'idle' | 'recording' | 'uploading' | 'ready' | 'error'
   >('idle')
   const [recordingError, setRecordingError] = useState<string | null>(null)
+  const [recordingStarting, setRecordingStarting] = useState(false)
+  const [recordingLimitReached, setRecordingLimitReached] = useState(false)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const recordingStartedAtRef = useRef<number | null>(null)
 
   useEffect(() => {
     const timer = window.setInterval(
@@ -185,56 +187,84 @@ function GameplayContent({
     }
 
     setRecordingError(null)
+    setRecordingLimitReached(false)
+    setRecordingStarting(true)
+    let stream: MediaStream | null = null
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      streamRef.current = stream
       const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
         ? 'video/webm;codecs=vp9,opus'
         : MediaRecorder.isTypeSupported('video/webm')
           ? 'video/webm'
           : undefined
-      const chunks: BlobPart[] = []
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunks.push(event.data)
+      const stopRecorder = () => {
+        if (recorder.state !== 'inactive') recorder.stop()
       }
-      recorder.onstop = () => {
-        const startedAt = recordingStartedAtRef.current ?? Date.now()
-        const recording = new Blob(chunks, { type: 'video/webm' })
+      // As partes sobem durante a gravação; só o resto fica para o "Parar e enviar".
+      const upload = createRecordingUpload({
+        contentType: recordingContentType(recorder.mimeType || mimeType),
+        onLimitReached: () => {
+          setRecordingLimitReached(true)
+          stopRecorder()
+        },
+        onError: () => {
+          setRecordingState('error')
+          setRecordingError(RECORDING_UPLOAD_ERROR)
+          stopRecorder()
+        },
+      })
+      // Sem o envio aberto (consentimento, API fora) não adianta gravar.
+      try {
+        await upload.start()
+      } catch (error) {
         stream.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+        setRecordingState('error')
+        setRecordingError(
+          error instanceof ApiError && error.status < 500
+            ? error.message
+            : 'Não foi possível preparar o envio da gravação. Tente novamente.',
+        )
+        return
+      }
+
+      const capture = stream
+      recorder.ondataavailable = (event) => upload.append(event.data)
+      recorder.onstop = () => {
+        capture.getTracks().forEach((track) => track.stop())
         recorderRef.current = null
         streamRef.current = null
-        recordingStartedAtRef.current = null
-        if (!recording.size) {
-          setRecordingState('error')
-          setRecordingError(
-            'Nenhum vídeo foi gravado. Inicie novamente e compartilhe uma tela ou janela.',
-          )
-          return
-        }
+        // A parte que falhou já mostrou o erro (onError).
+        if (upload.failed) return
         setRecordingState('uploading')
-        void uploadRecording
-          .mutateAsync({ sessionId, recording, durationMs: Date.now() - startedAt })
+        void upload
+          .finish()
           .then(() => setRecordingState('ready'))
-          .catch(() => {
+          .catch((error: unknown) => {
             setRecordingState('error')
             setRecordingError(
-              'Não foi possível enviar a gravação. Você pode gravar novamente antes de encerrar.',
+              error instanceof EmptyRecordingError
+                ? 'Nenhum vídeo foi gravado. Inicie novamente e compartilhe uma tela ou janela.'
+                : RECORDING_UPLOAD_ERROR,
             )
           })
       }
-      stream.getVideoTracks()[0]?.addEventListener('ended', () => {
-        if (recorder.state !== 'inactive') recorder.stop()
-      })
-      streamRef.current = stream
+      capture.getVideoTracks()[0]?.addEventListener('ended', stopRecorder)
       recorderRef.current = recorder
-      recordingStartedAtRef.current = Date.now()
       recorder.start(1_000)
       setRecordingState('recording')
     } catch {
+      stream?.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+      recorderRef.current = null
       setRecordingState('error')
       setRecordingError(
         'Não foi possível iniciar a gravação. Autorize o compartilhamento de tela e tente novamente.',
       )
+    } finally {
+      setRecordingStarting(false)
     }
   }
 
@@ -326,7 +356,8 @@ function GameplayContent({
                       Gravação de tela autorizada para este teste
                     </p>
                     <p className="mt-1 text-xs text-muted">
-                      Compartilhe a janela ou a tela usada no teste. O arquivo é enviado ao parar.
+                      Compartilhe a janela ou a tela usada no teste. O vídeo é enviado em partes
+                      enquanto você grava.
                     </p>
                   </div>
                   {recordingState === 'recording' ? (
@@ -336,7 +367,7 @@ function GameplayContent({
                   ) : (
                     <Button
                       size="sm"
-                      disabled={recordingState === 'uploading'}
+                      disabled={recordingState === 'uploading' || recordingStarting}
                       onClick={() => void startScreenRecording()}
                     >
                       <Icon name="monitor" />{' '}
@@ -357,6 +388,11 @@ function GameplayContent({
                 {recordingState === 'ready' ? (
                   <p className="mt-3 flex items-center gap-2 text-xs text-success">
                     <Icon name="check" /> Gravação enviada e em processamento.
+                  </p>
+                ) : null}
+                {recordingLimitReached && recordingState !== 'recording' ? (
+                  <p className="mt-2 text-xs text-muted">
+                    A gravação parou sozinha ao chegar no limite de tamanho ou duração.
                   </p>
                 ) : null}
                 {recordingError ? (
@@ -450,6 +486,9 @@ function GameplayContent({
     </main>
   )
 }
+
+const RECORDING_UPLOAD_ERROR =
+  'Não foi possível enviar a gravação. Você pode gravar novamente antes de encerrar.'
 
 function elapsedSince(startedAt: string): number {
   return Math.max(0, Date.now() - new Date(startedAt).getTime())

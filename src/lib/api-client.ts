@@ -58,6 +58,23 @@ async function parseError(response: Response): Promise<ApiError> {
 /** Single-flight refresh so parallel 401s don't each fire a refresh. */
 let refreshFlight: { revision: number; promise: Promise<boolean> } | null = null
 
+/** Web Lock compartilhado por todas as abas da mesma origem. */
+export const REFRESH_LOCK_NAME = 'orbitplay:auth-refresh'
+
+/**
+ * O single-flight acima vale por aba. Todas as abas mandam o mesmo cookie de
+ * refresh, e a API o rotaciona a cada uso: duas abas renovando juntas
+ * apresentariam o mesmo token. O Web Lock enfileira as renovações entre abas —
+ * a segunda só sai depois que a primeira gravou o cookie novo. Sem Web Locks
+ * (navegador antigo, contexto não seguro), segue como antes; o backend ainda
+ * tolera o reuso do token por alguns segundos.
+ */
+function withRefreshLock<T>(run: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator === 'undefined' ? undefined : navigator.locks
+  if (typeof locks?.request !== 'function') return run()
+  return locks.request(REFRESH_LOCK_NAME, run)
+}
+
 /**
  * Renova o access token pelo cookie httpOnly: `true` se renovou, `false` se a API
  * recusou o cookie (a sessão acabou de fato). Falha de rede ou 5xx (API
@@ -67,7 +84,10 @@ let refreshFlight: { revision: number; promise: Promise<boolean> } | null = null
 async function tryRefresh(): Promise<boolean> {
   const revision = useAuthStore.getState().revision
   if (refreshFlight?.revision === revision) return refreshFlight.promise
-  const promise = (async () => {
+  const promise = withRefreshLock(async () => {
+    // Login/logout nesta aba enquanto esperava o lock: esta renovação ficou
+    // obsoleta e quem chamou já confere a revisão — não gaste o cookie.
+    if (useAuthStore.getState().revision !== revision) return false
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
@@ -77,7 +97,7 @@ async function tryRefresh(): Promise<boolean> {
     const data = (await res.json().catch(() => null)) as LoginResponse | null
     if (!data?.accessToken || !data.user) return false
     return useAuthStore.getState().refreshSession(data, revision)
-  })()
+  })
   const flight = { revision, promise }
   refreshFlight = flight
 

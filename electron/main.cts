@@ -126,10 +126,13 @@ if (!app.requestSingleInstanceLock()) {
           apiUrl: API_URL,
           port: PORT,
         })
-      } catch {
+      } catch (error) {
+        const portBusy = (error as NodeJS.ErrnoException).code === 'EADDRINUSE'
         dialog.showErrorBox(
           'OrbitPlay',
-          `Não foi possível abrir a porta ${PORT}. Feche o que estiver usando e tente de novo.`,
+          portBusy
+            ? `Não foi possível abrir a porta ${PORT}. Feche o que estiver usando e tente de novo.`
+            : `Não foi possível iniciar o OrbitPlay: ${error instanceof Error ? error.message : String(error)}`,
         )
         app.quit()
         return

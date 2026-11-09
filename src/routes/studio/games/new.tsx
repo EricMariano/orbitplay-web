@@ -67,6 +67,7 @@ function NewGameWizard() {
   const createGame = useCreateGame()
   const uploadAsset = useUploadGameAsset()
   const setAccess = useSetGameAccess()
+  const canManageAccess = user?.role === 'owner' || user?.role === 'admin'
 
   const [step, setStep] = useState(STEP_INFO)
   const [draft, setDraft] = useState(createNewGameDraft)
@@ -142,7 +143,9 @@ function NewGameWizard() {
         sent.add(slot.kind)
         setSentKinds(new Set(sent))
       }
-      if (!accessSaved.current) {
+      // PUT /games/:id/access é só de owner/admin: um `studio` cria o jogo sem
+      // gravar a matriz (sem linhas em game_access, vale o acesso por papel).
+      if (!accessSaved.current && canManageAccess) {
         await setAccess.mutateAsync({ gameId: game.id, ...toSetGameAccessRequest(access) })
         accessSaved.current = true
       }
@@ -271,7 +274,14 @@ function NewGameWizard() {
 
             {step === STEP_ACCESS ? (
               <>
-                <GameAccessStep entries={access} onChange={setAccessEntries} />
+                {canManageAccess ? (
+                  <GameAccessStep entries={access} onChange={setAccessEntries} />
+                ) : (
+                  <p className="text-sm text-muted">
+                    As permissões por jogo são definidas por proprietários e administradores. Você
+                    poderá pedir a eles depois de criar o jogo.
+                  </p>
+                )}
                 <WizardFooter
                   onBack={() => setStep(STEP_MEDIA)}
                   onNext={() => void handleFinish()}

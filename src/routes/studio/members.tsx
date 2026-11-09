@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import type { OrgMember } from '@/api-types'
 import { EmptyState } from '@/components/common/EmptyState'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
@@ -32,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useResendInvite } from '@/features/auth/api/use-resend-invite'
 import { roleLabels } from '@/features/auth/role-labels'
 import {
   useAuditLogs,
@@ -246,8 +248,8 @@ function StudioMembersPage() {
           <DialogHeader>
             <DialogTitle>Convidar pessoa</DialogTitle>
             <DialogDescription>
-              O convite cria um acesso pendente. A pessoa define a própria senha pelo e-mail
-              recebido.
+              O convite cria um acesso pendente. A pessoa recebe um link para aceitá-lo e, se ainda
+              não tiver conta, cria a própria senha.
             </DialogDescription>
           </DialogHeader>
           <form className="grid gap-4" onSubmit={(event) => void submitInvite(event)}>
@@ -367,10 +369,14 @@ function MemberRow({
 }) {
   const remove = useRemoveOrgMember()
   const passwordReset = useTriggerMemberPasswordReset()
+  const resendInvite = useResendInvite()
+  const callerRole = useAuthStore((state) => state.role)
   const nextStatus = member.status === 'disabled' ? 'active' : 'disabled'
-  // Convite pendente não muda de status: o convidado o aceita ao definir a senha,
+  // Convite pendente não muda de status: o convidado o aceita pelo link do convite,
   // e cancelar é remover o membro (a API responde 409).
   const isPendingInvite = member.status === 'invited'
+  // Hierarquia: só um proprietário age sobre outro proprietário (a API responde 403).
+  const canManage = member.role !== 'owner' || callerRole === 'owner'
   return (
     <TableRow>
       <TableCell>
@@ -417,44 +423,71 @@ function MemberRow({
       </TableCell>
       <TableCell className="text-right">
         <RoleGate allow={['owner', 'admin']}>
-          <div className="flex justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isCurrentUser || passwordReset.isPending}
-              onClick={() => void passwordReset.mutateAsync(member.userId)}
-              title="Enviar e-mail de redefinição de senha"
-            >
-              <Icon name="key" />
-              <span className="sr-only">Redefinir senha de {member.displayName}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isCurrentUser || isPendingInvite}
-              title={
-                isPendingInvite
-                  ? 'Convite pendente: o convidado o aceita ao definir a senha. Para cancelar, remova o membro.'
-                  : undefined
-              }
-              onClick={() => onChange({ type: 'status', member, value: nextStatus })}
-            >
-              <Icon name={nextStatus === 'disabled' ? 'lock' : 'user-check'} />
-              {nextStatus === 'disabled' ? 'Desativar' : 'Reativar'}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isCurrentUser || remove.isPending}
-              onClick={() => {
-                if (window.confirm(`Remover ${member.displayName} da organização?`))
-                  void remove.mutateAsync(member.userId)
-              }}
-            >
-              <Icon name="trash" />
-              <span className="sr-only">Remover {member.displayName}</span>
-            </Button>
-          </div>
+          {canManage ? (
+            <div className="flex justify-end gap-1">
+              {isPendingInvite ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={resendInvite.isPending}
+                  onClick={() =>
+                    resendInvite.mutate(member.userId, {
+                      onSuccess: ({ message }) => toast.success(message),
+                      onError: (error) =>
+                        toast.error(
+                          error instanceof ApiError
+                            ? error.message
+                            : 'Não foi possível reenviar o convite.',
+                        ),
+                    })
+                  }
+                  title="Enviar um novo link de convite (o anterior deixa de valer)"
+                >
+                  <Icon name="send" />
+                  Reenviar convite
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isCurrentUser || passwordReset.isPending}
+                  onClick={() => void passwordReset.mutateAsync(member.userId)}
+                  title="Enviar e-mail de redefinição de senha"
+                >
+                  <Icon name="key" />
+                  <span className="sr-only">Redefinir senha de {member.displayName}</span>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isCurrentUser || isPendingInvite}
+                title={
+                  isPendingInvite
+                    ? 'Convite pendente: o convidado o aceita pelo link do convite. Para cancelar, remova o membro.'
+                    : undefined
+                }
+                onClick={() => onChange({ type: 'status', member, value: nextStatus })}
+              >
+                <Icon name={nextStatus === 'disabled' ? 'lock' : 'user-check'} />
+                {nextStatus === 'disabled' ? 'Desativar' : 'Reativar'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isCurrentUser || remove.isPending}
+                onClick={() => {
+                  if (window.confirm(`Remover ${member.displayName} da organização?`))
+                    void remove.mutateAsync(member.userId)
+                }}
+              >
+                <Icon name="trash" />
+                <span className="sr-only">Remover {member.displayName}</span>
+              </Button>
+            </div>
+          ) : (
+            <span className="text-xs text-muted">Somente proprietários</span>
+          )}
         </RoleGate>
       </TableCell>
     </TableRow>
@@ -667,6 +700,8 @@ function auditLabel(action: string) {
     'org.member_status_changed': 'Status de membro alterado',
     'org.member_removed': 'Membro removido',
     'org.member_password_reset_triggered': 'Redefinição de senha solicitada',
+    'org.member_invite_resent': 'Convite reenviado',
+    'org.invite_accepted': 'Convite aceito',
   }
   return labels[action] ?? action.replaceAll('_', ' ').replaceAll('.', ' · ')
 }

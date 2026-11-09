@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -46,6 +47,11 @@ import { Route as StudioGamesGameIdTestsTestIdSessionsSessionIdRouteImport } fro
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -219,6 +225,7 @@ const StudioGamesGameIdTestsTestIdSessionsSessionIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/player': typeof PlayerRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
@@ -288,6 +296,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/player': typeof PlayerRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accept-invite'
     | '/login'
     | '/player'
     | '/reset-password'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accept-invite'
     | '/login'
     | '/reset-password'
     | '/signup'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/accept-invite'
     | '/login'
     | '/player'
     | '/reset-password'
@@ -429,6 +441,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcceptInviteRoute: typeof AcceptInviteRoute
   LoginRoute: typeof LoginRoute
   PlayerRoute: typeof PlayerRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -444,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -760,6 +780,7 @@ const StudioRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcceptInviteRoute: AcceptInviteRoute,
   LoginRoute: LoginRoute,
   PlayerRoute: PlayerRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,

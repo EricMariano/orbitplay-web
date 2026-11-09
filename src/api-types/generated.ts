@@ -197,6 +197,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/invite/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_previewInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/invite/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_acceptInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/orgs/current": {
         parameters: {
             query?: never;
@@ -287,6 +319,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["OrgsController_triggerPasswordReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orgs/members/{userId}/invite/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OrgsController_resendInvite"];
         delete?: never;
         options?: never;
         head?: never;
@@ -400,6 +448,22 @@ export interface paths {
         put?: never;
         post: operations["GamesController_confirmAsset"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/games/{id}/assets/current/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["GamesController_removeCurrentAsset"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1540,6 +1604,29 @@ export interface components {
         ResetPasswordDto: {
             token: string;
             password: string;
+        };
+        InvitePreviewRequestDto: {
+            token: string;
+        };
+        InvitePreviewDto_Output: {
+            organizationName: string;
+            /** @enum {string} */
+            role: "owner" | "admin" | "studio" | "player";
+            email: string;
+            accountExists: boolean;
+            birthdateRequired: boolean;
+        };
+        AcceptInviteDto: {
+            token: string;
+            password?: string;
+            currentPassword?: string;
+            /** Format: date */
+            birthdate?: string;
+        };
+        AcceptInviteResponseDto_Output: {
+            message: string;
+            email: string;
+            organizationName: string;
         };
         OrgDto_Output: {
             id: string;
@@ -3602,6 +3689,52 @@ export interface operations {
             };
         };
     };
+    AuthController_previewInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitePreviewRequestDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitePreviewDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_acceptInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInviteDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptInviteResponseDto_Output"];
+                };
+            };
+        };
+    };
     OrgsController_current: {
         parameters: {
             query?: never;
@@ -3743,6 +3876,27 @@ export interface operations {
         };
     };
     OrgsController_triggerPasswordReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto_Output"];
+                };
+            };
+        };
+    };
+    OrgsController_resendInvite: {
         parameters: {
             query?: never;
             header?: never;
@@ -3983,6 +4137,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["GameAssetDto_Output"];
                 };
+            };
+        };
+    };
+    GamesController_removeCurrentAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

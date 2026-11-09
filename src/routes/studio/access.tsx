@@ -36,7 +36,6 @@ import {
 } from '@/features/access/api/use-org-groups'
 import { useOrgMembers } from '@/features/access/api/use-org-members'
 import { useGames } from '@/features/games/api/use-games'
-import { STUDIO_ROLES } from '@/lib/auth'
 
 export const Route = createFileRoute('/studio/access')({ component: StudioAccessPage })
 
@@ -276,7 +275,15 @@ function AccessEditorContent({
   return (
     <div className="mt-5 space-y-4">
       <GameAccessStep entries={entries} onChange={setEntries} />
-      <RoleGate allow={STUDIO_ROLES}>
+      {/* PUT /games/:id/access é só de owner/admin; studio vê a matriz sem salvar. */}
+      <RoleGate
+        allow={['owner', 'admin']}
+        fallback={
+          <p className="text-sm text-muted">
+            Somente proprietários e administradores podem alterar as permissões.
+          </p>
+        }
+      >
         <Button
           disabled={save.isPending}
           onClick={() => void save.mutateAsync({ gameId, ...toSetGameAccessRequest(entries) })}

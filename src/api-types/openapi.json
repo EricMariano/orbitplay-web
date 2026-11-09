@@ -220,7 +220,7 @@
             "schema": {
               "minLength": 1,
               "format": "email",
-              "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
               "type": "string"
             }
           }
@@ -362,6 +362,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessageResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/invite/preview": {
+      "post": {
+        "operationId": "AuthController_previewInvite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitePreviewRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePreviewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/invite/accept": {
+      "post": {
+        "operationId": "AuthController_acceptInvite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInviteResponseDto_Output"
                 }
               }
             }
@@ -645,6 +707,41 @@
     "/orgs/members/{userId}/password-reset": {
       "post": {
         "operationId": "OrgsController_triggerPasswordReset",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orgs"
+        ]
+      }
+    },
+    "/orgs/members/{userId}/invite/resend": {
+      "post": {
+        "operationId": "OrgsController_resendInvite",
         "parameters": [
           {
             "name": "userId",
@@ -1060,6 +1157,42 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{id}/assets/current/{kind}": {
+      "delete": {
+        "operationId": "GamesController_removeCurrentAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
           }
         },
         "security": [
@@ -4386,7 +4519,7 @@
             "type": "string",
             "minLength": 1,
             "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
           },
           "password": {
             "type": "string",
@@ -4511,7 +4644,7 @@
             "type": "string",
             "minLength": 1,
             "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
           },
           "password": {
             "type": "string",
@@ -4599,7 +4732,7 @@
             "type": "string",
             "minLength": 1,
             "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
           },
           "password": {
             "type": "string",
@@ -4687,7 +4820,7 @@
             "type": "string",
             "minLength": 1,
             "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
           }
         },
         "required": [
@@ -4711,6 +4844,101 @@
           "token",
           "password"
         ]
+      },
+      "InvitePreviewRequestDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "InvitePreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "organizationName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "studio",
+              "player"
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "accountExists": {
+            "type": "boolean"
+          },
+          "birthdateRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "organizationName",
+          "role",
+          "email",
+          "accountExists",
+          "birthdateRequired"
+        ],
+        "additionalProperties": false
+      },
+      "AcceptInviteDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 256
+          },
+          "currentPassword": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "AcceptInviteResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "email",
+          "organizationName"
+        ],
+        "additionalProperties": false
       },
       "OrgDto_Output": {
         "type": "object",
@@ -4815,7 +5043,7 @@
             "type": "string",
             "minLength": 1,
             "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
           },
           "displayName": {
             "type": "string",
@@ -6360,7 +6588,7 @@
           "partNumber": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 9007199254740991
+            "maximum": 1000
           },
           "uploadId": {
             "type": "string",
@@ -6433,6 +6661,7 @@
             "maxLength": 500
           },
           "parts": {
+            "maxItems": 1000,
             "type": "array",
             "items": {
               "type": "object",
@@ -6440,7 +6669,7 @@
                 "partNumber": {
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 9007199254740991
+                  "maximum": 1000
                 },
                 "etag": {
                   "type": "string",
@@ -7442,6 +7671,7 @@
         "type": "object",
         "properties": {
           "questions": {
+            "maxItems": 100,
             "type": "array",
             "items": {
               "type": "object",
@@ -7478,6 +7708,7 @@
                   "maximum": 1000
                 },
                 "options": {
+                  "maxItems": 50,
                   "type": "array",
                   "items": {
                     "type": "object",

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AuthUser } from '@/api-types'
-import { api, initializeSession } from './api-client'
+import { api, initializeSession, REFRESH_LOCK_NAME } from './api-client'
 import { useAuthStore } from './auth'
 
 const user: AuthUser = {
@@ -22,6 +22,20 @@ function deferred<T>() {
     resolve = done
   })
   return { promise, resolve }
+}
+const isRefresh = ([url]: Parameters<typeof fetch>) => String(url).endsWith('/auth/refresh')
+const tick = () => new Promise((done) => setTimeout(done, 0))
+
+/** Web Locks em memória (o jsdom não implementa): um lock exclusivo, em fila. */
+function installWebLocks() {
+  let tail: Promise<unknown> = Promise.resolve()
+  const request = vi.fn((name: string, callback: (lock: Lock | null) => Promise<unknown>) => {
+    const run = tail.then(() => callback({ name, mode: 'exclusive' } as Lock))
+    tail = run.catch(() => undefined)
+    return run
+  })
+  Object.defineProperty(navigator, 'locks', { configurable: true, value: { request } })
+  return request
 }
 
 describe('API session and retry boundaries', () => {
@@ -179,6 +193,74 @@ describe('API session and retry boundaries', () => {
     refresh.resolve(unauthorized())
     await initial
     expect(useAuthStore.getState().accessToken).toBe('login-token')
+  })
+
+  describe('refresh across tabs (Web Locks)', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'locks')
+    })
+
+    it('falls back to the in-tab single-flight when Web Locks are unavailable', async () => {
+      expect('locks' in navigator).toBe(false)
+      fetchMock
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(refreshed())
+        .mockResolvedValueOnce(json({ ok: true }))
+      await expect(api.get('/private')).resolves.toEqual({ ok: true })
+      expect(useAuthStore.getState().accessToken).toBe('new-token')
+    })
+
+    it('waits for another tab holding the refresh lock before spending the shared cookie', async () => {
+      const request = installWebLocks()
+      const otherTab = deferred<void>()
+      void navigator.locks.request(REFRESH_LOCK_NAME, () => otherTab.promise)
+      fetchMock
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(refreshed())
+        .mockImplementation(async () => json({ ok: true }))
+
+      const result = api.get('/private')
+      await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
+      await tick()
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock.mock.calls.filter(isRefresh)).toHaveLength(0)
+
+      otherTab.resolve()
+      await expect(result).resolves.toEqual({ ok: true })
+      expect(fetchMock.mock.calls.filter(isRefresh)).toHaveLength(1)
+      expect(request).toHaveBeenLastCalledWith(REFRESH_LOCK_NAME, expect.any(Function))
+      expect(useAuthStore.getState().accessToken).toBe('new-token')
+    })
+
+    it('still asks for the lock once per tab when parallel requests get a 401', async () => {
+      const request = installWebLocks()
+      fetchMock
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(refreshed())
+        .mockImplementation(async () => json({ ok: true }))
+
+      await Promise.all([api.get('/one'), api.get('/two')])
+      expect(request).toHaveBeenCalledTimes(1)
+      expect(fetchMock.mock.calls.filter(isRefresh)).toHaveLength(1)
+    })
+
+    it('drops a refresh made obsolete by a logout while it waited for the lock', async () => {
+      const request = installWebLocks()
+      const otherTab = deferred<void>()
+      void navigator.locks.request(REFRESH_LOCK_NAME, () => otherTab.promise)
+      fetchMock.mockResolvedValueOnce(unauthorized())
+
+      const result = api.get('/private').catch((error: unknown) => error)
+      // The other tab's lock + this tab's refresh, queued behind it.
+      await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
+      useAuthStore.getState().clearSession()
+      otherTab.resolve()
+
+      await expect(result).resolves.toMatchObject({ status: 401 })
+      expect(fetchMock.mock.calls.filter(isRefresh)).toHaveLength(0)
+      expect(useAuthStore.getState().status).toBe('unauthenticated')
+    })
   })
 
   it('retries the boot refresh on the next navigation when the API was unavailable', async () => {
