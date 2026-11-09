@@ -7665,7 +7665,7 @@
           "sizeBytes": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 5368709120
+            "maximum": 1073741824
           },
           "platform": {
             "type": "string",
