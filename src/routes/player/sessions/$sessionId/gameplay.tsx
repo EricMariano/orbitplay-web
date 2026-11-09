@@ -14,8 +14,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ApiError } from '@/lib/api-client'
+import { ApiError, apiUrl } from '@/lib/api-client'
 import { formatDuration } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import {
   useFinishSession,
   useRecordSessionDevice,
@@ -142,6 +143,9 @@ function GameplayContent({
     [],
   )
 
+  // Fixed on first render: every refetch signs a new link, and a new `src`
+  // would reload the game mid-session.
+  const [playSrc] = useState(() => (gameplay.play ? apiUrl(gameplay.play.path) : null))
   const backgroundImage = gameplay.game.bannerUrl ?? gameplay.game.coverUrl
   const sessionTitle = gameplay.test.title ?? gameplay.game.title
   const deviceCards: Array<{
@@ -272,6 +276,60 @@ function GameplayContent({
     if (recorderRef.current && recorderRef.current.state !== 'inactive') recorderRef.current.stop()
   }
 
+  function renderRecordingPanel(className?: string) {
+    return (
+      <div
+        className={cn('rounded-xl border border-border bg-background/60 p-4 text-left', className)}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Gravação de tela</p>
+            <p className="mt-1 text-xs text-success">Gravação de tela autorizada para este teste</p>
+            <p className="mt-1 text-xs text-muted">
+              Compartilhe a janela ou a tela usada no teste. O vídeo é enviado em partes enquanto
+              você grava.
+            </p>
+          </div>
+          {recordingState === 'recording' ? (
+            <Button size="sm" variant="destructive" onClick={stopScreenRecording}>
+              <Icon name="close" /> Parar e enviar
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              disabled={recordingState === 'uploading' || recordingStarting}
+              onClick={() => void startScreenRecording()}
+            >
+              <Icon name="monitor" />{' '}
+              {recordingState === 'uploading'
+                ? 'Enviando…'
+                : recordingState === 'ready'
+                  ? 'Gravar novamente'
+                  : 'Iniciar gravação'}
+            </Button>
+          )}
+        </div>
+        {recordingState === 'recording' ? (
+          <p className="mt-3 flex items-center gap-2 text-xs text-destructive">
+            <span className="size-2 animate-pulse rounded-full bg-destructive" /> Gravação em
+            andamento
+          </p>
+        ) : null}
+        {recordingState === 'ready' ? (
+          <p className="mt-3 flex items-center gap-2 text-xs text-success">
+            <Icon name="check" /> Gravação enviada e em processamento.
+          </p>
+        ) : null}
+        {recordingLimitReached && recordingState !== 'recording' ? (
+          <p className="mt-2 text-xs text-muted">
+            A gravação parou sozinha ao chegar no limite de tamanho ou duração.
+          </p>
+        ) : null}
+        {recordingError ? <p className="mt-3 text-xs text-destructive">{recordingError}</p> : null}
+      </div>
+    )
+  }
+
   async function finishSession() {
     setFinishError(null)
     try {
@@ -332,76 +390,41 @@ function GameplayContent({
           </div>
         </header>
 
-        <section
-          className="flex flex-1 items-center justify-center py-10 text-center"
-          aria-label="Área do jogo"
-        >
-          <div className="max-w-lg rounded-2xl border border-border bg-surface/85 p-7 shadow-2xl backdrop-blur">
-            <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/15 text-primary">
-              <Icon name="gamepad" className="size-7" />
-            </span>
-            <h2 className="mt-4 text-xl font-semibold text-foreground">
-              Seu jogo está em execução
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Jogue na build aberta no seu dispositivo. Esta sobreposição mantém a sessão ativa e
-              registra os dispositivos que você escolheu usar.
-            </p>
-            {gameplay.recordingRequired ? (
-              <div className="mt-5 rounded-xl border border-border bg-background/60 p-4 text-left">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Gravação de tela</p>
-                    <p className="mt-1 text-xs text-success">
-                      Gravação de tela autorizada para este teste
-                    </p>
-                    <p className="mt-1 text-xs text-muted">
-                      Compartilhe a janela ou a tela usada no teste. O vídeo é enviado em partes
-                      enquanto você grava.
-                    </p>
-                  </div>
-                  {recordingState === 'recording' ? (
-                    <Button size="sm" variant="destructive" onClick={stopScreenRecording}>
-                      <Icon name="close" /> Parar e enviar
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      disabled={recordingState === 'uploading' || recordingStarting}
-                      onClick={() => void startScreenRecording()}
-                    >
-                      <Icon name="monitor" />{' '}
-                      {recordingState === 'uploading'
-                        ? 'Enviando…'
-                        : recordingState === 'ready'
-                          ? 'Gravar novamente'
-                          : 'Iniciar gravação'}
-                    </Button>
-                  )}
-                </div>
-                {recordingState === 'recording' ? (
-                  <p className="mt-3 flex items-center gap-2 text-xs text-destructive">
-                    <span className="size-2 animate-pulse rounded-full bg-destructive" /> Gravação
-                    em andamento
-                  </p>
-                ) : null}
-                {recordingState === 'ready' ? (
-                  <p className="mt-3 flex items-center gap-2 text-xs text-success">
-                    <Icon name="check" /> Gravação enviada e em processamento.
-                  </p>
-                ) : null}
-                {recordingLimitReached && recordingState !== 'recording' ? (
-                  <p className="mt-2 text-xs text-muted">
-                    A gravação parou sozinha ao chegar no limite de tamanho ou duração.
-                  </p>
-                ) : null}
-                {recordingError ? (
-                  <p className="mt-3 text-xs text-destructive">{recordingError}</p>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </section>
+        {playSrc ? (
+          <section className="flex flex-1 flex-col gap-3 py-4" aria-label="Área do jogo">
+            {/* Studio code: sandboxed without allow-same-origin, so it gets an
+                opaque origin and can't read the Orbit session (the API also
+                enforces this with a CSP `sandbox` on every file it serves). */}
+            <iframe
+              src={playSrc}
+              title={`Jogo: ${gameplay.game.title}`}
+              sandbox="allow-scripts allow-pointer-lock"
+              allow="fullscreen; gamepad; autoplay"
+              referrerPolicy="no-referrer"
+              className="min-h-[60dvh] w-full flex-1 rounded-2xl border border-border bg-background shadow-2xl"
+            />
+            {gameplay.recordingRequired ? renderRecordingPanel() : null}
+          </section>
+        ) : (
+          <section
+            className="flex flex-1 items-center justify-center py-10 text-center"
+            aria-label="Área do jogo"
+          >
+            <div className="max-w-lg rounded-2xl border border-border bg-surface/85 p-7 shadow-2xl backdrop-blur">
+              <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Icon name="gamepad" className="size-7" />
+              </span>
+              <h2 className="mt-4 text-xl font-semibold text-foreground">
+                Seu jogo está em execução
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Jogue na build aberta no seu dispositivo. Esta sobreposição mantém a sessão ativa e
+                registra os dispositivos que você escolheu usar.
+              </p>
+              {gameplay.recordingRequired ? renderRecordingPanel('mt-5') : null}
+            </div>
+          </section>
+        )}
 
         <section className="grid gap-3 rounded-2xl border border-border bg-surface/95 p-4 shadow-xl backdrop-blur lg:grid-cols-[1fr_auto] lg:items-center">
           <div>

@@ -2477,6 +2477,10 @@ export interface components {
             };
             heartbeatIntervalMs: number;
             recordingRequired: boolean;
+            play: {
+                path: string;
+                expiresAt: string;
+            } | null;
         };
         SessionSummaryDto_Output: {
             session: {

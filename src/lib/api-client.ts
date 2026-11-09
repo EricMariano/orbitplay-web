@@ -3,6 +3,11 @@ import { clearSession, getAccessToken, useAuthStore } from '@/lib/auth'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
 
+/** Full URL of an API path, for what the browser loads itself (e.g. an iframe `src`). */
+export function apiUrl(path: string): string {
+  return `${BASE_URL}${path}`
+}
+
 /** Typed error thrown for any non-ok response. Preserves per-field errors so
  *  forms can show them without losing what the user typed (handoff requirement). */
 export class ApiError extends Error {

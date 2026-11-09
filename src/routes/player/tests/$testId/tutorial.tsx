@@ -148,16 +148,19 @@ function PreparationContent({
       return undefined
     }
   })
+  // Web builds run inside the gameplay page (sandboxed iframe): nothing to download.
+  const runsInBrowser = build.platform === 'web'
   const download = useBuildDownloadUrl(
     build.id,
     forceDownload ? undefined : localVersion,
-    compatibility.data?.compatible === true && build.status === 'validated',
+    !runsInBrowser && compatibility.data?.compatible === true && build.status === 'validated',
   )
   const requirements = tutorial.requiredConsents
   const allConsentsSelected = requirements.every((kind) => selectedConsents[kind] === true)
   const consentsGranted =
     participation.consentsGranted || consentMutation.data?.allRequiredGranted === true
   const downloadConfirmed =
+    runsInBrowser ||
     download.data?.needsDownload === false ||
     (!forceDownload && localVersion === download.data?.version)
   const ready =
@@ -186,8 +189,10 @@ function PreparationContent({
   }
 
   function startSession() {
-    if (!ready || !download.data?.version) return
-    sessionMutation.mutate({ buildVersion: download.data.version, platform: 'web' })
+    // A web build has no local copy to version: the build itself is what runs.
+    const buildVersion = runsInBrowser ? (build.version ?? build.id) : download.data?.version
+    if (!ready || !buildVersion) return
+    sessionMutation.mutate({ buildVersion, platform: 'web' })
   }
 
   return (
@@ -299,7 +304,13 @@ function PreparationContent({
             <CompatibilityStatus query={compatibility} />
           </div>
 
-          {compatibility.data?.compatible && build.status === 'validated' ? (
+          {compatibility.data?.compatible && build.status === 'validated' && runsInBrowser ? (
+            <p className="mt-4 flex items-center gap-2 text-sm text-success">
+              <Icon name="check" /> Este jogo roda direto no navegador, dentro do Orbit. Não precisa
+              baixar nada.
+            </p>
+          ) : null}
+          {compatibility.data?.compatible && build.status === 'validated' && !runsInBrowser ? (
             <DownloadStatus
               query={download}
               confirmed={downloadConfirmed}
