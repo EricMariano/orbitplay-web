@@ -136,3 +136,28 @@ handoff definitivo).
 - **CI (GitHub Actions)** em `.github/workflows/ci.yml`: roda em PR e push para
   `development`/`main` — lint, typecheck, testes e build, mais o smoke E2E do
   Playwright. Mesmo conjunto que `pnpm lint && pnpm typecheck && pnpm test`.
+
+## App desktop (Electron)
+
+O menu do usuário oferece o instalador para Windows, macOS e Linux. Em dev **não
+é preciso criar `.env.local`**: o Vite serve o que estiver em `release/` em
+`/downloads/<arquivo>`.
+
+- **Windows:** `pnpm desktop:dist` (baixa o Electron na primeira vez; os avisos
+  amarelos do electron-builder são normais). Gera `release/OrbitPlay-Setup.exe`.
+  Feche o app e o `pnpm desktop:dev` antes. **Não copie o instalador para
+  `public/`:** ele iria para o `dist/` e para dentro do próprio instalador.
+- **macOS e Linux:** só podem ser gerados no próprio sistema. Use o workflow
+  _Desktop release_ (GitHub Actions); ele publica uma Release com os três arquivos:
+
+  ```bash
+  git tag desktop-v0.1.0 && git push origin desktop-v0.1.0
+  ```
+
+- **Produção:** preencha `VITE_DESKTOP_DOWNLOAD_WIN`, `_MAC` e `_LINUX` com os
+  links da Release (`.../releases/latest/download/OrbitPlay-Setup.exe`,
+  `OrbitPlay.dmg`, `OrbitPlay.AppImage`).
+- O app instalado serve o front em `127.0.0.1:5173` (feche o `pnpm dev` antes) e
+  fala com a API em `ORBITPLAY_API_URL` (padrão `http://localhost:3000`).
+
+Mais contexto em `DECISIONS.md`.

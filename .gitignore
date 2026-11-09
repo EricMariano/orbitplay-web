@@ -36,3 +36,4 @@ test-results
 # Electron
 dist-electron
 release
+/public/downloads

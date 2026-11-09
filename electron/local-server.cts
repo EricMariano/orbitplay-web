@@ -25,7 +25,14 @@ function stripApiPrefix(url: string): string {
 }
 
 function serveStatic(root: string, req: http.IncomingMessage, res: http.ServerResponse): void {
-  const pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname)
+  let pathname: string
+  try {
+    pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname)
+  } catch {
+    // URL malformada (ex.: `/%E0`): responde 400 em vez de derrubar o app.
+    res.writeHead(400).end()
+    return
+  }
   let file = path.join(root, pathname)
   // Impede sair de `dist/` com `..`.
   if (!file.startsWith(root)) {

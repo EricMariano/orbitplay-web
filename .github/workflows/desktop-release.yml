@@ -1,0 +1,79 @@
+name: Desktop release
+
+# Gera os instaladores do app desktop. Cada um só pode ser construído no próprio
+# sistema (o .dmg no macOS, o .AppImage no Linux), por isso a matriz.
+# Dispara ao empurrar uma tag `desktop-v*` (ex.: desktop-v0.1.0) ou à mão.
+# Com tag, publica uma Release com nomes fixos — os links do front ficam
+# https://github.com/<org>/<repo>/releases/latest/download/<arquivo>.
+on:
+  push:
+    tags: ['desktop-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Instalador (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            file: OrbitPlay-Setup.exe
+          - os: macos-latest
+            file: OrbitPlay.dmg
+          - os: ubuntu-latest
+            file: OrbitPlay.AppImage
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build installer
+        run: pnpm desktop:dist --publish never
+        env:
+          # Sem certificado de assinatura por enquanto.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: release/${{ matrix.file }}
+          if-no-files-found: error
+
+  release:
+    name: Publicar Release
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download installers
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" installers/*
+          --repo "$GITHUB_REPOSITORY"
+          --title "OrbitPlay desktop ${GITHUB_REF_NAME#desktop-v}"
+          --notes "Instaladores do app desktop: Windows (.exe), macOS (.dmg) e Linux (.AppImage)."

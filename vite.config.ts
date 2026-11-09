@@ -6,31 +6,46 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vitest/config'
 
-// Só dev: serve o instalador gerado por `pnpm desktop:dist` (release/) em
-// /downloads/OrbitPlay-Setup.exe, para o botão "Baixar app" funcionar local.
-// Fora do `public/` de propósito: iria para o dist/ e para dentro do próprio .exe.
-function serveDesktopInstaller(): Plugin {
+// Só dev: serve os instaladores de `release/` em /downloads/<arquivo>, para o
+// menu "Baixar app" funcionar local. O .exe sai de `pnpm desktop:dist` na sua
+// máquina; o .dmg (macOS) e o .AppImage (Linux) só podem ser gerados no próprio
+// sistema — em geral pelo workflow `desktop-release` no GitHub Actions — e, se
+// você copiar o arquivo para `release/`, ele é servido aqui também.
+// Fora do `public/` de propósito: iria para o dist/ e para dentro do próprio app.
+const DESKTOP_INSTALLERS = [
+  { name: 'OrbitPlay-Setup.exe', match: /Setup.*\.exe$/ },
+  { name: 'OrbitPlay.dmg', match: /\.dmg$/ },
+  { name: 'OrbitPlay.AppImage', match: /\.AppImage$/ },
+]
+
+function serveDesktopInstallers(): Plugin {
   const releaseDir = path.resolve('release')
   return {
-    name: 'serve-desktop-installer',
+    name: 'serve-desktop-installers',
     configureServer(server) {
-      server.middlewares.use('/downloads/OrbitPlay-Setup.exe', (_req, res) => {
-        const name = fs.existsSync(releaseDir)
-          ? fs.readdirSync(releaseDir).find((f) => /Setup.*\.exe$/.test(f))
-          : undefined
-        if (!name) {
-          res.statusCode = 404
-          res.end('Instalador não gerado. Rode `pnpm desktop:dist`.')
-          return
-        }
-        const file = path.join(releaseDir, name)
-        res.writeHead(200, {
-          'Content-Type': 'application/octet-stream',
-          'Content-Length': fs.statSync(file).size,
-          'Content-Disposition': 'attachment; filename="OrbitPlay-Setup.exe"',
+      for (const installer of DESKTOP_INSTALLERS) {
+        server.middlewares.use(`/downloads/${installer.name}`, (_req, res) => {
+          const found = fs.existsSync(releaseDir)
+            ? fs.readdirSync(releaseDir).find((f) => installer.match.test(f))
+            : undefined
+          if (!found) {
+            res.statusCode = 404
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+            res.end(
+              `${installer.name} não encontrado em release/. Windows: rode \`pnpm desktop:dist\`. ` +
+                'macOS/Linux: gere pelo workflow "Desktop release" (GitHub Actions) ou no próprio sistema.',
+            )
+            return
+          }
+          const file = path.join(releaseDir, found)
+          res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': fs.statSync(file).size,
+            'Content-Disposition': `attachment; filename="${installer.name}"`,
+          })
+          fs.createReadStream(file).pipe(res)
         })
-        fs.createReadStream(file).pipe(res)
-      })
+      }
     },
   }
 }
@@ -42,7 +57,7 @@ export default defineConfig({
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react(),
     tailwindcss(),
-    serveDesktopInstaller(),
+    serveDesktopInstallers(),
   ],
   resolve: {
     alias: {
