@@ -1,4 +1,5 @@
-import { detectPlatform, getDesktopDownloads } from '@/lib/desktop'
+import { detectPlatform, getDesktopDownloads, resolveDownloadUrl } from '@/lib/desktop'
+import { DESKTOP_RELEASE_URL } from '@/lib/desktop-release'
 
 const WIN = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
 const MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'
@@ -15,6 +16,31 @@ describe('detectPlatform', () => {
     expect(detectPlatform(LINUX)).toBe('linux')
     expect(detectPlatform(ANDROID)).toBeNull()
     expect(detectPlatform(IPHONE)).toBeNull()
+  })
+})
+
+describe('resolveDownloadUrl', () => {
+  it('em produção aponta para a Release desktop-latest', () => {
+    expect(resolveDownloadUrl('win', undefined, false)).toBe(
+      `${DESKTOP_RELEASE_URL}/OrbitPlay-Setup.exe`,
+    )
+    expect(resolveDownloadUrl('mac', '', false)).toBe(`${DESKTOP_RELEASE_URL}/OrbitPlay.dmg`)
+    expect(resolveDownloadUrl('linux', undefined, false)).toBe(
+      `${DESKTOP_RELEASE_URL}/OrbitPlay.AppImage`,
+    )
+  })
+
+  it('em dev passa pelo Vite em /downloads', () => {
+    expect(resolveDownloadUrl('win', undefined, true)).toBe('/downloads/OrbitPlay-Setup.exe')
+  })
+
+  it('o link do .env tem prioridade', () => {
+    expect(resolveDownloadUrl('win', 'https://cdn.exemplo/app.exe', false)).toBe(
+      'https://cdn.exemplo/app.exe',
+    )
+    expect(resolveDownloadUrl('mac', 'https://cdn.exemplo/app.dmg', true)).toBe(
+      'https://cdn.exemplo/app.dmg',
+    )
   })
 })
 

@@ -246,15 +246,22 @@ O E2E deste passo cobre apenas os itens 1–3 (lógica de cliente).
   empacotar. `pnpm.onlyBuiltDependencies` libera o postinstall do Electron.
 - **Download do app dentro do front.** `DownloadDesktopItem` (menu do usuário do
   `AppShell` e do `PlayerTopNav`) lista Windows, macOS e Linux, com o sistema do
-  visitante primeiro. Links via `VITE_DESKTOP_DOWNLOAD_*`; em dev, sem link, usa
-  `/downloads/<arquivo>` (Vite serve `release/`), sem precisar de `.env.local`.
-  Sem link em produção a plataforma some; no celular ou já no app desktop nada
-  aparece. Sem endpoint novo e sem mudança no banco; a lógica fica em
-  `lib/desktop.ts`.
-- **Instaladores por sistema.** Cada um só pode ser construído no próprio sistema
-  (.dmg no macOS, .AppImage no Linux), então `.github/workflows/desktop-release.yml`
-  constrói os três em matriz e, numa tag `desktop-v*`, publica uma Release com
-  nomes fixos (`OrbitPlay-Setup.exe`, `OrbitPlay.dmg`, `OrbitPlay.AppImage`).
-  Não copiar instalador para `public/`: iria para o `dist/` e para dentro do
+  visitante primeiro; no celular ou já no app desktop nada aparece. Os links
+  apontam para a Release `desktop-latest` (`lib/desktop-release.ts`); em dev
+  passam por `/downloads/<arquivo>`, onde o Vite serve o instalador de
+  `release/` se houver, senão redireciona para a Release. `VITE_DESKTOP_DOWNLOAD_*`
+  sobrescrevem (opcional). Sem endpoint novo e sem mudança no banco; a lógica
+  fica em `lib/desktop.ts`.
+- **Build automatizada.** Ninguém precisa gerar o instalador na própria máquina:
+  `.github/workflows/desktop-release.yml` roda a cada push na `main` que mexe no
+  app (front ou Electron — o app empacota o `dist/`), constrói os três em matriz
+  (cada um só sai do próprio sistema: .dmg no macOS, .AppImage no Linux) e
+  substitui os arquivos da Release fixa `desktop-latest`, movendo a tag para o
+  commit. Nomes fixos (`OrbitPlay-Setup.exe`, `OrbitPlay.dmg`,
+  `OrbitPlay.AppImage`) ⇒ links estáveis. Release fixa em vez de uma por versão
+  porque o app ainda não tem versionamento (`0.0.0`); se passar a ter, dá para
+  criar Releases numeradas além da `desktop-latest`. Só funciona com o repo
+  público (Release de repo privado exige login).
+- **Não copiar instalador para `public/`:** iria para o `dist/` e para dentro do
   próprio app. Sem assinatura de código por enquanto (avisos do SmartScreen no
   Windows e do Gatekeeper no macOS).

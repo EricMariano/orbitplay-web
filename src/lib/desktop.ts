@@ -1,3 +1,5 @@
+import { DESKTOP_INSTALLER_FILES, DESKTOP_RELEASE_URL } from '@/lib/desktop-release'
+
 export type DesktopPlatform = 'win' | 'mac' | 'linux'
 
 export type DesktopDownload = {
@@ -29,23 +31,27 @@ const LABELS: Record<DesktopPlatform, string> = {
   linux: 'Linux',
 }
 
-// Em dev o Vite serve o que estiver em `release/` nestes caminhos (ver
-// vite.config.ts), então não é preciso configurar .env.local. Em produção os
-// links vêm do .env (VITE_DESKTOP_DOWNLOAD_*).
-const DEV_URLS: Record<DesktopPlatform, string> = {
-  win: '/downloads/OrbitPlay-Setup.exe',
-  mac: '/downloads/OrbitPlay.dmg',
-  linux: '/downloads/OrbitPlay.AppImage',
-}
-
-function resolveUrl(fromEnv: string | undefined, platform: DesktopPlatform): string | undefined {
-  return fromEnv || (import.meta.env.DEV ? DEV_URLS[platform] : undefined)
+/**
+ * Link do instalador de uma plataforma. `VITE_DESKTOP_DOWNLOAD_*` sobrescreve,
+ * se preenchida. Sem ela: em dev, `/downloads/<arquivo>` — o Vite serve o
+ * instalador de `release/` se você gerou um, senão redireciona para a Release
+ * (ver vite.config.ts); em produção, direto a Release `desktop-latest`, mantida
+ * pelo workflow `desktop-release`. Nenhum dos dois precisa de .env.
+ */
+export function resolveDownloadUrl(
+  platform: DesktopPlatform,
+  fromEnv?: string,
+  dev: boolean = import.meta.env.DEV,
+): string {
+  if (fromEnv) return fromEnv
+  const file = DESKTOP_INSTALLER_FILES[platform]
+  return dev ? `/downloads/${file}` : `${DESKTOP_RELEASE_URL}/${file}`
 }
 
 const URLS: Record<DesktopPlatform, string | undefined> = {
-  win: resolveUrl(import.meta.env.VITE_DESKTOP_DOWNLOAD_WIN, 'win'),
-  mac: resolveUrl(import.meta.env.VITE_DESKTOP_DOWNLOAD_MAC, 'mac'),
-  linux: resolveUrl(import.meta.env.VITE_DESKTOP_DOWNLOAD_LINUX, 'linux'),
+  win: resolveDownloadUrl('win', import.meta.env.VITE_DESKTOP_DOWNLOAD_WIN),
+  mac: resolveDownloadUrl('mac', import.meta.env.VITE_DESKTOP_DOWNLOAD_MAC),
+  linux: resolveDownloadUrl('linux', import.meta.env.VITE_DESKTOP_DOWNLOAD_LINUX),
 }
 
 const MOBILE = /Android|iPhone|iPad|iPod/i
@@ -65,9 +71,9 @@ export function detectPlatform(userAgent: string): DesktopPlatform | null {
 
 /**
  * Instaladores do app desktop que podem ser oferecidos, com o sistema do
- * visitante primeiro. Vazio quando já está no app, no celular ou quando
- * nenhum link está configurado. Os links vêm do .env — nada passa pela API
- * nem pelo banco.
+ * visitante primeiro. Vazio quando já está no app ou no celular. Os links
+ * apontam para a Release do GitHub (ou para o .env) — nada passa pela API nem
+ * pelo banco.
  */
 export function getDesktopDownloads(
   userAgent: string = typeof navigator === 'undefined' ? '' : navigator.userAgent,
